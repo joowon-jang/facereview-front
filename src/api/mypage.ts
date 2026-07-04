@@ -33,3 +33,10 @@ export const changePassword = async (props: {
   const res = await api.patch(url, props);
   return res;
 };
+
+// 회원 탈퇴
+export const withdraw = async () => {
+  const url = '/v2/mypage/withdraw';
+  const res = await api.delete(url);
+  return res;
+};

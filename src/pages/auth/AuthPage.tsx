@@ -52,6 +52,14 @@ const AuthPage = () => {
     }
   }, [currentStep]);
 
+  // 새로고침(=페이지 신규 마운트) 시에는 항상 1단계로 초기화
+  useEffect(() => {
+    if (currentStep !== 1) {
+      navigate('/auth/1', { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const validateEmail = (email: string) => {
     return email.match(
       /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
@@ -172,7 +180,7 @@ const AuthPage = () => {
         .then((res) => {
           if (res.status === 201 || res.status === 200) {
             toast.success('가입되었어요', { toastId: 'signUp complete' });
-            navigate('/auth');
+            navigate('/auth/1');
           }
         })
         .catch(() => {

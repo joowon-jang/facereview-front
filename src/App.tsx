@@ -26,10 +26,9 @@ function App() {
   }, [access_token]);
 
   useEffect(() => {
-    const { access_token } = useAuthStorage.getState();
-    const { setUserInfo } = useAuthStorage.getState();
+    const { is_sign_in, setUserInfo } = useAuthStorage.getState();
 
-    if (access_token) return;
+    if (!is_sign_in) return; // 게스트는 reissue를 시도하지 않음
 
     refreshToken()
       .then(async (res) => {

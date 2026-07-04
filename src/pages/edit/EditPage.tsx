@@ -10,10 +10,12 @@ import ModalDialog from 'components/ModalDialog/ModalDialog';
 import { CategoryType, EmotionType } from 'types';
 import { useAuthStorage } from 'store/authStore';
 import { updateProfile } from 'api/auth';
+import { withdraw } from 'api/mypage';
 import { mapEmotionToNumber, mapNumberToEmotion } from 'utils/index';
 import CategoryList from 'components/CategoryList/CategoryList';
 import useMediaQuery from 'hooks/useMediaQuery';
 import useWindowSize from 'hooks/useWindowSize';
+import { useLogout } from 'hooks/useLogout';
 
 const EditPage = () => {
   const isMobile = useMediaQuery('(max-width: 1200px)');
@@ -25,6 +27,7 @@ const EditPage = () => {
   const user_profile = useAuthStorage((s) => s.user_profile);
   const user_favorite_genres = useAuthStorage((s) => s.user_favorite_genres);
   const navigate = useNavigate();
+  const { handleLogout } = useLogout();
   const [nickName, setNickName] = useState(user_name);
   const [selectedCategories, setSelectedCategories] = useState<CategoryType[]>(
     user_favorite_genres as CategoryType[],
@@ -37,6 +40,8 @@ const EditPage = () => {
   );
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
+  const [isWithdrawing, setIsWithdrawing] = useState(false);
 
   const handleColorSelect = (color: EmotionType) => {
     setSelectedColor(color);
@@ -93,6 +98,25 @@ const EditPage = () => {
         console.error(error);
         toast.error('회원정보 수정에 실패했어요');
       });
+  };
+
+  const handleWithdrawClick = () => {
+    setIsWithdrawModalOpen(true);
+  };
+
+  const handleWithdrawConfirm = async () => {
+    setIsWithdrawing(true);
+    try {
+      await withdraw();
+      toast.success('탈퇴가 완료되었어요');
+      setIsWithdrawModalOpen(false);
+      await handleLogout('/main');
+    } catch (error) {
+      console.error(error);
+      toast.error('탈퇴에 실패했어요. 잠시 후 다시 시도해주세요.');
+    } finally {
+      setIsWithdrawing(false);
+    }
   };
 
   return (
@@ -204,7 +228,49 @@ const EditPage = () => {
           disabled={nickName.length < 2 || selectedCategories.length < 1}
           onClick={handleEditButtonClick}
         />
+
+        <div className="edit-page-withdraw-container">
+          <button
+            type="button"
+            className="edit-page-withdraw-button font-body-large"
+            onClick={handleWithdrawClick}>
+            탈퇴하기
+          </button>
+          <p className="edit-page-withdraw-notice font-body-medium">
+            * 탈퇴 시 계정 정보는 삭제되지만, 분석된 감정 데이터는 삭제되지
+            않습니다.
+          </p>
+        </div>
       </div>
+
+      <ModalDialog
+        isOpen={isWithdrawModalOpen}
+        onClose={() => !isWithdrawing && setIsWithdrawModalOpen(false)}>
+        <div className="withdraw-modal-container">
+          <h2 className="font-title-medium">정말 탈퇴하시겠어요?</h2>
+          <p className="withdraw-modal-description font-body-large">
+            탈퇴해도 분석된 감정 데이터는 남아있어요
+          </p>
+          <div className="withdraw-modal-button-wrapper">
+            <Button
+              label={'취소'}
+              variant={'cta-fixed-secondary'}
+              style={{
+                marginRight: '12px',
+                background: '#5D5D6D',
+              }}
+              disabled={isWithdrawing}
+              onClick={() => setIsWithdrawModalOpen(false)}
+            />
+            <Button
+              label={isWithdrawing ? '탈퇴 중...' : '확인'}
+              variant={'cta-fixed'}
+              disabled={isWithdrawing}
+              onClick={handleWithdrawConfirm}
+            />
+          </div>
+        </div>
+      </ModalDialog>
     </>
   );
 };
