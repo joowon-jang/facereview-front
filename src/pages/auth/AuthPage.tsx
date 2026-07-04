@@ -1,5 +1,6 @@
 import AnimatedLogo from 'components/AnimatedLogo/AnimatedLogo';
 import Button from 'components/Button/Button';
+import Seo from 'components/Seo/Seo';
 import StepIndicator from 'components/StepIndicator/StepIndicator';
 import TextInput from 'components/TextInput/TextInput';
 import { useEffect, useRef, useState } from 'react';
@@ -221,6 +222,18 @@ const AuthPage = () => {
 
   return (
     <>
+      <Seo
+        title={
+          currentStep === 1
+            ? '로그인'
+            : currentStep === 2
+              ? '회원가입'
+              : '관심사 선택'
+        }
+        description="FaceReview에 로그인하고 내 표정으로 영상을 리뷰해 보세요. 회원가입 후 좋아하는 장르를 선택하면 더 정확한 영상 추천을 받을 수 있어요."
+        keywords="FaceReview 로그인, 회원가입, 감정 리뷰 로그인, 페이스리뷰 가입"
+        path={`/auth/${currentStep}`}
+      />
       <div className="auth-container">
         <StepIndicator step={isSingInSuccess ? 3 : currentStep} maxStep={3} />
 

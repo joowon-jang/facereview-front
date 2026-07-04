@@ -11,6 +11,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import Webcam from 'react-webcam';
 import YouTube, { YouTubeEvent } from 'react-youtube';
 import EmotionBadge from 'components/EmotionBadge/EmotionBadge';
+import Seo from 'components/Seo/Seo';
 import { YouTubePlayer } from 'youtube-player/dist/types';
 import './watchpage.scss';
 import { socket } from 'socket';
@@ -573,6 +574,21 @@ const WatchPage = (): ReactElement => {
 
   return (
     <div className="watch-page-container">
+      <Seo
+        title={videoData?.title ? `${videoData.title}` : '영상 시청'}
+        description={
+          videoData?.title
+            ? `${videoData.title} — FaceReview에서 영상을 보며 실시간으로 내 감정을 분석하고 다른 사람들의 감정 리뷰도 확인해 보세요.`
+            : 'FaceReview에서 영상을 보며 실시간으로 내 감정을 분석하고 다른 사람들의 감정 리뷰를 공유해 보세요.'
+        }
+        image={
+          videoData?.youtube_url
+            ? `https://i.ytimg.com/vi/${videoData.youtube_url}/maxresdefault.jpg`
+            : undefined
+        }
+        path={`/watch/${id}`}
+        type="article"
+      />
       <ModalDialog isOpen={isModalOpen1} onClose={closeModal1}>
         <div className="watch-page-safe-modal-container">
           <div className="watch-page-modal-image-container">

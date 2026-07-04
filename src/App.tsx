@@ -5,7 +5,6 @@ import Router from './components/Router';
 import { useAuthStorage } from 'store/authStore';
 import HeaderToken from 'api/HeaderToken';
 import { refreshToken, getUserName } from 'api/auth';
-import { Helmet } from 'react-helmet-async';
 
 function App() {
   const access_token = useAuthStorage((state) => state.access_token);
@@ -63,9 +62,6 @@ function App() {
 
   return (
     <div className="App">
-      <Helmet>
-        <title>FaceReview</title>
-      </Helmet>
       <Router />
       <ToastContainer
         position="bottom-right"

@@ -3,6 +3,7 @@ import tutorial1 from 'assets/img/tutorial1.gif';
 import tutorial2 from 'assets/img/tutorial2.gif';
 import tutorial3 from 'assets/img/tutorial3.gif';
 import Button from 'components/Button/Button';
+import Seo from 'components/Seo/Seo';
 import StepIndicator from 'components/StepIndicator/StepIndicator';
 import { ReactElement, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -57,6 +58,12 @@ const TutorialPage = (): ReactElement => {
 
   return (
     <div className="tutorial-container">
+      <Seo
+        title={`사용 방법 안내 (${currentStep}/3)`}
+        description="FaceReview 사용법을 알아보세요. 감정 기반 영상 추천, 실시간 표정 기록, 맞춤 추천 기능이 어떻게 작동하는지 단계별로 안내해 드려요."
+        keywords="FaceReview 사용법, 튜토리얼, 감정 추천 방법, 표정 기록, 페이스리뷰 도움말"
+        path={`/tutorial/${currentStep}`}
+      />
       <div className="tutorial-content">
         {!isMobile && (
           <div className="tutorial-left-container">
