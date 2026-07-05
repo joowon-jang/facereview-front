@@ -7,12 +7,12 @@
 
   @include variables.mobile {
     width: 100vw;
-    padding-top: 61px;
+    padding-top: 70px;
     padding-left: 16px;
   }
 
   @include variables.desktop {
-    padding-top: 126px;
+    padding-top: 110px;
     width: 1200px;
     margin: 0 auto;
   }
@@ -179,7 +179,7 @@
     flex-direction: column;
 
     @include variables.mobile {
-      margin-left: -20px;
+      margin-left: -8px;
       margin-top: 40px;
     }
 
@@ -195,7 +195,7 @@
 
       .my-page-title {
         @include variables.mobile {
-          padding-left: 20px;
+          padding-left: 8px;
         }
       }
 
@@ -216,7 +216,7 @@
           white-space: nowrap;
 
           @include variables.mobile {
-            padding-left: 20px;
+            padding-left: 8px;
             padding-top: 24px;
             padding-bottom: 18px;
           }
@@ -233,7 +233,7 @@
       margin-bottom: 88px;
 
       @include variables.mobile {
-        padding-left: 20px;
+        padding-left: 8px;
       }
     }
 

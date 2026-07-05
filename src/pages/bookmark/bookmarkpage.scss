@@ -15,11 +15,12 @@
 
   .title {
     color: variables.$gray-900;
+    margin-bottom: 12px;
   }
 
   .subtitle {
     color: variables.$gray-400;
-    margin-top: 12px;
+    margin-top: 0;
 
     @include variables.mobile {
       margin-bottom: 40px;

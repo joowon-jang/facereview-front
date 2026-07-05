@@ -11,7 +11,7 @@
     padding-top: 92px;
   }
   @include variables.desktop {
-    padding-top: 126px;
+    padding-top: 110px;
   }
 
   .main-container {
@@ -136,6 +136,7 @@
 
           .emotion-title-wrapper {
             display: flex;
+            margin-bottom: 22px;
 
             .emotion-title {
               color: variables.$gray-900;
@@ -146,7 +147,7 @@
           .graph-container {
             height: 12px;
             border-radius: 2px;
-            margin-top: 22px;
+            margin-bottom: 22px;
 
             .graph-tooltip-container {
               width: 80px;
@@ -158,7 +159,6 @@
           .graph-detail-container {
             display: flex;
             justify-content: space-between;
-            margin-top: 22px;
           }
           .graph-detail-item {
             justify-content: center;
@@ -384,6 +384,7 @@
 
       .emotion-title-wrapper {
         display: flex;
+        margin-bottom: 22px;
 
         .emotion-title {
           color: variables.$gray-900;
@@ -394,7 +395,7 @@
       .graph-container {
         height: 12px;
         border-radius: 2px;
-        margin-top: 22px;
+        margin-bottom: 22px;
 
         .graph-tooltip-container {
           width: 80px;
@@ -406,7 +407,6 @@
       .graph-detail-container {
         display: flex;
         justify-content: space-between;
-        margin-top: 22px;
 
         .graph-detail-item {
           width: 100%;

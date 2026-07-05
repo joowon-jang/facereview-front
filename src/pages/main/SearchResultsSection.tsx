@@ -72,8 +72,11 @@ const SearchResultsSection = ({
                   width={isMobile ? windowWidth - 32 : 280}
                   style={
                     isMobile
-                      ? { marginBottom: '24px' }
-                      : { marginRight: '28px', marginBottom: '56px' }
+                      ? { marginTop: '14px', marginBottom: '14px' }
+                      : {
+                          marginRight: (i + 1) % 4 === 0 ? 0 : '26px',
+                          marginBottom: '56px',
+                        }
                   }
                 />
               ))}
@@ -92,8 +95,11 @@ const SearchResultsSection = ({
                   videoMostEmotionPercentage={v.dominant_emotion_per}
                   style={
                     isMobile
-                      ? { marginBottom: '24px' }
-                      : { marginRight: '28px', marginBottom: '56px' }
+                      ? { marginTop: '14px', marginBottom: '14px' }
+                      : {
+                          marginRight: (i + 1) % 4 === 0 ? 0 : '26px',
+                          marginBottom: '56px',
+                        }
                   }
                 />
               ))}
@@ -105,8 +111,11 @@ const SearchResultsSection = ({
                       width={isMobile ? windowWidth - 32 : 280}
                       style={
                         isMobile
-                          ? { marginBottom: '24px' }
-                          : { marginRight: '28px', marginBottom: '56px' }
+                          ? { marginTop: '14px', marginBottom: '14px' }
+                          : {
+                              marginRight: (i + 1) % 4 === 0 ? 0 : '26px',
+                              marginBottom: '56px',
+                            }
                       }
                     />
                   ))}

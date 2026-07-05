@@ -13,25 +13,23 @@
 
   .title {
     color: variables.$gray-900;
+    margin-bottom: 12px;
   }
 
   .search-results-container {
     .video-container {
-      margin-left: -20px;
+      width: 100%;
       .video-wrapper {
-        @include variables.desktop {
-          width: 1300px;
-        }
         display: flex;
         flex-wrap: wrap;
-        padding-left: 20px;
+        width: 100%;
       }
     }
   }
 
   .subtitle {
     color: variables.$gray-400;
-    margin-top: 12px;
+    margin-top: 0;
 
     @include variables.mobile {
       margin-bottom: 40px;

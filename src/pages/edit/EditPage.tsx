@@ -167,7 +167,7 @@ const EditPage = () => {
           </ModalDialog>
           <div className="edit-page-edit-container">
             <div className="edit-page-input-container">
-              <label htmlFor="editNickName" className="font-title-mini">
+              <label htmlFor="editNickName" className="font-title-mini edit-page-input-label">
                 닉네임
               </label>
               <TextInput
@@ -179,12 +179,10 @@ const EditPage = () => {
                   isMobile
                     ? {
                         width: windowWidth - 32,
-                        marginTop: '16px',
                         marginBottom: '24px',
                       }
                     : {
                         width: '380px',
-                        marginTop: '16px',
                         marginBottom: '48px',
                       }
                 }
@@ -198,11 +196,10 @@ const EditPage = () => {
             <div className="edit-page-category-wrapper">
               <label
                 htmlFor="editCategory"
-                className="font-title-mini"
-                style={{ marginBottom: '20px' }}>
+                className="font-title-mini edit-page-category-label">
                 관심사 (필수)
               </label>
-              <div className="category-wrapper" style={{ marginTop: '20px' }}>
+              <div className="category-wrapper">
                 <CategoryList
                   selected={selectedCategories}
                   onChange={setSelectedCategories}
@@ -222,8 +219,8 @@ const EditPage = () => {
           variant="cta-full"
           style={
             isMobile
-              ? { width: windowWidth - 32, marginTop: '16px' }
-              : { width: '380px', marginTop: '16px' }
+              ? { width: windowWidth - 32 }
+              : { width: '380px' }
           }
           disabled={nickName.length < 2 || selectedCategories.length < 1}
           onClick={handleEditButtonClick}

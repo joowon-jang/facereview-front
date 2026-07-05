@@ -7,26 +7,27 @@
   padding-bottom: 102px;
 
   @include variables.mobile {
-    padding-top: 82px;
+    padding-top: 70px;
   }
 
   @include variables.desktop {
-    padding-top: 148px;
+    padding-top: 110px;
   }
 
   .edit-page-user-container {
     display: flex;
     flex-direction: column;
     align-items: center;
+    margin-bottom: 16px;
 
     @include variables.mobile {
       width: calc(100vw - 32px);
-      margin-top: 60px;
+      margin-top: 40px;
     }
 
     @include variables.desktop {
       width: 380px;
-      margin-top: 80px;
+      margin-top: 48px;
     }
 
     .edit-page-edit-container {
@@ -38,20 +39,27 @@
     }
 
     .edit-page-input-container {
-      width: 100%;
       display: flex;
       flex-direction: column;
       align-items: flex-start;
-      width: 380px;
+      width: 100%;
       margin-bottom: 8px;
 
       .edit-page-input-label {
         color: variables.$gray-900;
+        margin-bottom: 16px;
       }
     }
 
     .edit-page-category-wrapper {
       width: 100%;
+      display: flex;
+      flex-direction: column;
+
+      .edit-page-category-label {
+        color: variables.$gray-900;
+        margin-bottom: 20px;
+      }
     }
   }
 
