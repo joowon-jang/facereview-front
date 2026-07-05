@@ -6,9 +6,10 @@
   padding-bottom: 148px;
 
   @include variables.mobile {
-    width: 100vw;
+    width: 100%;
     padding-top: 70px;
     padding-left: 16px;
+    padding-right: 16px;
   }
 
   @include variables.desktop {
@@ -64,9 +65,8 @@
       flex-direction: column;
       align-items: flex-start;
       padding: 16px;
-      margin-right: 16px;
       margin-bottom: 32px;
-      width: calc(100vw - 32px);
+      width: 100%;
 
       .banner-action {
         margin-top: 12px;
@@ -82,7 +82,7 @@
     flex-direction: column;
 
     @include variables.mobile {
-      width: calc(100vw - 32px);
+      width: 100%;
     }
 
     @include variables.desktop {
@@ -154,6 +154,8 @@
 
         @include variables.mobile {
           margin-left: 12px;
+          flex-direction: column;
+          justify-content: center;
         }
 
         @include variables.desktop {
@@ -217,6 +219,7 @@
 
           @include variables.mobile {
             padding-left: 8px;
+            padding-right: 8px;
             padding-top: 24px;
             padding-bottom: 18px;
           }
@@ -261,7 +264,7 @@
         justify-content: center;
 
         @include variables.mobile {
-          width: calc(100vw - 16px);
+          width: 100%;
         }
 
         @include variables.desktop {

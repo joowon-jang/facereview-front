@@ -8,6 +8,11 @@
   flex-direction: column;
   align-items: center;
 
+  @include variables.mobile {
+    padding: 36px 20px 0px 20px;
+    width: calc(100vw - 32px);
+  }
+
   .main-page-modal-title {
     text-align: center;
   }
@@ -15,6 +20,10 @@
   .main-page-modal-input-container {
     width: 100%;
     margin-top: 80px;
+
+    @include variables.mobile {
+      margin-top: 28px;
+    }
 
     .main-page-modal-input-label {
       margin-bottom: 16px;
@@ -33,6 +42,12 @@
     margin-top: 36px;
     height: 298px;
     overflow-y: auto;
+
+    @include variables.mobile {
+      margin-top: 24px;
+      height: 210px;
+      width: 100%;
+    }
     // Hide scrollbar while keeping scrollability.
     -ms-overflow-style: none;
     scrollbar-width: none;
@@ -50,6 +65,13 @@
       background: variables.$gray-200;
       border-radius: 12px;
 
+      @include variables.mobile {
+        width: 100%;
+        height: auto;
+        min-height: 0;
+        aspect-ratio: 16 / 9;
+      }
+
       .main-page-modal-thumbnail-empty-image {
         width: 80px;
         height: 80px;
@@ -61,8 +83,18 @@
       height: 214px;
       border-radius: 12px;
 
+      @include variables.mobile {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 16 / 9;
+      }
+
       & + .main-page-modal-thumbnail-registering {
         margin-top: 36px;
+
+        @include variables.mobile {
+          margin-top: 16px;
+        }
       }
     }
 
@@ -71,11 +103,36 @@
       height: 214px;
       margin-top: 36px;
       border-radius: 12px;
+
+      @include variables.mobile {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 16 / 9;
+        margin-top: 16px;
+      }
     }
   }
 
   .video-register-modal-button-wrapper {
     width: 100%;
     padding: 12px 10px 40px 10px;
+
+    @include variables.mobile {
+      padding: 12px 0px 24px 0px;
+    }
+  }
+
+  .video-recommend-add-btn {
+    position: absolute;
+    bottom: 128px;
+    z-index: 10;
+
+    @include variables.mobile {
+      position: relative;
+      bottom: auto !important;
+      margin-top: 16px;
+      margin-bottom: 8px;
+      z-index: 10;
+    }
   }
 }

@@ -28,7 +28,8 @@
   width: 380px;
 
   @include variables.mobile {
-    width: 358px;
+    width: calc(100% - 32px);
+    max-width: 358px;
   }
 
   .input-item-container {

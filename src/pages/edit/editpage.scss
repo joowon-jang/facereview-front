@@ -21,7 +21,7 @@
     margin-bottom: 16px;
 
     @include variables.mobile {
-      width: calc(100vw - 32px);
+      width: calc(100% - 32px);
       margin-top: 40px;
     }
 

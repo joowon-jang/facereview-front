@@ -93,7 +93,7 @@ const VideoCarousel = <T,>({
                 return (
                   <VideoItem
                     type="small-emoji"
-                    width={isMobile ? window.innerWidth - 32 : 280}
+                    width={isMobile ? '100%' : 280}
                     videoId={video.youtube_url}
                     videoUuid={video.uuid ?? video.id ?? video.video_id}
                     videoTitle={video.title}

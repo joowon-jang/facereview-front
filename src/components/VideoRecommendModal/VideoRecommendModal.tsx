@@ -222,7 +222,7 @@ const VideoRecommendModal = ({
           label={''}
           variant={'add'}
           aria-label="영상 추가"
-          style={{ position: 'absolute', bottom: '128px' }}
+          className="video-recommend-add-btn"
           onClick={handleAddVideoIds}
           disabled={!isRegisterMatched || registerVideoMutation.isPending}
         />

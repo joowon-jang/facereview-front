@@ -126,6 +126,7 @@
           display: flex;
           white-space: nowrap;
           padding-left: 8px;
+          padding-right: 8px;
 
           @include variables.mobile {
             padding-top: 24px;

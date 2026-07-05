@@ -4,7 +4,7 @@
   background: variables.$bg;
   position: fixed;
   top: 0;
-  width: 100vw;
+  width: 100%;
   z-index: 998;
 
   @include variables.mobile {
@@ -50,6 +50,10 @@
   }
 
   .header-logout-button-mobile {
+    background: transparent;
+    border: none;
+    padding: 0;
+    white-space: nowrap;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -211,6 +215,32 @@
         &:hover {
           background: transparent;
           color: variables.$gray-900;
+        }
+      }
+    }
+
+    @include variables.mobile {
+      ~ .header-icon-button,
+      ~ .header-profile-icon-button,
+      ~ .header-logout-button-mobile,
+      ~ .button {
+        transition: opacity 0.2s ease 0.25s, visibility 0s ease 0.25s, width 0.2s ease 0.25s, margin 0.2s ease 0.25s;
+        opacity: 1;
+        visibility: visible;
+      }
+
+      &.open {
+        ~ .header-icon-button,
+        ~ .header-profile-icon-button,
+        ~ .header-logout-button-mobile,
+        ~ .button {
+          transition: opacity 0.15s ease, visibility 0s ease 0.15s, width 0.15s ease, margin 0.15s ease;
+          opacity: 0;
+          visibility: hidden;
+          width: 0 !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          border: none !important;
         }
       }
     }

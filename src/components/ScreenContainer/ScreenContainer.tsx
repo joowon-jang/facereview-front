@@ -1,5 +1,5 @@
 import { ReactElement, useEffect } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useAuthStorage } from 'store/authStore';
 import Header from '../Header/Header';
@@ -18,7 +18,9 @@ const ScreenContainer = ({
   const is_sign_in = useAuthStorage((s) => s.is_sign_in);
   const is_admin = useAuthStorage((s) => s.is_admin);
   const navigate = useNavigate();
+  const { pathname } = useLocation();
 
+  const isMyPage = pathname === '/my';
   const denied = (isAdmin && !is_admin) || (isSignIn && !is_sign_in);
 
   useEffect(() => {
@@ -35,7 +37,7 @@ const ScreenContainer = ({
 
   return (
     <div className="screen-container">
-      {headerShown ? <Header isMyPage={isSignIn} /> : null}
+      {headerShown ? <Header isMyPage={isMyPage} /> : null}
       <main>
         <Outlet />
       </main>

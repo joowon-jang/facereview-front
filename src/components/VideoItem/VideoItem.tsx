@@ -13,7 +13,7 @@ type VideoItemPropsType = {
   videoTitle: string;
   videoMostEmotion: EmotionType;
   videoMostEmotionPercentage: number;
-  width?: number;
+  width?: number | string;
   style?: React.CSSProperties;
   hoverToPlay?: boolean;
   priority?: boolean;
@@ -35,7 +35,7 @@ const VideoItem = memo(
     isBookmarked = false,
   }: VideoItemPropsType): ReactElement => {
     const navigation = useNavigate();
-    const height = width ? width * (9 / 16) : null;
+    const height = typeof width === 'number' ? width * (9 / 16) : undefined;
     const opts = useMemo(
       () => ({
         width: width ? width : 280,
@@ -102,7 +102,7 @@ const VideoItem = memo(
     return (
       <div
         className="video-item-container"
-        style={{ ...style, width: `${width ? width : 280}px` }}
+        style={{ ...style, width: typeof width === 'number' ? `${width}px` : width || '280px' }}
         role="link"
         tabIndex={0}
         onClick={handleClick}
@@ -111,11 +111,11 @@ const VideoItem = memo(
         onMouseOut={handleMouseOut}>
         <div
           className="thumbnail-wrapper"
-          style={{ width: width ? width : 280, height: height ? height : 158 }}>
+          style={typeof width === 'number' ? { width, height } : { width: '100%', aspectRatio: '16/9' }}>
           <img
             className={`video-thumbnail ${hoverToPlay ? '' : 'fix'}`}
-            width={width ? width : 280}
-            height={height ? height : 158}
+            width={typeof width === 'number' ? width : '100%'}
+            height={typeof width === 'number' ? height : '100%'}
             src={`https://img.youtube.com/vi/${parsedVideoId}/mqdefault.jpg`}
             alt={videoTitle}
             loading={priority ? 'eager' : 'lazy'}
