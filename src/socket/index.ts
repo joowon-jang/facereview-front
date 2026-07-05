@@ -11,7 +11,7 @@ let socketInstance: Socket | null = null;
 export const getSocket = (): Socket => {
   if (socketInstance) return socketInstance;
 
-  socketInstance = io({
+  socketInstance = io(import.meta.env.VITE_SOCKET_URL ?? undefined, {
     transports: ['websocket'],
     reconnection: true,
     reconnectionDelay: 1000,
