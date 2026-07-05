@@ -101,6 +101,34 @@ export const getRelatedVideo = async (props: { video_id: string }) => {
   return data.videos ?? [];
 };
 
+export const toggleBookmark = async (props: { video_id: string }) => {
+  const url = '/v2/home/bookmark';
+  const { data } = await api.post<{
+    is_bookmarked?: boolean;
+    message?: string;
+  }>(url, props);
+
+  return data;
+};
+
+export const getBookmarkVideos = async (props: {
+  page: number;
+  size: number;
+  emotion: string;
+}) => {
+  const url = '/v2/home/bookmark';
+  const { data } = await api.get<{ videos: VideoDataType[] }>(url, {
+    params: props,
+  });
+
+  if (!data || !data.videos) {
+    console.warn('getBookmarkVideos: unexpected response:', data);
+    return [];
+  }
+
+  return data.videos;
+};
+
 export const getDataFromYoutube = async (props: { youtube_url: string }) => {
   const { data } = await youtubeApi.get<YoutubeVideoDataType>(
     '/youtube/v3/videos',

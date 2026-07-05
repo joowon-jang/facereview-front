@@ -72,6 +72,8 @@
       .title {
         color: variables.$gray-900;
         word-break: keep-all;
+        min-width: 0;
+        flex: 1 1 auto;
         @include variables.mobile {
           white-space: nowrap;
           overflow: hidden;
@@ -86,28 +88,23 @@
 
       .right-side {
         display: flex;
-        justify-content: flex-end;
-        align-items: center;
+        flex-direction: column;
+        align-items: flex-end;
+        justify-content: flex-start;
+        flex-shrink: 0;
+        gap: 6px;
 
-        @include variables.mobile {
-          width: 80px;
-          flex-direction: column;
-        }
-        @include variables.desktop {
-          width: 180px;
-          height: 32px;
-          flex-wrap: wrap;
+        .right-side-actions {
+          display: flex;
+          align-items: center;
+          gap: 8px;
         }
 
         .video-hits-text {
           color: variables.$gray-700;
-
-          @include variables.mobile {
-            margin-top: 8px;
-          }
-          @include variables.desktop {
-            margin-left: 16px;
-          }
+          white-space: nowrap;
+          margin-top: 6px;
+          margin-right: 8px;
         }
       }
     }

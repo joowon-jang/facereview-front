@@ -26,6 +26,12 @@ body {
   background-color: variables.$bg;
 }
 
+// Reserve space for the vertical scrollbar so toggling overflow
+// (modal open/close, content growing) never shifts the layout.
+html {
+  scrollbar-gutter: stable;
+}
+
 .srOnly {
   position: absolute;
   width: 1px;

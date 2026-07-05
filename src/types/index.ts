@@ -31,6 +31,7 @@ export type VideoDetailType = {
   like_count: number;
   duration: number;
   user_is_liked: boolean;
+  is_bookmarked?: boolean;
   youtube_url: string;
   timeline_data: VideoDistributionDataType;
 };

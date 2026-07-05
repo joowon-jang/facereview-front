@@ -43,6 +43,23 @@
       visibility: 1;
       display: block;
     }
+
+    .video-bookmark-indicator {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      z-index: 2;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 6px;
+      background: rgba(21, 21, 29, 0.6);
+      backdrop-filter: blur(4px);
+      color: variables.$brand-peach;
+    }
   }
 
   .video-info-container {

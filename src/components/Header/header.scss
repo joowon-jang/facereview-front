@@ -34,6 +34,21 @@
     padding: 8px 16px 8px 16px;
   }
 
+  .header-logo {
+    display: flex;
+    align-items: center;
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    @include variables.desktop {
+      gap: 12px;
+    }
+  }
+
   .header-logout-button-mobile {
     cursor: pointer;
     display: flex;
@@ -46,5 +61,158 @@
   .header-profile-icon-button {
     background: transparent;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+  }
+
+  .header-icon-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: variables.$gray-500;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    padding: 0;
+    transition:
+      color 0.2s ease,
+      background-color 0.2s ease;
+
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        color: variables.$gray-900;
+        background: variables.$gray-50;
+      }
+    }
+
+    &:active {
+      transform: scale(0.92);
+    }
+  }
+
+  // Expandable search (Netflix-style)
+  .header-search {
+    display: flex;
+    align-items: center;
+
+    .header-search-form {
+      display: flex;
+      align-items: center;
+      background: transparent;
+      border-radius: 100px;
+      height: 36px;
+      padding: 0;
+      transition: background-color 0.25s ease, padding 0.25s ease;
+
+      @include variables.desktop {
+        height: 40px;
+      }
+    }
+
+    // Wrapper holds the input + clear button.
+    // We animate max-width on the wrapper (Safari-safe) instead of width on a
+    // flex item, which fails to reflow in some browsers.
+    .header-search-input-wrap {
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      max-width: 0;
+      opacity: 0;
+      transition: max-width 0.3s ease, opacity 0.2s ease;
+
+      @include variables.mobile {
+        height: 36px;
+      }
+      @include variables.desktop {
+        height: 40px;
+      }
+    }
+
+    .header-search-input {
+      // Fixed width so the input never has to reflow; the wrapper clips it.
+      width: 150px;
+      min-width: 150px;
+      border: none;
+      outline: none;
+      background: transparent;
+      color: variables.$gray-900;
+      font-size: 14px;
+      padding: 0 8px;
+      height: 100%;
+
+      @include variables.desktop {
+        width: 220px;
+        min-width: 220px;
+      }
+
+      &::placeholder {
+        color: variables.$gray-400;
+      }
+    }
+
+    .header-search-clear {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      color: variables.$gray-400;
+      padding: 4px;
+      margin-right: 4px;
+      flex-shrink: 0;
+      width: 24px;
+      height: 24px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s ease;
+
+      &.visible {
+        opacity: 1;
+        pointer-events: auto;
+      }
+
+      &:hover {
+        color: variables.$gray-900;
+      }
+    }
+
+    // Search icon button reused inside the form.
+    .header-icon-button {
+      flex-shrink: 0;
+      color: variables.$gray-400;
+    }
+
+    &.open {
+      .header-search-form {
+        background: variables.$gray-50;
+        padding: 0 8px 0 4px;
+
+        @include variables.desktop {
+          padding: 0 12px 0 6px;
+        }
+      }
+
+      .header-search-input-wrap {
+        max-width: 200px;
+        opacity: 1;
+
+        @include variables.desktop {
+          max-width: 260px;
+        }
+      }
+
+      .header-icon-button {
+        color: variables.$gray-700;
+
+        &:hover {
+          background: transparent;
+          color: variables.$gray-900;
+        }
+      }
+    }
   }
 }

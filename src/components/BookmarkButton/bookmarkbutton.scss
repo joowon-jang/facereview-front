@@ -1,0 +1,83 @@
+@use 'styles/abstracts' as variables;
+
+.bookmark-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: variables.$gray-400;
+  padding: 6px;
+  border-radius: 50%;
+  transition:
+    color 0.15s ease,
+    background-color 0.15s ease,
+    transform 0.1s ease;
+
+  &.active {
+    color: variables.$brand-peach;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      color: variables.$gray-900;
+      background: variables.$gray-50;
+    }
+    &.active:hover {
+      color: variables.$brand-peach;
+      background: rgba(255, 152, 113, 0.12);
+    }
+  }
+
+  &:active {
+    transform: scale(0.92);
+  }
+
+  // Overlay variant: sits on top of a video thumbnail.
+  &.icon {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 2;
+    // The thumbnail wrapper disables pointer events so the card hover/iframe
+    // don't intercept; re-enable on the button itself.
+    pointer-events: auto;
+    background: rgba(21, 21, 29, 0.55);
+    backdrop-filter: blur(4px);
+    color: variables.$gray-900;
+
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        color: variables.$gray-900;
+        background: rgba(21, 21, 29, 0.75);
+      }
+    }
+
+    &.active {
+      color: variables.$brand-peach;
+      background: rgba(21, 21, 29, 0.7);
+    }
+  }
+
+  // Inline variant: next to the like button on the watch page.
+  &.with-label {
+    padding: 8px 14px;
+    border-radius: 100px;
+    background: variables.$gray-50;
+    color: variables.$gray-500;
+
+    &:hover {
+      color: variables.$gray-900;
+    }
+    &.active {
+      color: variables.$brand-peach;
+      background: rgba(255, 152, 113, 0.12);
+    }
+
+    .bookmark-label {
+      color: inherit;
+    }
+  }
+}

@@ -2,11 +2,13 @@ import { Suspense, lazy } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import ScreenContainer from './ScreenContainer/ScreenContainer';
 import AnimatedLogo from './AnimatedLogo/AnimatedLogo';
+import SignInPromptModal from 'components/SignInPromptModal/SignInPromptModal';
 
 const WatchPage = lazy(() => import('pages/watch/WatchPage'));
 const AuthPage = lazy(() => import('pages/auth/AuthPage'));
 const MainPage = lazy(() => import('pages/main/MainPage'));
 const MyPage = lazy(() => import('pages/my/MyPage'));
+const BookmarkPage = lazy(() => import('pages/bookmark/BookmarkPage'));
 const PasswordChangePage = lazy(() => import('pages/my/PasswordChangePage'));
 const EditPage = lazy(() => import('pages/edit/EditPage'));
 const TutorialPage = lazy(() => import('pages/tutorial/TutorialPage'));
@@ -51,6 +53,7 @@ const Router = () => {
           <Route
             element={<ScreenContainer isSignIn={true} headerShown={true} />}>
             <Route path="/my" element={<MyPage />} />
+            <Route path="/bookmark" element={<BookmarkPage />} />
             <Route
               path="/my/password-change"
               element={<PasswordChangePage />}
@@ -63,6 +66,7 @@ const Router = () => {
           </Route>
         </Routes>
       </Suspense>
+      <SignInPromptModal />
     </BrowserRouter>
   );
 };

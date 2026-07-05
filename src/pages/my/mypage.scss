@@ -204,6 +204,13 @@
         width: 100%;
         overflow-x: auto;
 
+        // Hide scrollbar on the scroll container itself.
+        -ms-overflow-style: none; /* 인터넷 익스플로러 */
+        scrollbar-width: none; /* 파이어폭스 */
+        &::-webkit-scrollbar {
+          display: none; /* 크롬, 사파리, 오페라, 엣지 */
+        }
+
         .my-page-chip-wrapper {
           display: flex;
           white-space: nowrap;
@@ -218,16 +225,6 @@
             padding-top: 32px;
             padding-bottom: 16px;
           }
-
-          -ms-overflow-style: none;
-          /* 인터넷 익스플로러 */
-          scrollbar-width: none;
-          /* 파이어폭스 */
-        }
-
-        .chip-wrapper::-webkit-scrollbar {
-          display: none;
-          /* 크롬, 사파리, 오페라, 엣지 */
         }
       }
     }

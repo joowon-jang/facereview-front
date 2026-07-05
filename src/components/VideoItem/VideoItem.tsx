@@ -17,6 +17,7 @@ type VideoItemPropsType = {
   style?: React.CSSProperties;
   hoverToPlay?: boolean;
   priority?: boolean;
+  isBookmarked?: boolean;
 };
 
 const VideoItem = memo(
@@ -31,6 +32,7 @@ const VideoItem = memo(
     style,
     hoverToPlay = true,
     priority = false,
+    isBookmarked = false,
   }: VideoItemPropsType): ReactElement => {
     const navigation = useNavigate();
     const height = width ? width * (9 / 16) : null;
@@ -127,6 +129,18 @@ const VideoItem = memo(
               onReady={handleVideoReady}
             />
           ) : null}
+          {isBookmarked && (
+            <div className="video-bookmark-indicator" aria-label="즐겨찾기됨">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                stroke="none">
+                <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+              </svg>
+            </div>
+          )}
         </div>
         <div className="video-info-container">
           <h3 className="video-title font-label-large">{videoTitle}</h3>

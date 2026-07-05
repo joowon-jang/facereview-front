@@ -1,0 +1,79 @@
+@use 'styles/abstracts' as variables;
+
+.sign-in-prompt-modal {
+  position: relative;
+  width: 400px;
+  max-width: calc(100vw - 32px);
+  padding: 48px 32px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+
+  .sign-in-prompt-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: rgba(118, 255, 206, 0.12);
+    color: variables.$brand-mint;
+    margin-bottom: 24px;
+  }
+
+  .sign-in-prompt-title {
+    color: variables.$gray-900;
+    margin-bottom: 12px;
+  }
+
+  .sign-in-prompt-desc {
+    color: variables.$gray-400;
+    line-height: 1.6;
+    margin-bottom: 36px;
+  }
+
+  .sign-in-prompt-buttons {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .sign-in-prompt-btn {
+    flex: 1;
+    padding: 14px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    border: none;
+    transition:
+      background-color 0.15s ease,
+      color 0.15s ease;
+    font-family: inherit;
+
+    &.primary {
+      background: variables.$primary-basic;
+      color: variables.$bg;
+
+      @media (hover: hover) and (pointer: fine) {
+        &:hover {
+          background: #5df0bf;
+        }
+      }
+    }
+
+    &.secondary {
+      background: variables.$gray-100;
+      color: variables.$gray-900;
+
+      @media (hover: hover) and (pointer: fine) {
+        &:hover {
+          background: variables.$gray-50;
+        }
+      }
+    }
+
+    &:active {
+      transform: scale(0.98);
+    }
+  }
+}

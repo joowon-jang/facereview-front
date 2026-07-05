@@ -21,7 +21,7 @@ import TextInput from 'components/TextInput/TextInput';
 import UploadButton from 'components/UploadButton/UploadButton';
 import { ResponsiveBar } from '@nivo/bar';
 import { EmotionType, VideoDetailType } from 'types';
-import { getRelatedVideo, getVideoDetail } from 'api/youtube';
+import { getRelatedVideo, getVideoDetail, toggleBookmark } from 'api/youtube';
 import Divider from 'components/Divider/Divider';
 import { useAuthStorage } from 'store/authStore';
 import { toast } from 'react-toastify';
@@ -43,8 +43,10 @@ import ModalDialog from 'components/ModalDialog/ModalDialog';
 import Button from 'components/Button/Button';
 import safeImage from 'assets/img/safeImage.png';
 import LikeButton from 'components/LikeButton/LikeButton';
+import BookmarkButton from 'components/BookmarkButton/BookmarkButton';
 import { ResponsiveLine } from '@nivo/line';
 import useMediaQuery from 'hooks/useMediaQuery';
+import { useRequireSignIn } from 'hooks/useRequireSignIn';
 import { EMOTION_COLORS, EMOTION_LABELS, EMOTIONS } from 'constants/index';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import GraphDetailDataItem from 'components/GraphDetailDataItem/GraphDetailDataItem';
@@ -160,6 +162,52 @@ const WatchPage = (): ReactElement => {
   });
 
   const isLikeVideo = videoData?.user_is_liked ?? false;
+  const isBookmarked = videoData?.is_bookmarked ?? false;
+
+  const requireSignIn = useRequireSignIn();
+
+  const bookmarkMutation = useMutation({
+    mutationFn: () => toggleBookmark({ video_id: id || '' }),
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey: ['videoDetail', id] });
+      const previousVideoData = queryClient.getQueryData([
+        'videoDetail',
+        id,
+      ]) as VideoDetailType | undefined;
+
+      if (previousVideoData) {
+        queryClient.setQueryData(['videoDetail', id], {
+          ...previousVideoData,
+          is_bookmarked: !isBookmarked,
+        });
+      }
+
+      return { previousVideoData };
+    },
+    onError: (err, variables, context) => {
+      if (context?.previousVideoData) {
+        queryClient.setQueryData(
+          ['videoDetail', id],
+          context.previousVideoData,
+        );
+      }
+      toast.error('즐겨찾기 처리에 실패했습니다.', {
+        toastId: 'bookmarkError',
+      });
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['bookmarkVideos'] });
+      const message = data.is_bookmarked
+        ? '즐겨찾기에 추가했어요.'
+        : '즐겨찾기를 해제했어요.';
+      toast.success(message, { toastId: 'bookmarkToggle' });
+    },
+  });
+
+  const handleBookmarkClick = () => {
+    if (!requireSignIn()) return;
+    bookmarkMutation.mutate();
+  };
 
   const [video, setVideo] = useState<YouTubePlayer | null>(null);
   const [currentMyEmotion, setCurrentMyEmotion] =
@@ -287,11 +335,8 @@ const WatchPage = (): ReactElement => {
   });
 
   const handleLikeClick = () => {
-    if (is_sign_in) {
-      likeMutation.mutate();
-      return;
-    }
-    navigate('/auth/1');
+    if (!requireSignIn()) return;
+    likeMutation.mutate();
   };
 
   useLayoutEffect(() => {
@@ -706,11 +751,19 @@ const WatchPage = (): ReactElement => {
               {videoData?.title}
             </div>
             <div className="right-side">
-              <LikeButton
-                label={(videoData?.like_count || 0) + ''}
-                isActive={isLikeVideo}
-                onClick={handleLikeClick}
-              />
+              <div className="right-side-actions">
+                <LikeButton
+                  label={(videoData?.like_count || 0) + ''}
+                  isActive={isLikeVideo}
+                  onClick={handleLikeClick}
+                />
+                <BookmarkButton
+                  variant="with-label"
+                  label={isBookmarked ? '저장됨' : '저장'}
+                  isActive={isBookmarked}
+                  onClick={handleBookmarkClick}
+                />
+              </div>
               <p className="video-hits-text font-label-small">
                 조회수 {videoData?.view_count || 0}회
               </p>
