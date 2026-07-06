@@ -1,17 +1,15 @@
 import axios from 'axios';
 import { refreshToken } from './auth';
 import { useAuthStorage } from 'store/authStore';
-import HeaderToken from './HeaderToken';
 
 const api = axios.create({
   baseURL: '/api',
   timeout: 30000,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
 });
-
-const MAX_RETRY_COUNT = 3;
 
 let isRefreshing = false;
 let failedQueue: Array<{
@@ -30,10 +28,13 @@ const processQueue = (error: unknown, token: string | null = null) => {
   failedQueue = [];
 };
 
-api.interceptors.request.use(
-  (config) => config,
-  (error) => Promise.reject(error),
-);
+api.interceptors.request.use((config) => {
+  const { access_token } = useAuthStorage.getState();
+  if (access_token) {
+    config.headers.Authorization = `Bearer ${access_token}`;
+  }
+  return config;
+}, (error) => Promise.reject(error));
 
 api.interceptors.response.use(
   (response) => response,
@@ -46,43 +47,34 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // access_token이 없는 게스트 요청, 이미 재시도한 요청은 refresh하지 않습니다.
+    if (
+      error.response?.status === 401 &&
+      !originalRequest._retry &&
+      useAuthStorage.getState().access_token
+    ) {
+      // 이 요청의 재시도는 한 번만 수행되도록 마킹
+      originalRequest._retry = true;
+
+      // 다른 요청이 이미 refresh 중이면 완료될 때까지 대기
       if (isRefreshing) {
-        return new Promise(function (resolve, reject) {
+        return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
         })
-          .then((token) => {
-            originalRequest.headers['Authorization'] = `Bearer ${token}`;
-            return api(originalRequest);
-          })
+          .then(() => api(originalRequest))
           .catch((err) => Promise.reject(err));
       }
 
-      originalRequest._retry = true;
-      originalRequest._retryCount = (originalRequest._retryCount || 0) + 1;
       isRefreshing = true;
-
-      if (originalRequest._retryCount > MAX_RETRY_COUNT) {
-        window.dispatchEvent(new Event('auth:unauthorized'));
-        processQueue(error, null);
-        isRefreshing = false;
-        return Promise.reject(error);
-      }
 
       try {
         const { data } = await refreshToken();
         const { access_token } = data;
 
-        // Update Token
-        useAuthStorage.getState().setToken({
-          access_token,
-        });
-        HeaderToken.set(access_token);
-
+        // store에 새 토큰 저장 → 이후 요청은 request interceptor가 자동 주입
+        useAuthStorage.getState().setToken({ access_token });
         processQueue(null, access_token);
 
-        // Retry original request
-        originalRequest.headers['Authorization'] = `Bearer ${access_token}`;
         return api(originalRequest);
       } catch (refreshError) {
         window.dispatchEvent(new Event('auth:unauthorized'));

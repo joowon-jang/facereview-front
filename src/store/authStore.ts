@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import { devtools, persist } from 'zustand/middleware';
-import HeaderToken from 'api/HeaderToken';
 
 interface AuthState {
   is_sign_in: boolean;
@@ -131,20 +130,16 @@ export const useAuthStorage = create<AuthState>()(
       }),
       {
         name: 'auth-storage',
-        // Persist only the sign-in flag and non-sensitive profile info.
-        // access_token stays in memory and is restored via refreshToken() on mount.
+        // access_token을 persist에 포함하여 새로고침 시에도 재사용합니다.
+        // 헤더 주입은 api 요청 인터셉터가, 만료 갱신은 response 인터셉터가 담당합니다.
         partialize: (state) => ({
           is_sign_in: state.is_sign_in,
           user_id: state.user_id,
           user_name: state.user_name,
           user_profile: state.user_profile,
           user_favorite_genres: state.user_favorite_genres,
+          access_token: state.access_token,
         }),
-        onRehydrateStorage: () => (state) => {
-          if (state?.access_token) {
-            HeaderToken.set(state.access_token);
-          }
-        },
       },
     ),
   ),

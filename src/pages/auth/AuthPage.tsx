@@ -6,7 +6,6 @@ import TextInput from 'components/TextInput/TextInput';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 import { checkEmail, getUserName, signIn, signUp } from 'api/auth';
-import HeaderToken from 'api/HeaderToken';
 import CategoryList from 'components/CategoryList/CategoryList';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useAuthStorage } from 'store/authStore';
@@ -23,7 +22,7 @@ const AuthPage = () => {
   const navigate = useNavigate();
   const { step } = useParams();
   const currentStep = Number(step ?? 1);
-  const { setUserInfo } = useAuthStorage();
+  const { setUserInfo, setToken } = useAuthStorage();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -129,7 +128,8 @@ const AuthPage = () => {
               // V2 API: signIn returns tokens only. Need to fetch user profile.
               if (res.status === 200) {
                 const { access_token } = res.data;
-                HeaderToken.set(access_token);
+                // store에 토큰 저장 → 이후 api 요청에 인터셉터가 자동 주입
+                setToken({ access_token });
 
                 // Fetch User Info
                 const userRes = await getUserName();

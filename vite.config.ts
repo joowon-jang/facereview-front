@@ -53,6 +53,8 @@ export default defineConfig(({ mode }) => ({
           'https://facereview-api.winterholic.net',
         changeOrigin: true,
         secure: false,
+        // refresh_token 쿠키가 localhost에 저장되도록 Domain 속성 제거
+        cookieDomainRewrite: '',
       },
       '/socket.io': {
         target:
@@ -60,6 +62,7 @@ export default defineConfig(({ mode }) => ({
           'https://facereview-api.winterholic.net',
         changeOrigin: true,
         secure: false,
+        cookieDomainRewrite: '',
         ws: true,
       },
     },
