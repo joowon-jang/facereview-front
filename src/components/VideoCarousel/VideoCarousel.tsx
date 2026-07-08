@@ -6,7 +6,8 @@ import 'swiper/css/pagination';
 import 'swiper/css/navigation';
 import './VideoCarousel.scss';
 
-import useMediaQuery from 'hooks/useMediaQuery';
+import { useIsMobile } from 'hooks/useMediaQuery';
+import { BREAKPOINT_PX } from 'constants/index';
 import VideoItem from 'components/VideoItem/VideoItem';
 import { VideoDataType } from 'types';
 import { SwiperOptions } from 'swiper/types';
@@ -15,11 +16,7 @@ interface VideoCarouselProps<T> {
   videos: T[];
   hoverToPlay?: boolean;
   renderItem?: (video: T, index: number) => React.ReactNode;
-
-  // 자동 여백 계산을 위한 디멘션 설정
   desktopSlidesPerView?: number;  // 한 줄에 보여줄 아이템 개수 (기본 4)
-  desktopItemWidth?: number;      // 아이템 가로 픽셀 (기본 280)
-  desktopContainerWidth?: number; // 부모 컨테이너 가로 픽셀 (기본 1200)
 }
 
 const VideoCarousel = <T,>({
@@ -27,19 +24,17 @@ const VideoCarousel = <T,>({
   hoverToPlay = true,
   renderItem,
   desktopSlidesPerView = 4,
-  desktopItemWidth = 280,
-  desktopContainerWidth = 1200,
 }: VideoCarouselProps<T>): ReactElement | null => {
-  const isMobile = useMediaQuery('(max-width: 1200px)');
+  const isMobile = useIsMobile();
 
   if (!videos || videos.length === 0) return null;
 
-  // 컨테이너 폭에서 아이템들이 차지하는 영역을 뺀 남는 공간을 여백 개수로 나눔 (완벽한 symmetry gap 도출)
-  const desktopSpaceBetween =
-    desktopSlidesPerView > 1
-      ? (desktopContainerWidth - desktopItemWidth * desktopSlidesPerView) /
-        (desktopSlidesPerView - 1)
-      : 0;
+  // 고정 간격 + VideoItem width="100%" 조합 — Swiper 가 컨테이너 폭을 perView 로 자동 분배.
+  // (이전 desktopContainerWidth 역산은 부모 폭과 무관하게 1200px 을 가정해 좁은 화면에서 깨졌다)
+  const DESKTOP_SPACE_BETWEEN = 24;
+
+  // 태블릿 구간(768~1099px)에서는 카드가 너무 작아지지게 perView 를 한 단계 줄인다.
+  const midSlidesPerView = Math.max(2, desktopSlidesPerView - 1);
 
   const dynamicBreakpoints: SwiperOptions['breakpoints'] = {
     0: {
@@ -47,16 +42,22 @@ const VideoCarousel = <T,>({
       slidesPerGroup: 1,
       spaceBetween: 28, // 모바일 기본 간격
     },
-    1200: {
+    [BREAKPOINT_PX]: {
+      slidesPerView: midSlidesPerView,
+      slidesPerGroup: midSlidesPerView,
+      spaceBetween: DESKTOP_SPACE_BETWEEN,
+    },
+    1100: {
       slidesPerView: desktopSlidesPerView,
       slidesPerGroup: desktopSlidesPerView,
-      spaceBetween: desktopSpaceBetween,
+      spaceBetween: DESKTOP_SPACE_BETWEEN,
     },
   };
 
   return (
     <div className="video-carousel-container">
       <Swiper
+        key={isMobile ? 'mobile' : 'desktop'}
         modules={[Pagination, Navigation]}
         pagination={{ clickable: true, enabled: !isMobile }}
         navigation={{ enabled: isMobile }}
@@ -93,7 +94,7 @@ const VideoCarousel = <T,>({
                 return (
                   <VideoItem
                     type="small-emoji"
-                    width={isMobile ? '100%' : 280}
+                    width="100%"
                     videoId={video.youtube_url}
                     videoUuid={video.uuid ?? video.id ?? video.video_id}
                     videoTitle={video.title}

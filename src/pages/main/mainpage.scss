@@ -20,8 +20,9 @@
     .video-container {
       width: 100%;
       .video-wrapper {
-        display: flex;
-        flex-wrap: wrap;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 24px;
         width: 100%;
       }
     }
@@ -45,7 +46,10 @@
       margin-bottom: 100px;
     }
     @include variables.desktop {
-      width: 1200px;
+      width: 100%;
+      max-width: 1200px;
+      margin-inline: auto;
+      padding-inline: clamp(16px, 4vw, 48px);
       margin-bottom: 100px;
     }
   }
@@ -56,7 +60,10 @@
       margin-bottom: 100px;
     }
     @include variables.desktop {
-      width: 1200px;
+      width: 100%;
+      max-width: 1200px;
+      margin-inline: auto;
+      padding-inline: clamp(16px, 4vw, 48px);
       margin-bottom: 100px;
     }
 
@@ -105,8 +112,10 @@
     }
 
     .video-container {
-      width: 1200px;
-      max-width: 100%;
+      width: 100%;
+      max-width: 1200px;
+      margin-inline: auto;
+      padding-inline: clamp(16px, 4vw, 48px);
 
       .main-page-chip-container {
         display: flex;
@@ -143,8 +152,9 @@
         @include variables.desktop {
           width: 100%;
         }
-        display: flex;
-        flex-wrap: wrap;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 24px;
       }
     }
   }

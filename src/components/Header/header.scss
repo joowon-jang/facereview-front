@@ -12,24 +12,25 @@
   }
   @include variables.desktop {
     height: 92px;
-    margin-left: calc(600px - 50vw);
-    padding-left: calc(50vw - 600px);
   }
 }
 
 .header {
   display: flex;
   background: variables.$bg;
-  width: 1200px;
+  width: 100%;
+  max-width: 1200px;
+  left: 0;
+  right: 0;
+  margin-inline: auto;
+  padding: 24px clamp(16px, 4vw, 48px);
   justify-content: space-between;
   align-items: center;
-  padding: 24px 0px 24px 0px;
   position: fixed;
   top: 0;
   z-index: 998;
 
   @include variables.mobile {
-    width: 100%;
     height: 48px;
     padding: 8px 16px 8px 16px;
   }

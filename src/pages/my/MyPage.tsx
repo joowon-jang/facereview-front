@@ -6,7 +6,6 @@ import './mypage.scss';
 import Button from 'components/Button/Button';
 import Chip from 'components/Chip/Chip';
 import ProfileIcon from 'components/ProfileIcon/ProfileIcon';
-import Divider from 'components/Divider/Divider';
 import SomeIcon from 'components/SomeIcon/SomeIcon';
 
 import { ResponsivePie } from '@nivo/pie';
@@ -23,8 +22,7 @@ import { useLogout } from 'hooks/useLogout';
 import { EmotionType, VideoWatchedType } from 'types/index';
 import { getScaledTimelineGraphData, mapNumberToEmotion } from 'utils/index';
 import { ResponsiveLine } from '@nivo/line';
-import useMediaQuery from 'hooks/useMediaQuery';
-import useWindowSize from 'hooks/useWindowSize';
+import { useIsMobile } from 'hooks/useMediaQuery';
 import {
   EMOTION_COLORS,
   EMOTION_EMOJIS,
@@ -55,6 +53,43 @@ const INITIAL_EMOTION_TIME = { happy: 0, sad: 0, surprise: 0, angry: 0, neutral:
 const EMOTION_COLOR_LIST = EMOTIONS.map((e) => EMOTION_COLORS[e]);
 const LINE_CHART_MARGIN = { top: 2, right: 0, bottom: 2, left: 0 };
 
+const formatSeconds = (seconds: number): string => {
+  if (seconds < 60) return `${seconds}초`;
+  const min = Math.floor(seconds / 60);
+  const sec = seconds % 60;
+  if (sec === 0) return `${min}분`;
+  return `${min}분 ${sec}초`;
+};
+
+// Section header icons (inline SVG, inherits color via currentColor)
+const VideoSectionIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={2}
+    strokeLinecap="round"
+    strokeLinejoin="round">
+    <path d="m22 8-6 4 6 4V8Z" />
+    <rect x="2" y="6" width="14" height="12" rx="2" ry="2" />
+  </svg>
+);
+
+const ChartSectionIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth={2}
+    strokeLinecap="round"
+    strokeLinejoin="round">
+    <path d="M3 3v18h18" />
+    <path d="M18 17V9" />
+    <path d="M13 17V5" />
+    <path d="M8 17v-3" />
+  </svg>
+);
+
 const MyPage = () => {
   const is_sign_in = useAuthStorage((s) => s.is_sign_in);
   const user_name = useAuthStorage((s) => s.user_name);
@@ -62,8 +97,7 @@ const MyPage = () => {
   const is_verify_email_done = useAuthStorage((s) => s.is_verify_email_done);
   const setVerifyEmailDone = useAuthStorage((s) => s.setVerifyEmailDone);
 
-  const isMobile = useMediaQuery('(max-width: 1200px)');
-  const windowWidth = useWindowSize();
+  const isMobile = useIsMobile();
 
   const navigate = useNavigate();
   const { handleLogout } = useLogout();
@@ -90,6 +124,10 @@ const MyPage = () => {
   });
 
   const emotionTimeData = emotionSummaryData?.emotion_seconds ?? INITIAL_EMOTION_TIME;
+
+  const totalSeconds = useMemo(() => {
+    return Object.values(emotionTimeData).reduce((sum, val) => sum + (val || 0), 0);
+  }, [emotionTimeData]);
 
   const donutGraphData = useMemo(() => {
     if (!emotionSummaryData?.emotion_percentages) return INITIAL_DONUT_DATA;
@@ -168,6 +206,7 @@ const MyPage = () => {
   return (
     <>
       <div className="my-page-container">
+        {/* ── Email Verification Banner ── */}
         {!is_verify_email_done && (
           <section
             className="verify-alert-banner"
@@ -185,6 +224,8 @@ const MyPage = () => {
             </button>
           </section>
         )}
+
+        {/* ── Profile Hero Card ── */}
         <div className="my-page-user-container">
           <div className="my-page-user-info-container">
             <div className="my-page-profile-image-container">
@@ -225,8 +266,7 @@ const MyPage = () => {
                 </h3>
               </div>
               {!isMobile && (
-                <div
-                  style={{ display: 'flex', gap: '8px', marginBottom: '40px' }}>
+                <div className="my-page-actions">
                   <Button
                     label="비밀번호 변경"
                     variant="small-outline"
@@ -241,19 +281,38 @@ const MyPage = () => {
               )}
             </div>
           </div>
-          <Divider />
+          {isMobile && (
+            <div className="my-page-mobile-actions">
+              <Button
+                label="비밀번호 변경"
+                variant="small-outline"
+                onClick={() => navigate('/my/password-change')}
+              />
+              <Button
+                label="로그아웃"
+                variant="small-outline"
+                onClick={handleLogoutClick}
+              />
+            </div>
+          )}
         </div>
 
+        {/* ── Recent Videos Section ── */}
         <div className="my-page-watched-contents-container">
           <div className="my-page-watched-title-container">
-            <h3
-              className={
-                isMobile
-                  ? 'my-page-title font-title-small'
-                  : 'my-page-title font-title-medium'
-              }>
-              최근 본 영상
-            </h3>
+            <div className="my-page-section-header">
+              <div className="section-icon" aria-hidden="true">
+                <VideoSectionIcon />
+              </div>
+              <h3
+                className={
+                  isMobile
+                    ? 'my-page-title font-title-small'
+                    : 'my-page-title font-title-medium'
+                }>
+                최근 본 영상
+              </h3>
+            </div>
             <div className="my-page-chip-container">
               <div className="my-page-chip-wrapper">
                 {['all', ...EMOTIONS].map((emotion) => (
@@ -281,14 +340,13 @@ const MyPage = () => {
                 <VideoCarousel
                   videos={filteredRecentVideos}
                   desktopSlidesPerView={3}
-                  desktopItemWidth={360}
                   renderItem={(v, i) => (
                     <div
                       className="recent-video-item"
                       key={`videoItem${v.youtube_url}${v.dominant_emotion_per}_${i}`}>
                       <VideoItem
                         type="big-emoji"
-                        width={isMobile ? windowWidth - 32 : 360}
+                        width="100%"
                         videoId={v.youtube_url}
                         videoUuid={v.video_id}
                         videoTitle={v.title}
@@ -297,7 +355,7 @@ const MyPage = () => {
                         style={
                           isMobile
                             ? { paddingTop: '14px', paddingBottom: '14px' }
-                            : { marginRight: '0' } // Swiper가 gap을 알아서 띄우므로(spaceBetween) item 우측 마진 초기화
+                            : { marginRight: '0' }
                         }
                         hoverToPlay={false}
                       />
@@ -336,7 +394,7 @@ const MyPage = () => {
                   <img
                     className="my-page-video-empty-img"
                     src={Etc}
-                    alt="etc"
+                    alt="아직 본 영상 없음"
                   />
                   <p
                     className={
@@ -349,24 +407,27 @@ const MyPage = () => {
             </div>
           </div>
         </div>
+
+        {/* ── Emotion Graph Section ── */}
         <div className="my-page-emotion-container">
-          <h2 className={isMobile ? 'font-title-small' : 'font-title-medium'}>
-            나의 감정 그래프
-          </h2>
+          <div className="my-page-section-header">
+            <div className="section-icon" aria-hidden="true">
+              <ChartSectionIcon />
+            </div>
+            <h2 className={isMobile ? 'font-title-small' : 'font-title-medium'}>
+              나의 감정 그래프
+            </h2>
+          </div>
           <div className="my-page-emotion-graph-container">
-            <div className="pie-graph-container">
-              <div
-                style={{
-                  width: '320px',
-                  height: '320px',
-                  position: 'relative',
-                }}>
+            {/* Donut Chart Card */}
+            <div className="pie-graph-card">
+              <div className="pie-chart-wrapper">
                 {donutGraphData.every((d) => d.value === 0) ? (
                   <ResponsivePie
                     data={[{ id: 'empty', label: 'empty', value: 1 }]}
                     colors={['#4B4B5C']}
                     margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
-                    innerRadius={0.7}
+                    innerRadius={0.72}
                     enableArcLabels={false}
                     enableArcLinkLabels={false}
                     tooltip={() => null}
@@ -378,51 +439,66 @@ const MyPage = () => {
                     data={donutGraphData}
                     sortByValue={false}
                     margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
-                    activeOuterRadiusOffset={8}
-                    borderWidth={1}
-                    borderColor={{
-                      from: 'color',
-                      modifiers: [['darker', 0.2]],
-                    }}
-                    innerRadius={0.7}
+                    activeOuterRadiusOffset={6}
+                    borderWidth={0}
+                    innerRadius={0.72}
+                    padAngle={2}
+                    cornerRadius={4}
                     enableArcLabels={false}
                     enableArcLinkLabels={false}
                     tooltip={() => null}
                   />
                 )}
+                <div className="pie-center-label">
+                  <div className="pie-center-title">총 시청</div>
+                  <div className="pie-center-value">
+                    {totalSeconds > 0 ? formatSeconds(totalSeconds) : '—'}
+                  </div>
+                </div>
               </div>
               <div className="pie-legend-container">
                 {donutGraphData.map((item) => (
                   <div key={item.originalId} className="legend-item-wrapper">
                     <div
                       className={`legend-item-color ${item.originalId}`}></div>
-                    <div className="legend-item-text font-label-large">
+                    <span className="legend-item-label">
+                      {EMOTION_LABELS[item.originalId]}
+                    </span>
+                    <span className="legend-item-text">
                       {item.value || 0}%
-                    </div>
+                    </span>
                   </div>
                 ))}
               </div>
             </div>
-            <div className="emotion-time-container">
-              <h3 className="font-title-large emotion-time-title">
-                그동안
-                <br />
-                영상을 보며
+
+            {/* Emotion Time Stats Card */}
+            <div className="emotion-time-card">
+              <h3 className="emotion-time-title">
+                그동안 영상을 보며
               </h3>
-              <div className="text-wrapper">
+              <div className="emotion-stats-grid">
                 {EMOTIONS.map((emotion) => (
-                  <p key={emotion} className="emotion-time-text">
-                    <span className={`highlight ${emotion}`}>
+                  <div key={emotion} className="emotion-stat-row">
+                    <span className="stat-emoji">
+                      {EMOTION_EMOJIS[emotion]}
+                    </span>
+                    <span className="stat-label">
+                      {PAST_TENSE_LABELS[emotion]}
+                    </span>
+                    <span className={`stat-value ${emotion}`}>
                       {emotionTimeData?.[emotion] || 0}
                     </span>
-                    초 {PAST_TENSE_LABELS[emotion]} {EMOTION_EMOJIS[emotion]}
-                  </p>
+                    <span className="stat-unit">초</span>
+                  </div>
                 ))}
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* ── Email Verification Modal ── */}
       <ModalDialog
         isOpen={isVerificationModalOpen}
         onClose={() => {

@@ -45,7 +45,8 @@ import safeImage from 'assets/img/safeImage.png';
 import LikeButton from 'components/LikeButton/LikeButton';
 import BookmarkButton from 'components/BookmarkButton/BookmarkButton';
 import { ResponsiveLine } from '@nivo/line';
-import useMediaQuery from 'hooks/useMediaQuery';
+import { useIsMobile } from 'hooks/useMediaQuery';
+import useWindowSize from 'hooks/useWindowSize';
 import { useRequireSignIn } from 'hooks/useRequireSignIn';
 import { EMOTION_COLORS, EMOTION_LABELS, EMOTIONS } from 'constants/index';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -63,11 +64,17 @@ const BAR_CHART_BORDER_COLOR = { from: 'color' as const, modifiers: [['darker', 
 const BAR_CHART_LABEL_TEXT_COLOR = { from: 'color' as const, modifiers: [['darker', 2.3] as ['darker', number]] };
 const BAR_CHART_MARGIN = { top: -10, bottom: -10 };
 const LINE_CHART_MARGIN = { top: 0, right: 0, bottom: 0, left: 0 };
-const WEBCAM_STYLE = { borderRadius: '8px', marginBottom: '24px' };
+const WEBCAM_STYLE = {
+  width: '100%',
+  aspectRatio: '16 / 9',
+  borderRadius: '8px',
+  marginBottom: '24px',
+};
 const PROFILE_ICON_STYLE = { marginRight: '12px' };
 
 const WatchPage = (): ReactElement => {
-  const isMobile = useMediaQuery('(max-width: 1200px)');
+  const isMobile = useIsMobile();
+  const windowWidth = useWindowSize();
   const [modifyingComment, setModifyingComment] = useState<string>('');
   const disconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { id } = useParams();
@@ -77,7 +84,7 @@ const WatchPage = (): ReactElement => {
       isMobile
         ? {
             width: '100%',
-            height: `${window.innerWidth * (9 / 16)}px`,
+            height: `${windowWidth * (9 / 16)}px`,
             host: 'https://www.youtube-nocookie.com',
             playerVars: {
               autoplay: 1 as const,
@@ -97,7 +104,7 @@ const WatchPage = (): ReactElement => {
               origin: window.location.origin,
             },
           },
-    [isMobile],
+    [isMobile, windowWidth],
   );
 
   // Zustand selector optimization: subscribe to individual slices
@@ -111,15 +118,11 @@ const WatchPage = (): ReactElement => {
   const [videoViewLogId] = useState<string>(uuidv4()); // Generate log ID once
 
   const webcamRef = useRef<Webcam>(null);
-  const webcamOptions = isMobile
-    ? {
-        width: window.innerWidth - 32,
-        height: (window.innerWidth - 32) * (9 / 16),
-      }
-    : {
-        width: 320,
-        height: 180,
-      };
+  // videoConstraints 는 카메라 캡처 해상도(품질)만 결정. 렌더링 크기는 WEBCAM_STYLE(width:100%) 이 담당.
+  const webcamOptions = {
+    width: 640,
+    height: 360,
+  };
 
   const [myGraphData, setMyGraphData] = useState([
     EMOTIONS.reduce(
@@ -492,7 +495,8 @@ const WatchPage = (): ReactElement => {
   };
 
   const handleCommentEditClick = (commentId: string) => {
-    setIsEditVisible(commentId);
+    // 터치 환경에서는 mouseLeave 가 발생하지 않으므로 토글로 닫을 수 있게 한다
+    setIsEditVisible((prev) => (prev === commentId ? null : commentId));
   };
 
   const handleCommentDeleteClick = () => {
@@ -697,8 +701,8 @@ const WatchPage = (): ReactElement => {
             ) : (
               <div
                 style={{
-                  width: isMobile ? '100%' : 852,
-                  height: isMobile ? window.innerWidth * (9 / 16) : 480,
+                  width: '100%',
+                  aspectRatio: '16 / 9',
                   backgroundColor: '#1a1a2e',
                   display: 'flex',
                   alignItems: 'center',
@@ -778,30 +782,34 @@ const WatchPage = (): ReactElement => {
         )}
 
         <div className="comment-container">
-          {!isMobile && (
-            <div className="comment-input-container">
-              <ProfileIcon
-                type={'icon-medium'}
-                color={mapNumberToEmotion(user_profile)}
-                style={PROFILE_ICON_STYLE}
-              />
-              <TextInput
-                variant="underline"
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                placeholder={'영상에 대한 의견을 남겨보아요'}
-                aria-label="댓글 입력"
-              />
-              <UploadButton
-                onClick={handleCommentSubmit}
-                aria-label="댓글 등록"
-                style={{
-                  marginLeft: '12px',
-                  display: comment.length > 0 ? 'block' : 'none',
-                }}
-              />
-            </div>
-          )}
+          <div className="comment-input-container">
+            <ProfileIcon
+              type={isMobile ? 'icon-small' : 'icon-medium'}
+              color={mapNumberToEmotion(user_profile)}
+              style={PROFILE_ICON_STYLE}
+            />
+            <TextInput
+              variant="underline"
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              onKeyDown={(e) => {
+                // 한글 IME 조합 중 Enter 는 무시 (isComposing)
+                if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
+                  handleCommentSubmit();
+                }
+              }}
+              placeholder={'영상에 대한 의견을 남겨보아요'}
+              aria-label="댓글 입력"
+            />
+            <UploadButton
+              onClick={handleCommentSubmit}
+              aria-label="댓글 등록"
+              style={{
+                marginLeft: '12px',
+                display: comment.length > 0 ? 'block' : 'none',
+              }}
+            />
+          </div>
           <div
             className={
               isMobile
@@ -877,6 +885,7 @@ const WatchPage = (): ReactElement => {
                     user_id={comment.user_id}
                     hoveredComment={hoveredComment}
                     isEditVisible={isEditVisible}
+                    isMobile={isMobile}
                     onMouseEnter={handleCommentMouseEnter}
                     onMouseLeave={handleCommentMouseLeave}
                     onEditClick={handleCommentEditClick}
@@ -1039,7 +1048,7 @@ const WatchPage = (): ReactElement => {
             {relatedVideoList.map((v, index) => (
               <VideoItem
                 key={v.video_id || index}
-                width={isMobile ? window.innerWidth - 32 : 320}
+                width="100%"
                 videoId={v.youtube_url} // Corrected: use youtube_url for thumbnail
                 videoUuid={v.uuid ?? v.id ?? v.video_id}
                 videoTitle={v.title}

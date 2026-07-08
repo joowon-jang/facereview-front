@@ -11,7 +11,7 @@ import { useAuthStorage } from 'store/authStore';
 import AnimatedLogo from '../AnimatedLogo/AnimatedLogo';
 import './header.scss';
 import { mapNumberToEmotion } from 'utils/index';
-import useMediaQuery from 'hooks/useMediaQuery';
+import { useIsMobile } from 'hooks/useMediaQuery';
 import { useLogout } from 'hooks/useLogout';
 import { useRequireSignIn } from 'hooks/useRequireSignIn';
 
@@ -20,7 +20,7 @@ type HeaderPropsType = {
 };
 
 const Header = ({ isMyPage }: HeaderPropsType): ReactElement => {
-  const isMobile = useMediaQuery('(max-width : 1200px)');
+  const isMobile = useIsMobile();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const is_sign_in = useAuthStorage((state) => state.is_sign_in);

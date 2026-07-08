@@ -6,16 +6,14 @@ import VideoCardSkeleton from 'components/Skeleton/VideoCardSkeleton';
 import VideoItem from 'components/VideoItem/VideoItem';
 import { EMOTIONS } from 'constants/index';
 import useIntersectionObserver from 'hooks/useIntersectionObserver';
-import useMediaQuery from 'hooks/useMediaQuery';
-import useWindowSize from 'hooks/useWindowSize';
+import { useIsMobile } from 'hooks/useMediaQuery';
 import { ReactElement, useCallback, useMemo, useState } from 'react';
 import { EmotionType } from 'types';
 
 import './bookmarkpage.scss';
 
 const BookmarkPage = (): ReactElement => {
-  const isMobile = useMediaQuery('(max-width: 1200px)');
-  const windowWidth = useWindowSize();
+  const isMobile = useIsMobile();
   const [selectedEmotion, setSelectedEmotion] = useState<'all' | EmotionType>(
     'all',
   );
@@ -107,16 +105,7 @@ const BookmarkPage = (): ReactElement => {
             {Array.from({ length: 8 }).map((_, i) => (
               <VideoCardSkeleton
                 key={`bookmark-loading-${i}`}
-                width={isMobile ? windowWidth - 32 : 280}
-                style={
-                  isMobile
-                    ? { marginTop: '14px', marginBottom: '14px' }
-                    : {
-                        marginRight: (i + 1) % 4 === 0 ? 0 : '26px',
-                        marginBottom: '56px',
-                      }
-                }
-              />
+                width="100%"              />
             ))}
           </>
         ) : videos.length > 0 ? (
@@ -125,29 +114,20 @@ const BookmarkPage = (): ReactElement => {
               <VideoItem
                 type="small-emoji"
                 key={`${v.youtube_url}-${i}`}
-                width={isMobile ? windowWidth - 32 : 280}
+                width="100%"
                 videoId={v.youtube_url}
                 videoUuid={v.uuid ?? v.id ?? v.video_id}
                 videoTitle={v.title}
                 videoMostEmotion={v.dominant_emotion}
                 videoMostEmotionPercentage={v.dominant_emotion_per}
-                isBookmarked
-                style={
-                  isMobile
-                    ? { marginTop: '14px', marginBottom: '14px' }
-                    : {
-                        marginRight: (i + 1) % 4 === 0 ? 0 : '26px',
-                        marginBottom: '56px',
-                      }
-                }
-              />
+                isBookmarked              />
             ))}
             {isFetchingNextPage && (
               <>
                 {Array.from({ length: 4 }).map((_, i) => (
                   <VideoCardSkeleton
                     key={`bookmark-more-${i}`}
-                    width={isMobile ? windowWidth - 32 : 280}
+                    width="100%"
                     style={
                       isMobile
                         ? { marginTop: '14px', marginBottom: '14px' }

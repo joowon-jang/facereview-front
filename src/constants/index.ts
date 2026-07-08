@@ -54,3 +54,6 @@ export const EMOTION_COLORS = {
   angry: '#FF6B4B',
   neutral: '#5d5d6d',
 } as const;
+
+// 반응형 분기점(데스크톱 = 이 값 이상). SCSS 의 $breakpoint 와 단일 소스로 동기화.
+export const BREAKPOINT_PX = 768;

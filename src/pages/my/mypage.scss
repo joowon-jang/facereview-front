@@ -1,146 +1,209 @@
 @use 'styles/abstracts' as variables;
 
+/* ─── Animations ─── */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes floatBadge {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+/* ─── Reduced motion (accessibility) ─── */
+@media (prefers-reduced-motion: reduce) {
+  .my-page-container,
+  .my-page-container *,
+  .my-page-container *::before,
+  .my-page-container *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ─── Glassmorphism Card Mixin ─── */
+@mixin glass-card {
+  background: rgba(37, 37, 47, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 20px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2), 0 4px 16px rgba(0, 0, 0, 0.12);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+
+  &:hover {
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25), 0 12px 32px rgba(0, 0, 0, 0.2);
+  }
+}
+
+/* ─── My Page Container ─── */
 .my-page-container {
   display: flex;
   flex-direction: column;
-  padding-bottom: 148px;
+  min-height: 100vh;
+  animation: fadeInUp 0.6s ease-out;
 
   @include variables.mobile {
     width: 100%;
-    padding-top: 70px;
-    padding-left: 16px;
-    padding-right: 16px;
+    padding: 80px 16px 120px;
+    gap: 24px;
   }
 
   @include variables.desktop {
-    padding-top: 110px;
-    width: 1200px;
-    margin: 0 auto;
+    padding: clamp(80px, 8vw, 120px) clamp(16px, 4vw, 48px) clamp(100px, 10vw, 160px);
+    width: 100%;
+    max-width: 1200px;
+    margin-inline: auto;
+    gap: clamp(24px, 3vw, 32px);
   }
 
+  /* ─── Email Verification Banner ─── */
   .verify-alert-banner {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: rgba(255, 152, 0, 0.1);
-    border: 1px solid rgba(255, 152, 0, 0.3);
-    border-radius: 8px;
-    padding: 16px 20px;
-    margin-bottom: 24px;
-    transition: background-color 0.2s;
-
-    @include variables.desktop {
-      margin-right: 20px;
-      width: calc(1200px - 20px);
-    }
+    background: rgba(variables.$brand-peach, 0.1);
+    border: 1px solid rgba(255, 152, 113, 0.2);
+    border-radius: 12px;
+    padding: 10px 16px;
+    animation: fadeInUp 0.5s ease-out;
+    transition: all 0.3s ease;
 
     &:hover {
-      background-color: rgba(255, 152, 0, 0.15);
+      background: rgba(variables.$brand-peach, 0.15);
+      border-color: rgba(255, 152, 113, 0.35);
     }
 
     .banner-text {
-      color: #ffb74d;
-      font-size: 14px;
+      color: variables.$brand-peach;
+      font-size: 13px;
       font-weight: 500;
+      line-height: 1.4;
     }
 
     .banner-action {
       color: #fff;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 600;
-      background-color: #ff9800;
-      padding: 6px 12px;
-      border-radius: 6px;
+      background: variables.$brand-coral;
+      padding: 5px 14px;
+      border-radius: 8px;
       margin-left: 16px;
       flex-shrink: 0;
       cursor: pointer;
       border: none;
+      transition: all 0.25s ease;
 
       &:hover {
-        background-color: #f57c00;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(255, 152, 113, 0.3);
+      }
+
+      &:active {
+        transform: translateY(0);
       }
     }
 
     @include variables.mobile {
-      flex-direction: column;
-      align-items: flex-start;
-      padding: 16px;
-      margin-bottom: 32px;
-      width: 100%;
+      padding: 10px 14px;
+      border-radius: 10px;
+
+      .banner-text {
+        font-size: 12px;
+      }
 
       .banner-action {
-        margin-top: 12px;
-        margin-left: 0;
-        width: 100%;
-        text-align: center;
+        padding: 5px 12px;
+        font-size: 11px;
       }
     }
   }
 
+  /* ─── Profile Section (Hero Card) ─── */
   .my-page-user-container {
-    display: flex;
-    flex-direction: column;
+    @include glass-card;
+    overflow: hidden;
+    position: relative;
+    animation: fadeInUp 0.6s ease-out 0.1s both;
 
     @include variables.mobile {
-      width: 100%;
+      padding: 24px;
+      border-radius: 16px;
     }
 
     @include variables.desktop {
-      width: 1200px;
-      flex-direction: column;
+      padding: 32px 40px;
     }
 
     .my-page-user-info-container {
       display: flex;
+      align-items: center;
 
       @include variables.mobile {
-        margin-bottom: 44px;
+        gap: 16px;
       }
 
       @include variables.desktop {
-        flex-direction: column;
-        margin-bottom: 56px;
+        gap: 28px;
       }
 
       .my-page-profile-image-container {
         position: relative;
         display: inline-flex;
+        flex-shrink: 0;
         width: fit-content;
         height: fit-content;
 
         .verify-badge {
           position: absolute;
-          bottom: 0;
-          right: 0;
+          bottom: 2px;
+          right: 2px;
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          width: 22px;
-          height: 22px;
+          width: 24px;
+          height: 24px;
           border-radius: 50%;
-          background-color: #2196f3;
-          box-shadow: 0 0 0 2px #15161c; // 다크테마 배경 컷아웃 효과
-          color: white;
+          background: variables.$primary-basic;
+          box-shadow: 0 0 0 3px variables.$bg, 0 2px 8px rgba(118, 255, 206, 0.4);
+          color: variables.$bg;
+          z-index: 2;
+          animation: floatBadge 3s ease-in-out infinite;
 
           &::before {
             content: '';
             display: block;
-            width: 4px;
+            width: 5px;
             height: 9px;
-            border: solid white;
+            border: solid variables.$bg;
             border-width: 0 2px 2px 0;
             transform: rotate(45deg);
             margin-bottom: 2px;
           }
 
           @include variables.mobile {
-            width: 16px;
-            height: 16px;
-            box-shadow: 0 0 0 1.5px #15161c;
+            width: 18px;
+            height: 18px;
+            bottom: 0;
+            right: 0;
+            box-shadow: 0 0 0 2px variables.$bg, 0 2px 6px rgba(118, 255, 206, 0.3);
 
             &::before {
-              width: 3px;
-              height: 6px;
+              width: 3.5px;
+              height: 7px;
               border-width: 0 1.5px 1.5px 0;
               margin-bottom: 1.5px;
             }
@@ -150,54 +213,121 @@
 
       .my-page-user-edit-container {
         display: flex;
-        justify-content: space-between;
+        flex: 1;
+        min-width: 0;
 
         @include variables.mobile {
-          margin-left: 12px;
           flex-direction: column;
           justify-content: center;
+          gap: 4px;
         }
 
         @include variables.desktop {
-          margin-top: 20px;
+          justify-content: space-between;
+          align-items: center;
         }
 
-        .my-page-name-wrapper {
+        .my-page-name-container {
           display: flex;
-          align-items: center;
+          flex-direction: column;
+          min-width: 0;
 
-          .my-page-username {
-            margin-bottom: 6px;
+          .my-page-name-wrapper {
             display: flex;
             align-items: center;
+            gap: 8px;
+
+            .my-page-username {
+              display: flex;
+              align-items: center;
+              margin: 0;
+              color: variables.$gray-900;
+            }
+          }
+
+          h3 {
+            color: variables.$gray-400;
+            margin-top: 4px;
+            font-weight: 400;
+          }
+        }
+
+        .my-page-actions {
+          display: flex;
+          gap: 8px;
+
+          @include variables.desktop {
+            flex-shrink: 0;
           }
         }
       }
     }
+
+    /* Mobile action buttons row */
+    .my-page-mobile-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 20px;
+
+      button {
+        flex: 1;
+      }
+    }
   }
 
+  /* ─── Recent Videos Section ─── */
   .my-page-watched-contents-container {
     display: flex;
     flex-direction: column;
+    animation: fadeInUp 0.6s ease-out 0.2s both;
 
     @include variables.mobile {
-      margin-left: -8px;
-      margin-top: 40px;
+      margin-top: 8px;
     }
 
     @include variables.desktop {
-      width: 1200px;
-      margin-top: 56px;
+      margin-top: 8px;
     }
 
     .my-page-watched-title-container {
       display: flex;
       flex-direction: column;
-      width: 100%;
 
-      .my-page-title {
-        @include variables.mobile {
-          padding-left: 8px;
+      .my-page-section-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 4px;
+
+        .section-icon {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 36px;
+          height: 36px;
+          border-radius: 10px;
+          background: rgba(118, 255, 206, 0.1);
+          color: variables.$primary-basic;
+
+          svg {
+            width: 20px;
+            height: 20px;
+          }
+
+          @include variables.mobile {
+            width: 30px;
+            height: 30px;
+            border-radius: 8px;
+
+            svg {
+              width: 16px;
+              height: 16px;
+            }
+          }
+        }
+
+        .my-page-title {
+          color: variables.$gray-900;
         }
       }
 
@@ -205,12 +335,11 @@
         display: flex;
         width: 100%;
         overflow-x: auto;
+        -ms-overflow-style: none;
+        scrollbar-width: none;
 
-        // Hide scrollbar on the scroll container itself.
-        -ms-overflow-style: none; /* 인터넷 익스플로러 */
-        scrollbar-width: none; /* 파이어폭스 */
         &::-webkit-scrollbar {
-          display: none; /* 크롬, 사파리, 오페라, 엣지 */
+          display: none;
         }
 
         .my-page-chip-wrapper {
@@ -218,42 +347,41 @@
           white-space: nowrap;
 
           @include variables.mobile {
-            padding-left: 8px;
-            padding-right: 8px;
-            padding-top: 24px;
-            padding-bottom: 18px;
+            padding: 16px 0 14px;
           }
 
           @include variables.desktop {
-            padding-top: 32px;
-            padding-bottom: 16px;
+            padding: 20px 0 16px;
           }
         }
       }
     }
 
     .my-page-video-container {
-      margin-bottom: 88px;
-
-      @include variables.mobile {
-        padding-left: 8px;
-      }
+      margin-bottom: 0;
     }
 
     .my-page-video-wrapper {
       @include variables.desktop {
-        padding-top: 16px;
+        padding-top: 8px;
       }
 
       .recent-video-item {
         width: 100%;
+
         .video-graph-container {
           width: 100%;
           height: 100px;
           padding: 4px;
           background: variables.$gray-50;
-          border-radius: 8px;
-          margin-top: 8px;
+          border-radius: 12px;
+          margin-top: 10px;
+          border: 1px solid rgba(255, 255, 255, 0.04);
+          transition: border-color 0.3s ease;
+
+          &:hover {
+            border-color: rgba(118, 255, 206, 0.12);
+          }
         }
       }
 
@@ -262,145 +390,315 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
+        @include glass-card;
+        padding: 48px 24px;
 
         @include variables.mobile {
           width: 100%;
         }
 
         @include variables.desktop {
-          width: 1200px;
+          width: 100%;
         }
 
         .my-page-video-empty-img {
+          opacity: 0.6;
+          transition: opacity 0.3s ease;
+
           @include variables.mobile {
-            width: 66px;
-            height: 66px;
-            margin-top: 20px;
-            margin-bottom: 8px;
+            width: 72px;
+            height: 72px;
+            margin-bottom: 12px;
           }
 
           @include variables.desktop {
-            width: 100px;
-            height: 100px;
-            margin-top: 30px;
-            margin-bottom: 12px;
+            width: 96px;
+            height: 96px;
+            margin-bottom: 16px;
           }
+        }
+
+        p {
+          color: variables.$gray-400;
         }
       }
     }
   }
-}
 
-.my-page-emotion-container {
-  .my-page-emotion-graph-container {
-    display: flex;
-    flex-wrap: wrap;
-    flex-direction: row;
+  /* ─── Emotion Graph Section ─── */
+  .my-page-emotion-container {
+    animation: fadeInUp 0.6s ease-out 0.3s both;
 
-    margin-top: 28px;
+    .my-page-section-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 4px;
 
-    .pie-graph-container {
-      width: 320px;
-      height: auto;
-
-      .pie-legend-container {
+      .section-icon {
         display: flex;
-        flex-wrap: wrap;
         align-items: center;
-        margin-top: 12px;
-        padding-left: 20px;
-        gap: 8px 0;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        background: rgba(255, 152, 113, 0.1);
+        color: variables.$brand-peach;
 
-        .legend-item-wrapper {
-          display: flex;
-          align-items: center;
-          margin-right: 20px;
+        svg {
+          width: 20px;
+          height: 20px;
+        }
 
-          .legend-item-color {
+        @include variables.mobile {
+          width: 30px;
+          height: 30px;
+          border-radius: 8px;
+
+          svg {
             width: 16px;
             height: 16px;
-            border-radius: 100%;
-            margin-right: 8px;
-
-            &.happy {
-              background: variables.$category-joyful-basic;
-            }
-
-            &.sad {
-              background: variables.$category-sad-basic;
-            }
-
-            &.surprise {
-              background: variables.$category-surprised-basic;
-            }
-
-            &.angry {
-              background: variables.$category-angry-basic;
-            }
-
-            &.neutral {
-              background: variables.$category-neutral-basic;
-            }
           }
         }
       }
     }
 
-    .emotion-time-container {
+    .my-page-emotion-graph-container {
       display: flex;
-      flex-direction: column;
-      margin-left: 80px;
+      margin-top: 20px;
+      gap: 0;
+
+      @include variables.desktop {
+        flex-direction: row;
+        gap: clamp(16px, 2vw, 24px);
+      }
 
       @include variables.mobile {
-        margin-left: 0;
-        margin-top: 40px;
+        flex-direction: column;
+        gap: 24px;
         align-items: center;
       }
 
-      .emotion-time-title {
-        color: variables.$gray-900;
-        margin-bottom: 24px;
+      /* ─── Donut Chart Card ─── */
+      .pie-graph-card {
+        @include glass-card;
+        padding: 32px 40px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
         @include variables.desktop {
-          margin-right: 0;
+          flex: 0 0 clamp(260px, 32%, 380px);
+        }
+
+        @include variables.mobile {
+          width: 100%;
+          padding: 24px;
+          border-radius: 16px;
+        }
+
+        .pie-chart-wrapper {
+          position: relative;
+          width: min(260px, 60vw);
+          aspect-ratio: 1;
+
+          @include variables.mobile {
+            width: min(220px, 60vw);
+          }
+
+          .pie-center-label {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            pointer-events: none;
+
+            .pie-center-title {
+              font-size: 13px;
+              font-weight: 500;
+              color: variables.$gray-400;
+              margin-bottom: 4px;
+            }
+
+            .pie-center-value {
+              font-size: 28px;
+              font-weight: 700;
+              letter-spacing: -0.02em;
+              font-variant-numeric: tabular-nums;
+              color: variables.$gray-900;
+
+              @include variables.mobile {
+                font-size: 24px;
+              }
+            }
+          }
+        }
+
+        .pie-legend-container {
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: center;
+          gap: 12px 24px;
+          margin-top: 24px;
+          width: 100%;
+
+          @include variables.mobile {
+            gap: 10px 20px;
+            margin-top: 20px;
+          }
+
+          .legend-item-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+
+            .legend-item-color {
+              width: 10px;
+              height: 10px;
+              border-radius: 3px;
+
+              &.happy {
+                background: variables.$category-joyful-basic;
+              }
+              &.sad {
+                background: variables.$category-sad-basic;
+              }
+              &.surprise {
+                background: variables.$category-surprised-basic;
+              }
+              &.angry {
+                background: variables.$category-angry-basic;
+              }
+              &.neutral {
+                background: variables.$category-neutral-basic;
+              }
+            }
+
+            .legend-item-label {
+              font-size: 13px;
+              color: variables.$gray-500;
+            }
+
+            .legend-item-text {
+              font-size: 14px;
+              font-weight: 600;
+              color: variables.$gray-800;
+            }
+          }
         }
       }
 
-      .emotion-time-text {
-        font-size: 24px;
-        line-height: 32px;
-        font-weight: 700;
-        color: variables.$gray-900;
-        margin-bottom: 20px;
+      /* ─── Emotion Time Stats Card ─── */
+      .emotion-time-card {
+        @include glass-card;
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 32px 40px;
 
-        .happy {
-          color: variables.$category-joyful-basic;
+        @include variables.mobile {
+          width: 100%;
+          padding: 24px;
+          border-radius: 16px;
         }
 
-        .sad {
-          color: variables.$category-sad-basic;
+        .emotion-time-title {
+          color: variables.$gray-900;
+          margin-bottom: 28px;
+          font-size: 26px;
+          font-weight: 700;
+          line-height: 1.4;
+
+          @include variables.mobile {
+            font-size: 22px;
+            margin-bottom: 24px;
+            text-align: center;
+          }
         }
 
-        .angry {
-          color: variables.$category-angry-basic;
-        }
+        .emotion-stats-grid {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
 
-        .surprise {
-          color: variables.$category-surprised-basic;
-        }
+          @include variables.mobile {
+            gap: 12px;
+          }
 
-        .neutral {
-          color: variables.$category-neutral-basic;
+          .emotion-stat-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 12px 16px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            transition: all 0.25s ease;
+
+            &:hover {
+              background: rgba(255, 255, 255, 0.06);
+              border-color: rgba(255, 255, 255, 0.08);
+              transform: translateX(2px);
+            }
+
+            @include variables.mobile {
+              padding: 10px 14px;
+              gap: 12px;
+            }
+
+            .stat-emoji {
+              font-size: 24px;
+              flex-shrink: 0;
+
+              @include variables.mobile {
+                font-size: 20px;
+              }
+            }
+
+            .stat-label {
+              font-size: 15px;
+              color: variables.$gray-500;
+              flex: 1;
+              min-width: 0;
+
+              @include variables.mobile {
+                font-size: 14px;
+              }
+            }
+
+            .stat-value {
+              font-size: 20px;
+              font-weight: 700;
+              font-variant-numeric: tabular-nums;
+              flex-shrink: 0;
+
+              &.happy { color: variables.$category-joyful-basic; }
+              &.sad { color: variables.$category-sad-basic; }
+              &.surprise { color: variables.$category-surprised-basic; }
+              &.angry { color: variables.$category-angry-basic; }
+              &.neutral { color: variables.$category-neutral-basic; }
+
+              @include variables.mobile {
+                font-size: 18px;
+              }
+            }
+
+            .stat-unit {
+              font-size: 13px;
+              color: variables.$gray-400;
+              flex-shrink: 0;
+            }
+          }
         }
       }
-    }
-
-    @include variables.desktop {
-      width: 1200px;
-      height: auto;
     }
   }
 }
 
+/* ─── Email Verification Modal ─── */
 .email-verification-modal-container {
   padding: 48px 32px 32px 32px;
   width: 400px;

@@ -42,4 +42,4 @@ $system-error: #e74d4d;
 $system-dim-black: rgba(21, 21, 29, 0.7);
 $system-dim-white: rgba(255, 255, 255, 0.2);
 
-$breakpoint: 1200px;
+$breakpoint: 768px; // constants/index.ts 의 BREAKPOINT_PX 와 동기화

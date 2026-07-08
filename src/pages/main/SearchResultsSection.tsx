@@ -3,9 +3,8 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import { searchVideos } from 'api/youtube';
 import VideoItem from 'components/VideoItem/VideoItem';
 import VideoCardSkeleton from 'components/Skeleton/VideoCardSkeleton';
-import useMediaQuery from 'hooks/useMediaQuery';
+import { useIsMobile } from 'hooks/useMediaQuery';
 import useIntersectionObserver from 'hooks/useIntersectionObserver';
-import useWindowSize from 'hooks/useWindowSize';
 
 type SearchResultsSectionProps = {
   query: string;
@@ -14,8 +13,7 @@ type SearchResultsSectionProps = {
 const SearchResultsSection = ({
   query,
 }: SearchResultsSectionProps): ReactElement => {
-  const isMobile = useMediaQuery('(max-width: 1200px)');
-  const windowWidth = useWindowSize();
+  const isMobile = useIsMobile();
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useInfiniteQuery({
@@ -69,16 +67,8 @@ const SearchResultsSection = ({
               {Array.from({ length: 8 }).map((_, i) => (
                 <VideoCardSkeleton
                   key={`search-loading-${i}`}
-                  width={isMobile ? windowWidth - 32 : 280}
-                  style={
-                    isMobile
-                      ? { marginTop: '14px', marginBottom: '14px' }
-                      : {
-                          marginRight: (i + 1) % 4 === 0 ? 0 : '26px',
-                          marginBottom: '56px',
-                        }
-                  }
-                />
+                  width="100%"
+/>
               ))}
             </>
           ) : videos.length > 0 ? (
@@ -87,28 +77,20 @@ const SearchResultsSection = ({
                 <VideoItem
                   type="small-emoji"
                   key={`${v.youtube_url}-${i}`}
-                  width={isMobile ? windowWidth - 32 : 280}
+                  width="100%"
                   videoId={v.youtube_url}
                   videoUuid={v.uuid ?? v.id ?? v.video_id}
                   videoTitle={v.title}
                   videoMostEmotion={v.dominant_emotion}
                   videoMostEmotionPercentage={v.dominant_emotion_per}
-                  style={
-                    isMobile
-                      ? { marginTop: '14px', marginBottom: '14px' }
-                      : {
-                          marginRight: (i + 1) % 4 === 0 ? 0 : '26px',
-                          marginBottom: '56px',
-                        }
-                  }
-                />
+/>
               ))}
               {isFetchingNextPage && (
                 <>
                   {Array.from({ length: 4 }).map((_, i) => (
                     <VideoCardSkeleton
                       key={`search-more-${i}`}
-                      width={isMobile ? windowWidth - 32 : 280}
+                      width="100%"
                       style={
                         isMobile
                           ? { marginTop: '14px', marginBottom: '14px' }

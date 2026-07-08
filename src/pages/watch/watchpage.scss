@@ -12,21 +12,37 @@
   }
   @include variables.desktop {
     padding-top: 110px;
+    padding-inline: clamp(16px, 4vw, 48px);
+    gap: 28px;
+    flex-direction: row;
+
+    // 태블릿(768~1023px)은 1단으로 전환
+    @media (max-width: 1023px) {
+      flex-direction: column;
+    }
   }
 
   .main-container {
-    width: 100%;
-    margin-right: 28px;
+    flex: 1 1 0;
+    min-width: 0;
 
     .video-container {
       position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      border-radius: 8px;
+      margin-bottom: 20px;
 
-      @include variables.mobile {
-        aspect-ratio: 16 / 9;
-      }
       @include variables.desktop {
-        margin-bottom: 20px;
-        width: 852px;
+        max-width: 852px;
+      }
+
+      iframe {
+        position: absolute;
+        inset: 0;
+        width: 100% !important;
+        height: 100% !important;
       }
 
       &:hover .video-graph-container {
@@ -194,6 +210,10 @@
         align-items: center;
         margin-bottom: 44px;
 
+        @include variables.mobile {
+          margin-bottom: 32px;
+        }
+
         .comment-input {
           margin-left: 12px;
         }
@@ -293,7 +313,7 @@
             }
 
             .comment-icon-container {
-              display: relative;
+              position: relative;
               .comment-edit-container {
                 display: none;
                 flex-direction: column;
@@ -302,10 +322,17 @@
                 margin-top: -12px;
                 margin-left: 12px;
                 position: absolute;
-                margin-left: 12px;
                 background: variables.$gray-50;
                 border-radius: 8px;
                 z-index: 997;
+
+                // 모바일: 아이콘이 화면 우측 끝에 있으므로 오른쪽 정렬로 화면 이탈 방지
+                @include variables.mobile {
+                  margin-left: 0;
+                  right: 0;
+                  top: 24px;
+                  margin-top: 0;
+                }
 
                 &.visible {
                   display: flex;
@@ -377,7 +404,14 @@
   }
 
   .side-container {
-    width: 320px;
+    flex: 0 0 320px;
+    min-width: 0;
+
+    // 태블릿(768~1023px)에서는 풀폭으로 아래로
+    @media (min-width: 768px) and (max-width: 1023px) {
+      flex: none;
+      width: 100%;
+    }
 
     .emotion-container {
       margin-bottom: 48px;

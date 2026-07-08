@@ -2,7 +2,7 @@ import { ReactElement } from 'react';
 import './videocardskeleton.scss';
 
 type VideoCardSkeletonProps = {
-  width?: number;
+  width?: number | string;
   style?: React.CSSProperties;
 };
 
@@ -10,8 +10,9 @@ const VideoCardSkeleton = ({
   width,
   style,
 }: VideoCardSkeletonProps): ReactElement => {
-  const finalWidth = width ?? 280;
-  const height = finalWidth * (9 / 16);
+  const isNumber = typeof width === 'number';
+  const numericWidth = isNumber ? width : 280;
+  const height = isNumber ? numericWidth * (9 / 16) : undefined;
 
   return (
     <div
@@ -19,10 +20,17 @@ const VideoCardSkeleton = ({
       role="status"
       aria-busy="true"
       aria-label="영상 정보 불러오는 중"
-      style={{ ...style, width: `${finalWidth}px` }}>
+      style={{
+        ...style,
+        width: isNumber ? `${numericWidth}px` : width || '100%',
+      }}>
       <div
         className="thumbnail-skeleton"
-        style={{ width: finalWidth, height: height }}></div>
+        style={
+          isNumber
+            ? { width: numericWidth, height: height }
+            : { width: '100%', aspectRatio: '16 / 9' }
+        }></div>
       <div className="info-skeleton">
         <div className="title-skeleton"></div>
         <div className="meta-skeleton">

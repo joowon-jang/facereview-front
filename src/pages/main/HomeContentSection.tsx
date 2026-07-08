@@ -14,12 +14,10 @@ import Chip from 'components/Chip/Chip';
 import VideoCardSkeleton from 'components/Skeleton/VideoCardSkeleton';
 import { CATEGORIES, CATEGORY_ITEMS, EMOTIONS } from 'constants/index';
 import useIntersectionObserver from 'hooks/useIntersectionObserver';
-import useMediaQuery from 'hooks/useMediaQuery';
-import useWindowSize from 'hooks/useWindowSize';
+import { useIsMobile } from 'hooks/useMediaQuery';
 
 const HomeContentSection = (): ReactElement => {
-  const isMobile = useMediaQuery('(max-width: 1200px)');
-  const windowWidth = useWindowSize();
+  const isMobile = useIsMobile();
   const is_sign_in = useAuthStorage((s) => s.is_sign_in);
   const user_name = useAuthStorage((s) => s.user_name);
 
@@ -233,28 +231,19 @@ const HomeContentSection = (): ReactElement => {
               <VideoItem
                 type="small-emoji"
                 key={v.youtube_url || i}
-                width={isMobile ? windowWidth - 32 : 280}
+                width="100%"
                 videoId={v.youtube_url}
                 videoUuid={v.uuid ?? v.id ?? v.video_id}
                 videoTitle={v.title}
                 videoMostEmotion={v.dominant_emotion}
-                videoMostEmotionPercentage={v.dominant_emotion_per}
-                style={
-                  isMobile
-                    ? { marginTop: '14px', marginBottom: '14px' }
-                    : {
-                        marginRight: (i + 1) % 4 === 0 ? 0 : '26px',
-                        marginBottom: '56px',
-                      }
-                }
-              />
+                videoMostEmotionPercentage={v.dominant_emotion_per}              />
             ))}
             {isLoading && (
               <>
                 {Array.from({ length: 4 }).map((_, i) => (
                   <VideoCardSkeleton
                     key={`skeleton-${i}`}
-                    width={isMobile ? windowWidth - 32 : 280}
+                    width="100%"
                     style={
                       isMobile
                         ? { marginTop: '14px', marginBottom: '14px' }
@@ -272,7 +261,7 @@ const HomeContentSection = (): ReactElement => {
                 {Array.from({ length: 4 }).map((_, i) => (
                   <VideoCardSkeleton
                     key={`more-skeleton-${i}`}
-                    width={isMobile ? windowWidth - 32 : 280}
+                    width="100%"
                     style={
                       isMobile
                         ? { marginTop: '14px', marginBottom: '14px' }

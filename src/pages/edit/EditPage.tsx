@@ -13,12 +13,12 @@ import { updateProfile } from 'api/auth';
 import { withdraw } from 'api/mypage';
 import { mapEmotionToNumber, mapNumberToEmotion } from 'utils/index';
 import CategoryList from 'components/CategoryList/CategoryList';
-import useMediaQuery from 'hooks/useMediaQuery';
+import { useIsMobile } from 'hooks/useMediaQuery';
 import useWindowSize from 'hooks/useWindowSize';
 import { useLogout } from 'hooks/useLogout';
 
 const EditPage = () => {
-  const isMobile = useMediaQuery('(max-width: 1200px)');
+  const isMobile = useIsMobile();
   const windowWidth = useWindowSize();
   const setUserName = useAuthStorage((s) => s.setUserName);
   const setUserProfile = useAuthStorage((s) => s.setUserProfile);

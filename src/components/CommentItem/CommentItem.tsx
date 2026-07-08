@@ -10,6 +10,7 @@ const profileIconStyle = { marginRight: '12px' };
 type CommentItemProps = CommentType & {
   hoveredComment: string | null;
   isEditVisible: string | null;
+  isMobile?: boolean;
   onMouseEnter: (commentId: string) => void;
   onMouseLeave: () => void;
   onEditClick: (commentId: string) => void;
@@ -28,6 +29,7 @@ const CommentItem = React.memo(
     comment_id,
     hoveredComment,
     isEditVisible,
+    isMobile = false,
     onMouseEnter,
     onMouseLeave,
     onEditClick,
@@ -63,7 +65,8 @@ const CommentItem = React.memo(
           </div>
 
           <div className="comment-icon-container">
-            {hoveredComment === comment_id && (
+            {/* 터치 환경에는 hover 가 없으므로 모바일에서는 내 댓글이면 항상 노출 */}
+            {(hoveredComment === comment_id || (isMobile && is_mine)) && (
               <SomeIcon
                 type={'more'}
                 onClick={() => onEditClick(comment_id)}
