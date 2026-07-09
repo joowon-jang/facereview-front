@@ -2,6 +2,7 @@
 
 .bookmark-page-container {
   padding-bottom: 98px;
+  @include variables.rise;
 
   @include variables.mobile {
     padding-top: 70px;
@@ -9,10 +10,7 @@
   }
   @include variables.desktop {
     padding-top: 110px;
-    width: 100%;
-    max-width: 1200px;
-    margin-inline: auto;
-    padding-inline: clamp(16px, 4vw, 48px);
+    @include variables.page-shell;
   }
 
   .title {
@@ -69,5 +67,53 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 24px;
+  }
+
+  .bookmark-empty {
+    @include variables.glass-card(16px);
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 56px 24px;
+
+    .bookmark-empty-title {
+      color: variables.$gray-800;
+      margin-bottom: 8px;
+      word-break: keep-all;
+    }
+
+    .bookmark-empty-desc {
+      color: variables.$gray-400;
+      word-break: keep-all;
+    }
+
+    .bookmark-empty-cta {
+      margin-top: 24px;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 10px;
+      background: variables.$primary-basic;
+      color: variables.$bg;
+      cursor: pointer;
+      font-family: inherit;
+      transition:
+        transform 0.25s ease,
+        box-shadow 0.25s ease,
+        background 0.25s ease;
+
+      @media (hover: hover) and (pointer: fine) {
+        &:hover {
+          background: #5df0bf;
+          transform: translateY(-1px);
+          box-shadow: 0 6px 20px rgba(118, 255, 206, 0.25);
+        }
+      }
+
+      &:active {
+        transform: translateY(0);
+      }
+    }
   }
 }

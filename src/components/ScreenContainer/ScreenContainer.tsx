@@ -8,30 +8,24 @@ import './screencontainer.scss';
 
 const ScreenContainer = ({
   headerShown,
-  isAdmin = false,
   isSignIn = false,
 }: {
   headerShown: boolean;
-  isAdmin?: boolean;
   isSignIn?: boolean;
 }): ReactElement | null => {
   const is_sign_in = useAuthStorage((s) => s.is_sign_in);
-  const is_admin = useAuthStorage((s) => s.is_admin);
   const navigate = useNavigate();
   const { pathname } = useLocation();
 
   const isMyPage = pathname === '/my';
-  const denied = (isAdmin && !is_admin) || (isSignIn && !is_sign_in);
+  const denied = isSignIn && !is_sign_in;
 
   useEffect(() => {
-    if (isAdmin && !is_admin) {
-      toast.error('관리자 권한이 없어요', { toastId: 'not admin' });
-      navigate('/');
-    } else if (isSignIn && !is_sign_in) {
+    if (isSignIn && !is_sign_in) {
       toast.error('로그인을 해주세요', { toastId: 'need signin' });
       navigate('/auth/1');
     }
-  }, [isAdmin, isSignIn, is_admin, is_sign_in, navigate]);
+  }, [isSignIn, is_sign_in, navigate]);
 
   if (denied) return null;
 

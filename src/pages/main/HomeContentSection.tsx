@@ -6,17 +6,24 @@ import {
 } from 'api/youtube';
 import VideoItem from 'components/VideoItem/VideoItem';
 import { ReactElement, useCallback, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuthStorage } from 'store/authStore';
 import { EmotionType } from 'types';
 import VideoCarousel from 'components/VideoCarousel/VideoCarousel';
 
 import Chip from 'components/Chip/Chip';
 import VideoCardSkeleton from 'components/Skeleton/VideoCardSkeleton';
-import { CATEGORIES, CATEGORY_ITEMS, EMOTIONS } from 'constants/index';
+import {
+  CATEGORIES,
+  CATEGORY_ITEMS,
+  EMOTIONS,
+  EMOTION_EMOJIS,
+} from 'constants/index';
 import useIntersectionObserver from 'hooks/useIntersectionObserver';
 import { useIsMobile } from 'hooks/useMediaQuery';
 
 const HomeContentSection = (): ReactElement => {
+  const navigate = useNavigate();
   const isMobile = useIsMobile();
   const is_sign_in = useAuthStorage((s) => s.is_sign_in);
   const user_name = useAuthStorage((s) => s.user_name);
@@ -103,6 +110,38 @@ const HomeContentSection = (): ReactElement => {
 
   return (
     <>
+      {/* ... Hero (비로그인 방문자에게 서비스 소개) ... */}
+      {!is_sign_in && (
+        <div className="home-hero-wrap">
+          <section className="home-hero">
+            <div className="home-hero-copy">
+              <h1
+                className={isMobile ? 'font-title-medium' : 'font-title-large'}>
+                내 표정이 곧 리뷰가 돼요
+              </h1>
+              <p className="font-body-large">
+                영상을 보는 동안의 표정으로 감정을 기록하고,{' '}
+                {!isMobile && <br />}
+                나와 비슷하게 느낀 사람들이 좋아한 영상을 추천받아요.
+              </p>
+              <button
+                type="button"
+                className="home-hero-cta font-label-large"
+                onClick={() => navigate('/auth/1')}>
+                로그인하고 시작하기
+              </button>
+            </div>
+            <div className="home-hero-emojis" aria-hidden="true">
+              {EMOTIONS.map((emotion) => (
+                <span key={emotion} className="hero-emoji">
+                  {EMOTION_EMOJIS[emotion]}
+                </span>
+              ))}
+            </div>
+          </section>
+        </div>
+      )}
+
       {/* ... Personal Rec ... */}
       {is_sign_in ? (
         <div className="personal-recommend-contents-container">
@@ -236,44 +275,17 @@ const HomeContentSection = (): ReactElement => {
                 videoUuid={v.uuid ?? v.id ?? v.video_id}
                 videoTitle={v.title}
                 videoMostEmotion={v.dominant_emotion}
-                videoMostEmotionPercentage={v.dominant_emotion_per}              />
+                videoMostEmotionPercentage={v.dominant_emotion_per}
+              />
             ))}
-            {isLoading && (
-              <>
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <VideoCardSkeleton
-                    key={`skeleton-${i}`}
-                    width="100%"
-                    style={
-                      isMobile
-                        ? { marginTop: '14px', marginBottom: '14px' }
-                        : {
-                            marginRight: (i + 1) % 4 === 0 ? 0 : '26px',
-                            marginBottom: '56px',
-                          }
-                    }
-                  />
-                ))}
-              </>
-            )}
-            {isFetchingNextPage && (
-              <>
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <VideoCardSkeleton
-                    key={`more-skeleton-${i}`}
-                    width="100%"
-                    style={
-                      isMobile
-                        ? { marginTop: '14px', marginBottom: '14px' }
-                        : {
-                            marginRight: (i + 1) % 4 === 0 ? 0 : '26px',
-                            marginBottom: '56px',
-                          }
-                    }
-                  />
-                ))}
-              </>
-            )}
+            {isLoading &&
+              Array.from({ length: 4 }).map((_, i) => (
+                <VideoCardSkeleton key={`skeleton-${i}`} width="100%" />
+              ))}
+            {isFetchingNextPage &&
+              Array.from({ length: 4 }).map((_, i) => (
+                <VideoCardSkeleton key={`more-skeleton-${i}`} width="100%" />
+              ))}
             <div ref={targetRef} style={{ width: '100%', height: '20px' }} />
           </div>
         </div>

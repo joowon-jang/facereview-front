@@ -1,6 +1,7 @@
 @use 'abstracts/variables';
 @use 'base/reset';
 @use 'base/typography';
+@use 'base/motion';
 
 // Pretendard font is loaded via <link preload> in index.html (non-render-blocking)
 

@@ -1,11 +1,16 @@
-@use "styles/abstracts" as variables;
+@use 'styles/abstracts' as variables;
 
 .tutorial-container {
+  @include variables.emotion-aura;
   width: 100%;
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   flex-direction: row;
   justify-content: center;
+
+  @include variables.mobile {
+    padding: 24px 16px 0;
+  }
 
   @include variables.desktop {
     align-items: center;
@@ -13,15 +18,27 @@
 
   .tutorial-content {
     display: flex;
+    @include variables.rise;
+
+    @include variables.mobile {
+      width: 100%;
+    }
 
     .tutorial-left-container {
       margin-right: 100px;
 
       .visual-wrapper {
+        @include variables.glass-card;
         width: 460px;
         height: 460px;
-        background: variables.$gray-50;
-        border-radius: 12px;
+        overflow: hidden;
+
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
+        }
       }
     }
 
@@ -36,12 +53,19 @@
         height: 100%;
 
         .visual-wrapper {
+          @include variables.glass-card(16px);
           width: 100%;
           height: auto;
           aspect-ratio: 1 / 1;
-          background: variables.$gray-50;
-          border-radius: 12px;
-          margin-bottom: 34px;
+          overflow: hidden;
+          margin-bottom: 28px;
+
+          img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+          }
         }
 
         .tutorial-mobile-container {
@@ -56,10 +80,16 @@
         line-height: 24px;
         font-weight: 700;
         color: variables.$primary-basic;
+        font-variant-numeric: tabular-nums;
         margin-bottom: 24px;
 
+        .step-total {
+          color: variables.$gray-300;
+          font-weight: 600;
+        }
+
         @include variables.mobile {
-          margin-top: 34px;
+          margin-top: 28px;
         }
         @include variables.desktop {
           margin-top: 55px;
@@ -78,7 +108,8 @@
 
         @include variables.mobile {
           position: absolute;
-          padding: 4px 16px 8px 16px;
+          // 컨테이너가 이미 좌우 16px 패딩을 가지므로 여기선 상하 여백만
+          padding: 4px 0 8px;
           left: 0px;
           bottom: 21px;
         }

@@ -1,22 +1,63 @@
-@use "styles/abstracts" as variables;
+@use 'styles/abstracts' as variables;
+
+@keyframes notFoundBlink {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  30% {
+    transform: translateY(-8px) rotate(-6deg);
+  }
+  60% {
+    transform: translateY(0) rotate(4deg);
+  }
+}
 
 .not-found-container {
+  @include variables.emotion-aura;
+  @include variables.rise;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 60vh;
-  gap: 16px;
+  min-height: 80vh;
+  padding: 120px 16px 60px;
   text-align: center;
 
   .not-found-code {
-    font-size: 64px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 96px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
     color: variables.$gray-900;
-    margin: 0;
+    margin: 0 0 16px;
+
+    @include variables.mobile {
+      font-size: 72px;
+    }
+
+    .not-found-emoji {
+      font-size: 80px;
+      display: inline-block;
+      animation: notFoundBlink 3.2s ease-in-out infinite;
+
+      @include variables.mobile {
+        font-size: 60px;
+      }
+    }
+  }
+
+  .not-found-title {
+    color: variables.$gray-800;
+    margin-bottom: 8px;
+    word-break: keep-all;
   }
 
   .not-found-text {
     color: variables.$gray-400;
-    margin-bottom: 24px;
+    margin-bottom: 32px;
+    word-break: keep-all;
   }
 }

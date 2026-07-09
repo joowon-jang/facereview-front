@@ -1,51 +1,81 @@
-@use "styles/abstracts" as variables;
+@use 'styles/abstracts' as variables;
 
 .auth-container {
+  @include variables.emotion-aura;
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 128px;
-  padding-bottom: 98px;
+  min-height: 100vh;
+  padding: 128px 16px 98px;
 
   @include variables.mobile {
-    margin-top: 64px;
+    padding-top: 84px;
   }
-}
 
-.logo-wrapper {
-  margin-top: 84px;
-  margin-bottom: 108px;
+  .auth-card {
+    @include variables.glass-card;
+    @include variables.rise;
+    width: 100%;
+    max-width: 440px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 
-  @include variables.mobile {
-    margin-top: 30px;
-    margin-bottom: 96px;
+    @include variables.mobile {
+      padding: 32px 20px 36px;
+      border-radius: 16px;
+    }
+
+    @include variables.desktop {
+      padding: 40px 40px 44px;
+    }
+
+    .logo-wrapper {
+      margin-bottom: 28px;
+    }
+
+    .indicator-container {
+      margin-bottom: 28px;
+    }
+
+    .auth-heading {
+      text-align: center;
+      margin-bottom: 32px;
+
+      .auth-title {
+        color: variables.$gray-900;
+        margin-bottom: 8px;
+      }
+
+      .auth-subtitle {
+        color: variables.$gray-400;
+        line-height: 1.6;
+        word-break: keep-all;
+      }
+    }
   }
 }
 
 .input-container {
   display: flex;
   flex-direction: column;
-  width: 380px;
-
-  @include variables.mobile {
-    width: calc(100% - 32px);
-    max-width: 358px;
-  }
+  width: 100%;
 
   .input-item-container {
     display: flex;
     flex-direction: column;
     width: 100%;
-    margin-bottom: 24px;
+    margin-bottom: 12px;
 
     .input-label {
-      color: variables.$gray-900;
-      margin-bottom: 16px;
+      color: variables.$gray-800;
+      margin-bottom: 12px;
     }
 
     .input-alert-message {
       color: variables.$system-error;
       margin-top: 8px;
+      min-height: 24px;
     }
   }
 }

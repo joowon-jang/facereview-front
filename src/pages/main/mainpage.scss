@@ -1,5 +1,15 @@
 @use 'styles/abstracts' as variables;
 
+@keyframes heroFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
 .main-page-container {
   padding-bottom: 98px;
 
@@ -16,18 +26,6 @@
     margin-bottom: 12px;
   }
 
-  .search-results-container {
-    .video-container {
-      width: 100%;
-      .video-wrapper {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 24px;
-        width: 100%;
-      }
-    }
-  }
-
   .subtitle {
     color: variables.$gray-400;
     margin-top: 0;
@@ -40,30 +38,222 @@
     }
   }
 
+  // ─── 비로그인 히어로 ───
+  .home-hero-wrap {
+    @include variables.rise;
+
+    @include variables.mobile {
+      width: 100%;
+      margin-bottom: 64px;
+    }
+    @include variables.desktop {
+      @include variables.page-shell;
+      margin-bottom: 100px;
+    }
+  }
+
+  .home-hero {
+    @include variables.glass-card;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 32px;
+    overflow: hidden;
+
+    @include variables.mobile {
+      flex-direction: column;
+      align-items: flex-start;
+      padding: 28px 24px;
+      border-radius: 16px;
+      gap: 24px;
+    }
+    @include variables.desktop {
+      padding: 44px 48px;
+    }
+
+    // 카드 안쪽에만 감정 오라를 짙게
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(
+          420px 300px at 88% 0%,
+          rgba(118, 255, 206, 0.08),
+          transparent 70%
+        ),
+        radial-gradient(
+          360px 280px at 8% 110%,
+          rgba(255, 152, 113, 0.06),
+          transparent 70%
+        );
+    }
+
+    .home-hero-copy {
+      position: relative;
+      z-index: 1;
+
+      h1 {
+        color: variables.$gray-900;
+        margin-bottom: 12px;
+      }
+
+      p {
+        color: variables.$gray-400;
+        line-height: 1.6;
+        word-break: keep-all;
+        margin-bottom: 28px;
+      }
+
+      .home-hero-cta {
+        padding: 12px 24px;
+        border: none;
+        border-radius: 10px;
+        background: variables.$primary-basic;
+        color: variables.$bg;
+        cursor: pointer;
+        font-family: inherit;
+        transition:
+          transform 0.25s ease,
+          box-shadow 0.25s ease,
+          background 0.25s ease;
+
+        @media (hover: hover) and (pointer: fine) {
+          &:hover {
+            background: #5df0bf;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(118, 255, 206, 0.25);
+          }
+        }
+
+        &:active {
+          transform: translateY(0);
+        }
+      }
+    }
+
+    .home-hero-emojis {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      gap: 12px;
+      flex-shrink: 0;
+
+      @include variables.mobile {
+        gap: 8px;
+      }
+
+      .hero-emoji {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 56px;
+        height: 56px;
+        font-size: 28px;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        animation: heroFloat 4s ease-in-out infinite;
+
+        @include variables.mobile {
+          width: 44px;
+          height: 44px;
+          font-size: 22px;
+          border-radius: 12px;
+        }
+
+        // 감정마다 다른 박자로 떠다니게
+        &:nth-child(2) {
+          animation-delay: 0.4s;
+        }
+        &:nth-child(3) {
+          animation-delay: 0.8s;
+        }
+        &:nth-child(4) {
+          animation-delay: 1.2s;
+        }
+        &:nth-child(5) {
+          animation-delay: 1.6s;
+        }
+      }
+    }
+  }
+
+  // ─── 검색 결과 ───
+  .search-results-container {
+    @include variables.rise;
+
+    @include variables.desktop {
+      @include variables.page-shell;
+    }
+
+    .title {
+      margin-bottom: 24px;
+    }
+
+    .video-container {
+      width: 100%;
+
+      .video-wrapper {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 24px;
+        width: 100%;
+      }
+    }
+
+    .search-empty {
+      @include variables.glass-card(16px);
+      grid-column: 1 / -1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 56px 24px;
+
+      .search-empty-emoji {
+        font-size: 40px;
+        margin-bottom: 16px;
+      }
+
+      .search-empty-title {
+        color: variables.$gray-800;
+        margin-bottom: 8px;
+        word-break: keep-all;
+      }
+
+      .search-empty-desc {
+        color: variables.$gray-400;
+        word-break: keep-all;
+      }
+    }
+  }
+
+  // ─── 홈 섹션들 ───
   .personal-recommend-contents-container {
+    @include variables.rise(0.05s);
+
     @include variables.mobile {
       width: 100%;
       margin-bottom: 100px;
     }
     @include variables.desktop {
-      width: 100%;
-      max-width: 1200px;
-      margin-inline: auto;
-      padding-inline: clamp(16px, 4vw, 48px);
+      @include variables.page-shell;
       margin-bottom: 100px;
     }
   }
 
   .genre-contents-container {
+    @include variables.rise(0.1s);
+
     @include variables.mobile {
       width: 100%;
       margin-bottom: 100px;
     }
     @include variables.desktop {
-      width: 100%;
-      max-width: 1200px;
-      margin-inline: auto;
-      padding-inline: clamp(16px, 4vw, 48px);
+      @include variables.page-shell;
       margin-bottom: 100px;
     }
 
@@ -107,15 +297,24 @@
   }
 
   .hot-contents-container {
-    .title {
+    @include variables.rise(0.15s);
+
+    > .title {
       margin-bottom: 16px;
+
+      @include variables.desktop {
+        @include variables.page-shell;
+      }
     }
 
     .video-container {
       width: 100%;
       max-width: 1200px;
       margin-inline: auto;
-      padding-inline: clamp(16px, 4vw, 48px);
+
+      @include variables.desktop {
+        padding-inline: clamp(16px, 4vw, 48px);
+      }
 
       .main-page-chip-container {
         display: flex;
@@ -159,5 +358,3 @@
     }
   }
 }
-
-

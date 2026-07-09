@@ -13,9 +13,18 @@ const NotFoundPage = (): ReactElement => {
         path="/404"
         noindex
       />
-      <h1 className="not-found-code font-title-large">404</h1>
+      <h1 className="not-found-code" aria-label="404 오류">
+        <span aria-hidden="true">4</span>
+        <span className="not-found-emoji" aria-hidden="true">
+          😲
+        </span>
+        <span aria-hidden="true">4</span>
+      </h1>
+      <p className="not-found-title font-title-medium">
+        이 페이지는 표정을 잃었어요
+      </p>
       <p className="not-found-text font-body-large">
-        찾으시는 페이지가 없어요.
+        주소가 바뀌었거나 삭제된 페이지예요.
       </p>
       <Link to="/">
         <Button label="홈으로 돌아가기" variant="cta-fixed" />

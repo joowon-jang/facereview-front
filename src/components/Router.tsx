@@ -12,7 +12,6 @@ const BookmarkPage = lazy(() => import('pages/bookmark/BookmarkPage'));
 const PasswordChangePage = lazy(() => import('pages/my/PasswordChangePage'));
 const EditPage = lazy(() => import('pages/edit/EditPage'));
 const TutorialPage = lazy(() => import('pages/tutorial/TutorialPage'));
-const AdminPage = lazy(() => import('pages/admin/AdminPage'));
 const NotFoundPage = lazy(() => import('pages/notfound/NotFoundPage'));
 
 const Fallback = () => (
@@ -46,10 +45,6 @@ const Router = () => {
             <Route path="/watch/:id" element={<WatchPage />} />
           </Route>
           <Route path="/auth/:step" element={<AuthPage />} />
-          <Route
-            element={<ScreenContainer isAdmin={true} headerShown={true} />}>
-            <Route path="/admin" element={<AdminPage />} />
-          </Route>
           <Route
             element={<ScreenContainer isSignIn={true} headerShown={true} />}>
             <Route path="/my" element={<MyPage />} />

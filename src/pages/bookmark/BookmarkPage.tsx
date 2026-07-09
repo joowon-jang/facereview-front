@@ -8,36 +8,33 @@ import { EMOTIONS } from 'constants/index';
 import useIntersectionObserver from 'hooks/useIntersectionObserver';
 import { useIsMobile } from 'hooks/useMediaQuery';
 import { ReactElement, useCallback, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { EmotionType } from 'types';
 
 import './bookmarkpage.scss';
 
 const BookmarkPage = (): ReactElement => {
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
   const [selectedEmotion, setSelectedEmotion] = useState<'all' | EmotionType>(
     'all',
   );
 
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    isLoading,
-  } = useInfiniteQuery({
-    queryKey: ['bookmarkVideos', selectedEmotion],
-    queryFn: ({ pageParam = 1 }) =>
-      getBookmarkVideos({
-        page: pageParam,
-        size: 20,
-        emotion: selectedEmotion,
-      }),
-    getNextPageParam: (lastPage, allPages) => {
-      if (lastPage.length < 20) return undefined;
-      return allPages.length + 1;
-    },
-    initialPageParam: 1,
-  });
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
+    useInfiniteQuery({
+      queryKey: ['bookmarkVideos', selectedEmotion],
+      queryFn: ({ pageParam = 1 }) =>
+        getBookmarkVideos({
+          page: pageParam,
+          size: 20,
+          emotion: selectedEmotion,
+        }),
+      getNextPageParam: (lastPage, allPages) => {
+        if (lastPage.length < 20) return undefined;
+        return allPages.length + 1;
+      },
+      initialPageParam: 1,
+    });
 
   const videos = useMemo(
     () => data?.pages.flatMap((page) => page) || [],
@@ -103,9 +100,7 @@ const BookmarkPage = (): ReactElement => {
         {isLoading ? (
           <>
             {Array.from({ length: 8 }).map((_, i) => (
-              <VideoCardSkeleton
-                key={`bookmark-loading-${i}`}
-                width="100%"              />
+              <VideoCardSkeleton key={`bookmark-loading-${i}`} width="100%" />
             ))}
           </>
         ) : videos.length > 0 ? (
@@ -120,39 +115,33 @@ const BookmarkPage = (): ReactElement => {
                 videoTitle={v.title}
                 videoMostEmotion={v.dominant_emotion}
                 videoMostEmotionPercentage={v.dominant_emotion_per}
-                isBookmarked              />
+                isBookmarked
+              />
             ))}
-            {isFetchingNextPage && (
-              <>
-                {Array.from({ length: 4 }).map((_, i) => (
-                  <VideoCardSkeleton
-                    key={`bookmark-more-${i}`}
-                    width="100%"
-                    style={
-                      isMobile
-                        ? { marginTop: '14px', marginBottom: '14px' }
-                        : {
-                            marginRight: (i + 1) % 4 === 0 ? 0 : '26px',
-                            marginBottom: '56px',
-                          }
-                    }
-                  />
-                ))}
-              </>
-            )}
+            {isFetchingNextPage &&
+              Array.from({ length: 4 }).map((_, i) => (
+                <VideoCardSkeleton key={`bookmark-more-${i}`} width="100%" />
+              ))}
             <div ref={targetRef} style={{ width: '100%', height: '20px' }} />
           </>
         ) : (
-          <div
-            role="status"
-            className="bookmark-empty font-title-medium"
-            style={{
-              color: 'white',
-              padding: '60px 0',
-              textAlign: 'center',
-              width: '100%',
-            }}>
-            즐겨찾기한 영상이 없습니다.
+          <div role="status" className="bookmark-empty">
+            <p className="bookmark-empty-title font-title-small">
+              {selectedEmotion === 'all'
+                ? '아직 저장한 영상이 없어요'
+                : '이 감정으로 저장한 영상이 없어요'}
+            </p>
+            <p className="bookmark-empty-desc font-body-medium">
+              마음에 드는 영상에서 저장 버튼을 누르면 여기에 모여요.
+            </p>
+            {selectedEmotion === 'all' && (
+              <button
+                type="button"
+                className="bookmark-empty-cta font-label-large"
+                onClick={() => navigate('/')}>
+                영상 둘러보기
+              </button>
+            )}
           </div>
         )}
       </div>

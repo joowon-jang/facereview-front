@@ -50,14 +50,11 @@ const SearchResultsSection = ({
   });
 
   return (
-    <div
-      className="search-results-container"
-      style={{ padding: isMobile ? '0 16px' : '0' }}>
+    <div className="search-results-container">
       <h2
         className={
           isMobile ? 'title font-title-medium' : 'title font-title-large'
-        }
-        style={{ marginBottom: '20px' }}>
+        }>
         '{query}' 검색 결과
       </h2>
       <div className="video-container">
@@ -65,10 +62,7 @@ const SearchResultsSection = ({
           {isLoading ? (
             <>
               {Array.from({ length: 8 }).map((_, i) => (
-                <VideoCardSkeleton
-                  key={`search-loading-${i}`}
-                  width="100%"
-/>
+                <VideoCardSkeleton key={`search-loading-${i}`} width="100%" />
               ))}
             </>
           ) : videos.length > 0 ? (
@@ -83,39 +77,25 @@ const SearchResultsSection = ({
                   videoTitle={v.title}
                   videoMostEmotion={v.dominant_emotion}
                   videoMostEmotionPercentage={v.dominant_emotion_per}
-/>
+                />
               ))}
-              {isFetchingNextPage && (
-                <>
-                  {Array.from({ length: 4 }).map((_, i) => (
-                    <VideoCardSkeleton
-                      key={`search-more-${i}`}
-                      width="100%"
-                      style={
-                        isMobile
-                          ? { marginTop: '14px', marginBottom: '14px' }
-                          : {
-                              marginRight: (i + 1) % 4 === 0 ? 0 : '26px',
-                              marginBottom: '56px',
-                            }
-                      }
-                    />
-                  ))}
-                </>
-              )}
+              {isFetchingNextPage &&
+                Array.from({ length: 4 }).map((_, i) => (
+                  <VideoCardSkeleton key={`search-more-${i}`} width="100%" />
+                ))}
               <div ref={targetRef} style={{ width: '100%', height: '20px' }} />
             </>
           ) : (
-            <div
-              role="status"
-              style={{
-                color: 'white',
-                padding: '40px 0',
-                textAlign: 'center',
-                width: '100%',
-              }}
-              className="font-title-medium">
-              검색 결과가 없습니다.
+            <div role="status" className="search-empty">
+              <span className="search-empty-emoji" aria-hidden="true">
+                😥
+              </span>
+              <p className="search-empty-title font-title-small">
+                '{query}'에 맞는 영상을 찾지 못했어요
+              </p>
+              <p className="search-empty-desc font-body-medium">
+                다른 검색어로 시도하거나 홈에서 추천 영상을 둘러보세요.
+              </p>
             </div>
           )}
         </div>

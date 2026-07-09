@@ -1,6 +1,7 @@
-import { ReactElement } from 'react';
+import { ReactElement, useRef } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination, Navigation } from 'swiper/modules';
+import type { Swiper as SwiperInstance } from 'swiper';
 import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/navigation';
@@ -19,6 +20,25 @@ interface VideoCarouselProps<T> {
   desktopSlidesPerView?: number;  // 한 줄에 보여줄 아이템 개수 (기본 4)
 }
 
+const ChevronIcon = ({ direction }: { direction: 'prev' | 'next' }) => (
+  <svg
+    width="12"
+    height="12"
+    viewBox="0 0 12 12"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    aria-hidden="true"
+  >
+    <path
+      d={direction === 'prev' ? 'M7.5 2.5L4 6L7.5 9.5' : 'M4.5 2.5L8 6L4.5 9.5'}
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+);
+
 const VideoCarousel = <T,>({
   videos,
   hoverToPlay = true,
@@ -26,6 +46,9 @@ const VideoCarousel = <T,>({
   desktopSlidesPerView = 4,
 }: VideoCarouselProps<T>): ReactElement | null => {
   const isMobile = useIsMobile();
+  const prevRef = useRef<HTMLButtonElement>(null);
+  const nextRef = useRef<HTMLButtonElement>(null);
+  const paginationRef = useRef<HTMLDivElement>(null);
 
   if (!videos || videos.length === 0) return null;
 
@@ -54,32 +77,97 @@ const VideoCarousel = <T,>({
     },
   };
 
+  const bindDesktopControls = (swiper: SwiperInstance) => {
+    if (isMobile) return;
+
+    const navigation = swiper.params.navigation;
+    if (navigation && typeof navigation !== 'boolean') {
+      navigation.prevEl = prevRef.current;
+      navigation.nextEl = nextRef.current;
+    }
+
+    const pagination = swiper.params.pagination;
+    if (pagination && typeof pagination !== 'boolean') {
+      pagination.el = paginationRef.current;
+    }
+  };
+
+  const initDesktopControls = (swiper: SwiperInstance) => {
+    if (isMobile) return;
+
+    bindDesktopControls(swiper);
+
+    if (swiper.navigation) {
+      swiper.navigation.destroy();
+      swiper.navigation.init();
+      swiper.navigation.update();
+    }
+
+    if (swiper.pagination) {
+      swiper.pagination.destroy();
+      swiper.pagination.init();
+      swiper.pagination.render();
+      swiper.pagination.update();
+    }
+  };
+
   return (
     <div className="video-carousel-container">
+      {/* 데스크톱: 페이지네이션 양옆 화살표. Swiper init 전에 DOM에 있어야 하므로 위에 두고 order 로 아래로 배치 */}
+      {!isMobile && (
+        <div className="video-carousel-controls">
+          <button
+            ref={prevRef}
+            type="button"
+            className="video-carousel-nav-btn"
+            aria-label="이전 페이지"
+          >
+            <ChevronIcon direction="prev" />
+          </button>
+          <div ref={paginationRef} className="video-carousel-pagination" />
+          <button
+            ref={nextRef}
+            type="button"
+            className="video-carousel-nav-btn"
+            aria-label="다음 페이지"
+          >
+            <ChevronIcon direction="next" />
+          </button>
+        </div>
+      )}
+
       <Swiper
         key={isMobile ? 'mobile' : 'desktop'}
         modules={[Pagination, Navigation]}
-        pagination={{ clickable: true, enabled: !isMobile }}
-        navigation={{ enabled: isMobile }}
+        // 실제 el/prevEl/nextEl 은 렌더 중 ref 접근을 피해 onBeforeInit(bindDesktopControls)에서 바인딩
+        pagination={
+          isMobile ? { enabled: false } : { clickable: true, el: null }
+        }
+        navigation={
+          isMobile
+            ? { enabled: true }
+            : { enabled: true, prevEl: null, nextEl: null }
+        }
+        onBeforeInit={bindDesktopControls}
+        onSwiper={initDesktopControls}
         watchOverflow={false}
         allowTouchMove={false}
         breakpoints={dynamicBreakpoints}
         style={
           {
             paddingTop: '20px',
-            paddingBottom: '24px',
+            paddingBottom: isMobile ? '24px' : '8px',
             paddingLeft: isMobile ? '16px' : '20px',
             paddingRight: isMobile ? '16px' : '20px',
             marginLeft: isMobile ? '-16px' : '-20px',
             marginRight: isMobile ? '-16px' : '-20px',
-            '--swiper-pagination-bottom': '0px',
-            '--swiper-pagination-color': '#76FECE', // 활성 점 (포인트 컬러)
-            '--swiper-pagination-bullet-inactive-color': '#76FECE', // 비활성 점 (동일 통일감 부여)
-            '--swiper-pagination-bullet-inactive-opacity': '0.4', // 불투명도로만 구분
+            '--swiper-pagination-color': '#76FECE',
+            '--swiper-pagination-bullet-inactive-color': '#76FECE',
+            '--swiper-pagination-bullet-inactive-opacity': '0.4',
             '--swiper-pagination-bullet-size': '10px',
             '--swiper-pagination-bullet-horizontal-gap': '6px',
-            '--swiper-navigation-color': '#76FECE', // 모바일 네비게이션 화살표 컬러
-            '--swiper-navigation-size': '18px', // 원형 내부에 맞게 화살표 크기 축소 (여백감 부여)
+            '--swiper-navigation-color': '#76FECE',
+            '--swiper-navigation-size': '18px',
           } as React.CSSProperties
         }
       >

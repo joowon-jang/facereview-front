@@ -48,9 +48,20 @@ const INITIAL_DONUT_DATA = EMOTIONS.map((emotion) => ({
   originalId: emotion,
 }));
 
-const INITIAL_EMOTION_TIME = { happy: 0, sad: 0, surprise: 0, angry: 0, neutral: 0 };
+const INITIAL_EMOTION_TIME = {
+  happy: 0,
+  sad: 0,
+  surprise: 0,
+  angry: 0,
+  neutral: 0,
+};
 
 const EMOTION_COLOR_LIST = EMOTIONS.map((e) => EMOTION_COLORS[e]);
+// 타임라인 그래프는 데이터 없는 감정 시리즈가 필터링되므로, 순서 기반 배열 대신
+// 시리즈 id 로 색상을 매핑해야 감정-색상이 어긋나지 않는다 (WatchPage 와 동일).
+// 도넛 차트는 항상 5개 감정이 순서대로 존재하므로 EMOTION_COLOR_LIST 를 그대로 쓴다.
+const LINE_CHART_COLORS = (serie: { id: string }) =>
+  EMOTION_COLORS[serie.id as EmotionType] ?? EMOTION_COLORS.neutral;
 const LINE_CHART_MARGIN = { top: 2, right: 0, bottom: 2, left: 0 };
 
 const formatSeconds = (seconds: number): string => {
@@ -60,35 +71,6 @@ const formatSeconds = (seconds: number): string => {
   if (sec === 0) return `${min}분`;
   return `${min}분 ${sec}초`;
 };
-
-// Section header icons (inline SVG, inherits color via currentColor)
-const VideoSectionIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth={2}
-    strokeLinecap="round"
-    strokeLinejoin="round">
-    <path d="m22 8-6 4 6 4V8Z" />
-    <rect x="2" y="6" width="14" height="12" rx="2" ry="2" />
-  </svg>
-);
-
-const ChartSectionIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth={2}
-    strokeLinecap="round"
-    strokeLinejoin="round">
-    <path d="M3 3v18h18" />
-    <path d="M18 17V9" />
-    <path d="M13 17V5" />
-    <path d="M8 17v-3" />
-  </svg>
-);
 
 const MyPage = () => {
   const is_sign_in = useAuthStorage((s) => s.is_sign_in);
@@ -123,17 +105,23 @@ const MyPage = () => {
     enabled: is_sign_in,
   });
 
-  const emotionTimeData = emotionSummaryData?.emotion_seconds ?? INITIAL_EMOTION_TIME;
+  const emotionTimeData =
+    emotionSummaryData?.emotion_seconds ?? INITIAL_EMOTION_TIME;
 
   const totalSeconds = useMemo(() => {
-    return Object.values(emotionTimeData).reduce((sum, val) => sum + (val || 0), 0);
+    return Object.values(emotionTimeData).reduce(
+      (sum, val) => sum + (val || 0),
+      0,
+    );
   }, [emotionTimeData]);
 
   const donutGraphData = useMemo(() => {
     if (!emotionSummaryData?.emotion_percentages) return INITIAL_DONUT_DATA;
     return INITIAL_DONUT_DATA.map((item) => ({
       ...item,
-      value: Math.round(emotionSummaryData.emotion_percentages[item.originalId] || 0),
+      value: Math.round(
+        emotionSummaryData.emotion_percentages[item.originalId] || 0,
+      ),
     }));
   }, [emotionSummaryData]);
 
@@ -146,8 +134,12 @@ const MyPage = () => {
             video.dominant_emotion === selectedEmotion,
         )
         .map((video) => {
-          let graphData: { id: string; data: { x: number; y: number }[] }[] = [];
-          if (video.timeline_data && Object.keys(video.timeline_data).length > 0) {
+          let graphData: { id: string; data: { x: number; y: number }[] }[] =
+            [];
+          if (
+            video.timeline_data &&
+            Object.keys(video.timeline_data).length > 0
+          ) {
             graphData = getScaledTimelineGraphData(
               video.timeline_data,
               video.duration,
@@ -201,7 +193,6 @@ const MyPage = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
-
 
   return (
     <>
@@ -301,9 +292,6 @@ const MyPage = () => {
         <div className="my-page-watched-contents-container">
           <div className="my-page-watched-title-container">
             <div className="my-page-section-header">
-              <div className="section-icon" aria-hidden="true">
-                <VideoSectionIcon />
-              </div>
               <h3
                 className={
                   isMobile
@@ -363,9 +351,13 @@ const MyPage = () => {
                         {v.graphData.length > 0 && (
                           <ResponsiveLine
                             data={v.graphData}
-                            colors={EMOTION_COLOR_LIST}
+                            colors={LINE_CHART_COLORS}
                             margin={LINE_CHART_MARGIN}
-                            xScale={{ type: 'linear', min: 0, max: v.duration || 100 }}
+                            xScale={{
+                              type: 'linear',
+                              min: 0,
+                              max: v.duration || 100,
+                            }}
                             yScale={{
                               type: 'linear',
                               min: 0,
@@ -411,9 +403,6 @@ const MyPage = () => {
         {/* ── Emotion Graph Section ── */}
         <div className="my-page-emotion-container">
           <div className="my-page-section-header">
-            <div className="section-icon" aria-hidden="true">
-              <ChartSectionIcon />
-            </div>
             <h2 className={isMobile ? 'font-title-small' : 'font-title-medium'}>
               나의 감정 그래프
             </h2>
@@ -464,9 +453,7 @@ const MyPage = () => {
                     <span className="legend-item-label">
                       {EMOTION_LABELS[item.originalId]}
                     </span>
-                    <span className="legend-item-text">
-                      {item.value || 0}%
-                    </span>
+                    <span className="legend-item-text">{item.value || 0}%</span>
                   </div>
                 ))}
               </div>
@@ -474,9 +461,7 @@ const MyPage = () => {
 
             {/* Emotion Time Stats Card */}
             <div className="emotion-time-card">
-              <h3 className="emotion-time-title">
-                그동안 영상을 보며
-              </h3>
+              <h3 className="emotion-time-title">그동안 영상을 보며</h3>
               <div className="emotion-stats-grid">
                 {EMOTIONS.map((emotion) => (
                   <div key={emotion} className="emotion-stat-row">

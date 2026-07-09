@@ -76,34 +76,6 @@ export type VideoRelatedType = {
   duration?: number;
 };
 
-export type RequestedVideoType = {
-  request_id: string;
-  youtube_url: string;
-  created_at: string;
-  index: number; // Keeping index just in case, but request_id is key
-};
-
-export type YoutubeVideoDataType = {
-  items: {
-    id: string;
-    snippet: {
-      title: string;
-      channelTitle: string;
-    };
-    contentDetails: { duration: string };
-  }[];
-};
-
-export type RegisterVideoDataType = {
-  video_url: string;
-  title: string;
-  channel_name: string;
-  length_hour: number;
-  length_minute: number;
-  length_second: number;
-  category: string;
-};
-
 export type EmotionSummaryResponse = {
   emotion_percentages: { [key in EmotionType]: number };
   emotion_seconds: { [key in EmotionType]: number };

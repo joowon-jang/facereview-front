@@ -64,7 +64,7 @@ const TutorialPage = (): ReactElement => {
         keywords="FaceReview 사용법, 튜토리얼, 감정 추천 방법, 표정 기록, 페이스리뷰 도움말"
         path={`/tutorial/${currentStep}`}
       />
-      <div className="tutorial-content">
+      <div className="tutorial-content" key={currentStep}>
         {!isMobile && (
           <div className="tutorial-left-container">
             <div className="visual-wrapper">
@@ -79,6 +79,7 @@ const TutorialPage = (): ReactElement => {
           {!isMobile && <StepIndicator step={currentStep} maxStep={3} />}
           <h6 className="step-title">
             {currentStep.toString().padStart(2, '0')}
+            <span className="step-total"> / 03</span>
           </h6>
           <p className="tutorial-text font-title-large">
             {TUTORIAL_TEXT[currentStep]}

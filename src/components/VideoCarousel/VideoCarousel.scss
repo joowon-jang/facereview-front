@@ -1,12 +1,96 @@
 @use 'styles/abstracts' as variables;
 
 .video-carousel-container {
+  display: flex;
+  flex-direction: column;
+
+  // 컨트롤을 DOM 상단에 두되 시각적으로는 캐러셀 아래로
+  // 점 인디케이터와 같은 시각 언어: 테두리/배경 없이 민트 톤만
+  .video-carousel-controls {
+    order: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    margin-top: 2px;
+    min-height: 24px;
+  }
+
+  .swiper {
+    order: 1;
+    width: 100%;
+  }
+
+  .video-carousel-pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: static;
+    width: auto;
+    min-width: 0;
+
+    .swiper-pagination-bullet {
+      width: 10px;
+      height: 10px;
+      margin: 0 6px !important;
+      background: variables.$primary-basic;
+      opacity: 0.4;
+      transition: opacity 0.2s ease;
+
+      &:hover {
+        opacity: 0.7;
+      }
+
+      &.swiper-pagination-bullet-active {
+        opacity: 1;
+      }
+    }
+  }
+
+  .video-carousel-nav-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    color: variables.$primary-basic;
+    opacity: 0.45;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+
+    &:hover:not(.swiper-button-disabled) {
+      opacity: 1;
+    }
+
+    &:active:not(.swiper-button-disabled) {
+      opacity: 0.85;
+    }
+
+    &:focus-visible {
+      outline: 1px solid variables.$primary-basic;
+      outline-offset: 2px;
+      border-radius: 4px;
+      opacity: 1;
+    }
+
+    &.swiper-button-disabled {
+      opacity: 0.18;
+      cursor: default;
+    }
+  }
+
+  // 모바일: 기존 사이드 그라데이션 화살표 유지
   .swiper-button-prev {
     @include variables.mobile {
       left: 0;
       top: 0;
       margin-top: 0;
-      width: 44px; // 너무 넓었던 터치 영역을 다시 슬림하지만 터치 가능한 애플 표준 사이즈로 축소
+      width: 44px;
       height: 100%;
       background: linear-gradient(
         to right,

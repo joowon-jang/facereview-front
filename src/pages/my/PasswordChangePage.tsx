@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import TextInput from 'components/TextInput/TextInput';
 import Button from 'components/Button/Button';
 import { toast } from 'react-toastify';
@@ -10,6 +10,8 @@ import {
 } from 'api/mypage';
 import { useLogout } from 'hooks/useLogout';
 
+import './passwordchangepage.scss';
+
 const PasswordChangePage = () => {
   const [step, setStep] = useState<1 | 2>(1);
   const [verificationCode, setVerificationCode] = useState('');
@@ -18,6 +20,8 @@ const PasswordChangePage = () => {
   const [newPasswordConfirm, setNewPasswordConfirm] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [isEmailSent, setIsEmailSent] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [isChanging, setIsChanging] = useState(false);
 
   const navigate = useNavigate();
   const { handleLogout } = useLogout();
@@ -57,7 +61,9 @@ const PasswordChangePage = () => {
       toast.error('인증코드 6자리를 입력해주세요.');
       return;
     }
+    if (isVerifying) return;
 
+    setIsVerifying(true);
     try {
       const res = await verifyPasswordCode({ code: verificationCode });
       if (res.data?.reset_token) {
@@ -70,6 +76,8 @@ const PasswordChangePage = () => {
     } catch (err) {
       console.error(err);
       toast.error('인증 코드가 올바르지 않거나 오류가 발생했습니다.');
+    } finally {
+      setIsVerifying(false);
     }
   };
 
@@ -83,7 +91,9 @@ const PasswordChangePage = () => {
       toast.error('입력한 두 비밀번호가 서로 다릅니다.');
       return;
     }
+    if (isChanging) return;
 
+    setIsChanging(true);
     try {
       await changePassword({
         reset_token: resetToken,
@@ -96,52 +106,20 @@ const PasswordChangePage = () => {
     } catch (err) {
       console.error(err);
       toast.error('비밀번호 변경 처리 중 오류가 발생했습니다.');
+    } finally {
+      setIsChanging(false);
     }
   };
 
   return (
-    <div
-      style={{
-        width: '100%',
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        padding: '140px 20px 60px' /* 상단 헤더 공간 및 여유 확보 */,
-        boxSizing: 'border-box',
-        backgroundColor: '#15151d',
-      }}>
-      <div
-        style={{
-          width: '100%',
-          maxWidth: '520px',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          backgroundColor: 'transparent' /* 모달 배경 박스 제거 */,
-        }}>
+    <div className="password-change-container">
+      <div className="password-card">
         {step === 1 && (
           <>
-            <h3
-              className="font-title-medium"
-              style={{
-                marginTop: '0',
-                marginBottom: '24px',
-                fontSize: '28px',
-                fontWeight: '700',
-              }}>
+            <h3 className="password-title font-title-medium">
               비밀번호 변경 인증
             </h3>
-            <p
-              className="font-body-large"
-              style={{
-                marginTop: '0',
-                marginBottom: '48px',
-                color: '#A0A0A0',
-                lineHeight: '1.6',
-                fontSize: '16px',
-                textAlign: 'center',
-              }}>
+            <p className="password-desc font-body-large">
               {isSending ? (
                 '인증 메일 발송 중입니다...'
               ) : isEmailSent ? (
@@ -158,75 +136,42 @@ const PasswordChangePage = () => {
                 </>
               )}
             </p>
-            {!isEmailSent && (
-              <div style={{ width: '100%', marginTop: '20px' }}>
+            <div className="password-form">
+              {!isEmailSent ? (
                 <Button
-                  label="인증코드 발송"
+                  label={isSending ? '발송 중...' : '인증코드 발송'}
                   variant="small"
                   onClick={handleSendEmail}
                   disabled={isSending}
-                  style={{ width: '100%', padding: '16px 0', fontSize: '16px' }}
                 />
-              </div>
-            )}
-            {isEmailSent && (
-              <div
-                style={{
-                  width: '100%',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '24px',
-                  alignItems: 'center',
-                  marginTop: '12px',
-                }}>
-                <TextInput
-                  id="passwordVerificationCode"
-                  value={verificationCode}
-                  onChange={(e) => setVerificationCode(e.target.value)}
-                  placeholder="6자리 코드"
-                  maxLength={6}
-                  aria-label="6자리 인증 코드"
-                  style={{
-                    width: '100%',
-                    textAlign: 'center',
-                    letterSpacing: '12px',
-                    backgroundColor: 'transparent',
-                    border: 'none',
-                    borderBottom: '2px solid #4B4B5C',
-                    borderRadius: '0',
-                    padding: '16px 0',
-                    fontSize: '28px',
-                    fontWeight: '700',
-                    color: '#FFFFFF',
-                  }}
-                />
-                <Button
-                  label="인증 확인"
-                  variant="small"
-                  onClick={handleVerifyCodeSubmit}
-                  disabled={isSending || verificationCode.length !== 6}
-                  style={{ width: '100%', padding: '16px 0', fontSize: '16px' }}
-                />
-              </div>
-            )}
-            <div
-              style={{
-                width: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                marginTop: '24px',
-              }}>
+              ) : (
+                <>
+                  <TextInput
+                    id="passwordVerificationCode"
+                    className="code-input"
+                    value={verificationCode}
+                    onChange={(e) => setVerificationCode(e.target.value)}
+                    placeholder="6자리 코드"
+                    maxLength={6}
+                    inputMode="numeric"
+                    aria-label="6자리 인증 코드"
+                  />
+                  <Button
+                    label={isVerifying ? '확인 중...' : '인증 확인'}
+                    variant="small"
+                    onClick={handleVerifyCodeSubmit}
+                    disabled={
+                      isSending || isVerifying || verificationCode.length !== 6
+                    }
+                  />
+                </>
+              )}
+            </div>
+            <div className="password-secondary-action">
               <Button
                 label="취소하고 돌아가기"
                 variant="small-outline"
                 onClick={() => navigate('/my')}
-                style={{
-                  width: '100%',
-                  padding: '16px 0',
-                  fontSize: '16px',
-                  color: '#E0E0E0',
-                  borderColor: '#888',
-                }}
               />
             </div>
           </>
@@ -234,97 +179,45 @@ const PasswordChangePage = () => {
 
         {step === 2 && (
           <>
-            <h3
-              className="font-title-medium"
-              style={{
-                marginTop: '0',
-                marginBottom: '24px',
-                fontSize: '28px',
-                fontWeight: '700',
-              }}>
+            <h3 className="password-title font-title-medium">
               새 비밀번호 설정
             </h3>
-            <p
-              className="font-body-large"
-              style={{
-                marginTop: '0',
-                marginBottom: '48px',
-                color: '#A0A0A0',
-                lineHeight: '1.6',
-                fontSize: '16px',
-                textAlign: 'center',
-              }}>
+            <p className="password-desc font-body-large">
               새롭게 사용할 비밀번호를 입력해주세요.
               <br />
               최소 8자 이상의 안전한 암호를 권장합니다.
             </p>
-            <div
-              style={{
-                width: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '24px',
-                alignItems: 'center',
-              }}>
+            <div className="password-form">
               <TextInput
                 id="newPassword"
+                className="password-input"
                 type="password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 placeholder="새 비밀번호 입력"
                 aria-label="새 비밀번호 입력"
-                style={{
-                  width: '100%',
-                  backgroundColor: 'transparent',
-                  border: 'none',
-                  borderBottom: '2px solid #4B4B5C',
-                  borderRadius: '0',
-                  padding: '16px 8px',
-                  fontSize: '18px',
-                  color: '#FFFFFF',
-                }}
               />
               <TextInput
                 id="newPasswordConfirm"
+                className="password-input"
                 type="password"
                 value={newPasswordConfirm}
                 onChange={(e) => setNewPasswordConfirm(e.target.value)}
                 placeholder="새 비밀번호 다시 입력"
                 aria-label="새 비밀번호 확인"
-                style={{
-                  width: '100%',
-                  backgroundColor: 'transparent',
-                  border: 'none',
-                  borderBottom: '2px solid #4B4B5C',
-                  borderRadius: '0',
-                  padding: '16px 8px',
-                  fontSize: '18px',
-                  color: '#FFFFFF',
-                }}
               />
               <Button
-                label="비밀번호 변경"
+                label={isChanging ? '변경 중...' : '비밀번호 변경'}
                 variant="small"
                 onClick={handleChangePasswordSubmit}
-                disabled={!newPassword || !newPasswordConfirm}
-                style={{
-                  width: '100%',
-                  padding: '16px 0',
-                  fontSize: '16px',
-                  marginTop: '16px',
-                }}
+                disabled={!newPassword || !newPasswordConfirm || isChanging}
               />
+            </div>
+            <div className="password-secondary-action">
               <Button
                 label="취소하고 돌아가기"
                 variant="small-outline"
                 onClick={() => navigate('/my')}
-                style={{
-                  width: '100%',
-                  padding: '16px 0',
-                  fontSize: '16px',
-                  color: '#888',
-                  borderColor: '#444',
-                }}
               />
             </div>
           </>

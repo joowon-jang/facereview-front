@@ -1,15 +1,12 @@
 import {
   VideoRelatedType,
   VideoWatchedType,
-  YoutubeVideoDataType,
   EmotionSummaryResponse,
   VideoDataType,
   VideoDetailType,
   SearchVideoResponse,
 } from 'types';
-import api, { youtubeApi } from './index';
-
-const YOUTUBE_API_KEY = import.meta.env.VITE_YOUTUBE_API_KEY ?? '';
+import api from './index';
 
 export const getVideoList = async (category?: string) => {
   const url = `/v2/home/category`;
@@ -127,19 +124,4 @@ export const getBookmarkVideos = async (props: {
   }
 
   return data.videos;
-};
-
-export const getDataFromYoutube = async (props: { youtube_url: string }) => {
-  const { data } = await youtubeApi.get<YoutubeVideoDataType>(
-    '/youtube/v3/videos',
-    {
-      params: {
-        part: 'snippet,contentDetails',
-        id: props.youtube_url,
-        key: YOUTUBE_API_KEY,
-      },
-    },
-  );
-
-  return data;
 };

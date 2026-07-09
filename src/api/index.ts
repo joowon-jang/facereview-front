@@ -28,13 +28,16 @@ const processQueue = (error: unknown, token: string | null = null) => {
   failedQueue = [];
 };
 
-api.interceptors.request.use((config) => {
-  const { access_token } = useAuthStorage.getState();
-  if (access_token) {
-    config.headers.Authorization = `Bearer ${access_token}`;
-  }
-  return config;
-}, (error) => Promise.reject(error));
+api.interceptors.request.use(
+  (config) => {
+    const { access_token } = useAuthStorage.getState();
+    if (access_token) {
+      config.headers.Authorization = `Bearer ${access_token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error),
+);
 
 api.interceptors.response.use(
   (response) => response,
@@ -87,10 +90,5 @@ api.interceptors.response.use(
     return Promise.reject(error);
   },
 );
-
-export const youtubeApi = axios.create({
-  baseURL: 'https://www.googleapis.com/',
-  timeout: 30000,
-});
 
 export default api;

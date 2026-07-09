@@ -44,7 +44,15 @@ import Button from 'components/Button/Button';
 import safeImage from 'assets/img/safeImage.png';
 import LikeButton from 'components/LikeButton/LikeButton';
 import BookmarkButton from 'components/BookmarkButton/BookmarkButton';
-import { ResponsiveLine } from '@nivo/line';
+import {
+  ResponsiveLine,
+  Point,
+  SliceData,
+  SliceTooltipProps,
+  isSliceData,
+} from '@nivo/line';
+import VideoCardSkeleton from 'components/Skeleton/VideoCardSkeleton';
+import type { ScaledGraphDistributionDataType } from 'utils/emotion';
 import { useIsMobile } from 'hooks/useMediaQuery';
 import useWindowSize from 'hooks/useWindowSize';
 import { useRequireSignIn } from 'hooks/useRequireSignIn';
@@ -60,8 +68,14 @@ const EMOTION_BY_EMOTION_TEXT = EMOTIONS.map((emotion) => ({
 }));
 
 const BAR_CHART_COLORS = EMOTIONS.map((e) => EMOTION_COLORS[e]);
-const BAR_CHART_BORDER_COLOR = { from: 'color' as const, modifiers: [['darker', 1.6] as ['darker', number]] };
-const BAR_CHART_LABEL_TEXT_COLOR = { from: 'color' as const, modifiers: [['darker', 2.3] as ['darker', number]] };
+const BAR_CHART_BORDER_COLOR = {
+  from: 'color' as const,
+  modifiers: [['darker', 1.6] as ['darker', number]],
+};
+const BAR_CHART_LABEL_TEXT_COLOR = {
+  from: 'color' as const,
+  modifiers: [['darker', 2.3] as ['darker', number]],
+};
 const BAR_CHART_MARGIN = { top: -10, bottom: -10 };
 const LINE_CHART_MARGIN = { top: 0, right: 0, bottom: 0, left: 0 };
 const WEBCAM_STYLE = {
@@ -71,6 +85,50 @@ const WEBCAM_STYLE = {
   marginBottom: '24px',
 };
 const PROFILE_ICON_STYLE = { marginRight: '12px' };
+
+// 타임라인 그래프는 데이터 없는 감정 시리즈가 필터링되므로, 순서 기반 배열 대신
+// 시리즈 id 로 색상을 매핑해야 감정-색상이 어긋나지 않는다.
+const LINE_CHART_COLORS = (serie: ScaledGraphDistributionDataType) =>
+  EMOTION_COLORS[serie.id];
+
+const formatSecondsToClock = (seconds: number): string => {
+  const total = Math.max(0, Math.floor(seconds));
+  const minutes = Math.floor(total / 60);
+  const rest = total % 60;
+  return `${minutes}:${rest.toString().padStart(2, '0')}`;
+};
+
+const TimelineSliceTooltip = ({
+  slice,
+}: SliceTooltipProps<ScaledGraphDistributionDataType>) => {
+  const time = Number(slice.points[0]?.data.x ?? 0);
+  // 데이터가 없어 필터링된 감정이 있을 수 있으므로 slice 에 있는 모든 감정을 표시
+  const sortedPoints = [...slice.points].sort(
+    (a, b) => Number(b.data.y) - Number(a.data.y),
+  );
+
+  return (
+    <div className="timeline-tooltip">
+      <p className="timeline-tooltip-time font-label-small">
+        {formatSecondsToClock(time)}
+      </p>
+      {sortedPoints.map((point) => (
+        <div className="timeline-tooltip-row" key={point.id}>
+          <span
+            className="timeline-tooltip-dot"
+            style={{ background: point.seriesColor }}
+          />
+          <span className="timeline-tooltip-label font-label-small">
+            {EMOTION_LABELS[point.seriesId]} {Math.round(Number(point.data.y))}%
+          </span>
+        </div>
+      ))}
+      <p className="timeline-tooltip-hint font-label-small">
+        클릭해서 이 장면으로 이동
+      </p>
+    </div>
+  );
+};
 
 const WatchPage = (): ReactElement => {
   const isMobile = useIsMobile();
@@ -124,6 +182,25 @@ const WatchPage = (): ReactElement => {
     height: 360,
   };
 
+  const [webcamError, setWebcamError] = useState<
+    'denied' | 'unavailable' | null
+  >(null);
+  const [webcamKey, setWebcamKey] = useState<number>(0);
+
+  const handleWebcamError = (error: string | DOMException) => {
+    const errorName = typeof error === 'string' ? error : error.name;
+    setWebcamError(
+      errorName === 'NotAllowedError' || errorName === 'PermissionDeniedError'
+        ? 'denied'
+        : 'unavailable',
+    );
+  };
+
+  const handleWebcamRetry = () => {
+    setWebcamError(null);
+    setWebcamKey((prev) => prev + 1);
+  };
+
   const [myGraphData, setMyGraphData] = useState([
     EMOTIONS.reduce(
       (acc, emotion) => ({
@@ -146,19 +223,25 @@ const WatchPage = (): ReactElement => {
   ]);
   const queryClient = useQueryClient();
 
-  const { data: videoData } = useQuery({
+  const {
+    data: videoData,
+    isError: isVideoError,
+    refetch: refetchVideoDetail,
+  } = useQuery({
     queryKey: ['videoDetail', id],
     queryFn: () => getVideoDetail({ video_id: id || '' }),
     enabled: !!id,
   });
 
-  const { data: relatedVideoList = [] } = useQuery({
-    queryKey: ['relatedVideos', id],
-    queryFn: () => getRelatedVideo({ video_id: id || '' }),
-    enabled: !!id,
-  });
+  const { data: relatedVideoList = [], isLoading: isRelatedLoading } = useQuery(
+    {
+      queryKey: ['relatedVideos', id],
+      queryFn: () => getRelatedVideo({ video_id: id || '' }),
+      enabled: !!id,
+    },
+  );
 
-  const { data: commentList = [] } = useQuery({
+  const { data: commentList = [], isLoading: isCommentsLoading } = useQuery({
     queryKey: ['videoComments', id],
     queryFn: () => getVideoComments({ video_id: id || '' }),
     enabled: !!id,
@@ -231,8 +314,26 @@ const WatchPage = (): ReactElement => {
     return '';
   }, [webcamRef]);
 
+  // 백엔드의 duration 은 실제 영상 길이와 어긋난 경우가 있어 (그래프가 시간막대와
+  // 안 맞는 원인) 플레이어가 보고하는 실제 길이를 그래프 기준으로 사용한다.
+  const [playerDuration, setPlayerDuration] = useState<number | null>(null);
+
+  const syncPlayerDuration = async (player: YouTubePlayer) => {
+    const duration = await player.getDuration();
+    if (Number.isFinite(duration) && duration > 0) {
+      setPlayerDuration(duration);
+    }
+  };
+
   const handleVideoReady = (e: YouTubeEvent<YouTubePlayer>) => {
     setVideo(e.target);
+    syncPlayerDuration(e.target);
+  };
+
+  // 관련 영상으로 이동하면 loadVideoById 로 교체되어 onReady 가 다시 오지 않으므로
+  // 상태 변화 때마다 길이를 다시 동기화한다.
+  const handleVideoStateChange = (e: YouTubeEvent<number>) => {
+    syncPlayerDuration(e.target);
   };
 
   const handleVideoError = () => {
@@ -258,6 +359,11 @@ const WatchPage = (): ReactElement => {
       queryClient.invalidateQueries({ queryKey: ['videoComments', id] });
       setEditingcommentindex(null);
     },
+    onError: () => {
+      toast.error('댓글 수정에 실패했어요', {
+        toastId: 'error modify comment',
+      });
+    },
   });
 
   const deleteCommentMutation = useMutation({
@@ -266,17 +372,19 @@ const WatchPage = (): ReactElement => {
       queryClient.invalidateQueries({ queryKey: ['videoComments', id] });
       closeModal2();
     },
+    onError: () => {
+      toast.error('댓글 삭제에 실패했어요', {
+        toastId: 'error delete comment',
+      });
+    },
   });
 
   const handleCommentSubmit = () => {
-    if (is_sign_in) {
-      if (comment.length > 0) {
-        commentMutation.mutate(comment);
-      }
-      return;
+    if (!requireSignIn()) return;
+    if (commentMutation.isPending) return;
+    if (comment.length > 0) {
+      commentMutation.mutate(comment);
     }
-    toast.warn('로그인이 필요합니다', { toastId: 'need sign in' });
-    navigate('/auth/1');
   };
 
   useEffect(() => {
@@ -346,6 +454,8 @@ const WatchPage = (): ReactElement => {
     window.scrollTo(0, 0);
   }, [id]);
 
+  const effectiveDuration = playerDuration ?? videoData?.duration ?? 0;
+
   const videoGraphData = useMemo(() => {
     if (
       videoData?.timeline_data &&
@@ -353,11 +463,11 @@ const WatchPage = (): ReactElement => {
     ) {
       return getScaledTimelineGraphData(
         videoData.timeline_data,
-        videoData.duration,
+        effectiveDuration,
       );
     }
     return [];
-  }, [videoData]);
+  }, [videoData, effectiveDuration]);
 
   useEffect(() => {
     if (!user_announced) {
@@ -482,7 +592,9 @@ const WatchPage = (): ReactElement => {
   const [editingcommentindex, setEditingcommentindex] = useState<string | null>(
     null,
   );
-  const [deletingCommentId, setDeletingCommentId] = useState<string | null>(null);
+  const [deletingCommentId, setDeletingCommentId] = useState<string | null>(
+    null,
+  );
 
   // CommentItem callbacks — React Compiler handles memoization automatically
   const handleCommentMouseEnter = (commentId: string) => {
@@ -513,18 +625,112 @@ const WatchPage = (): ReactElement => {
     }
   };
 
+  const handleTimelineClick = (
+    datum:
+      | Readonly<Point<ScaledGraphDistributionDataType>>
+      | Readonly<SliceData<ScaledGraphDistributionDataType>>,
+  ) => {
+    if (!isSliceData(datum)) return;
+    const seconds = datum.points[0]?.data.x;
+    if (typeof seconds === 'number' && Number.isFinite(seconds)) {
+      video?.seekTo(seconds, true);
+    }
+  };
+
+  const renderWebcamArea = () => {
+    if (!is_sign_in) {
+      return (
+        <div className="webcam-placeholder-container">
+          <div className="webcam-placeholder-icon" aria-hidden="true">
+            <svg
+              width="28"
+              height="28"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round">
+              <path d="M23 7l-7 5 7 5V7z" />
+              <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+            </svg>
+          </div>
+          <p className="webcam-placeholder-text font-body-medium">
+            로그인하면 영상을 보는 동안
+            <br />
+            실시간 감정 분석을 볼 수 있어요
+          </p>
+          <button
+            type="button"
+            className="webcam-placeholder-button font-label-large"
+            onClick={() => navigate('/auth/1')}>
+            로그인 하기
+          </button>
+        </div>
+      );
+    }
+
+    if (webcamError) {
+      return (
+        <div className="webcam-placeholder-container">
+          <div className="webcam-placeholder-icon" aria-hidden="true">
+            <svg
+              width="28"
+              height="28"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round">
+              <path d="M16 16v1a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h2m5.66 0H14a2 2 0 0 1 2 2v3.34l1 1L23 7v10" />
+              <line x1="1" y1="1" x2="23" y2="23" />
+            </svg>
+          </div>
+          <p className="webcam-placeholder-text font-body-medium">
+            {webcamError === 'denied' ? (
+              <>
+                카메라 권한이 차단되어 있어요.
+                <br />
+                브라우저 설정에서 카메라를 허용한 뒤 다시 시도해 주세요.
+              </>
+            ) : (
+              <>
+                카메라를 사용할 수 없어요.
+                <br />
+                다른 앱이 카메라를 사용 중인지 확인해 주세요.
+              </>
+            )}
+          </p>
+          <button
+            type="button"
+            className="webcam-placeholder-button font-label-large"
+            onClick={handleWebcamRetry}>
+            다시 시도
+          </button>
+        </div>
+      );
+    }
+
+    return (
+      <Webcam
+        key={webcamKey}
+        style={WEBCAM_STYLE}
+        audio={false}
+        ref={webcamRef}
+        screenshotFormat="image/jpeg"
+        videoConstraints={webcamOptions}
+        mirrored={true}
+        screenshotQuality={0.5}
+        onUserMediaError={handleWebcamError}
+      />
+    );
+  };
+
   const renderMobileContainer = () => {
     return (
       <div className="watch-page-cam-container">
-        <Webcam
-          style={WEBCAM_STYLE}
-          audio={false}
-          ref={webcamRef}
-          screenshotFormat="image/jpeg"
-          videoConstraints={webcamOptions}
-          mirrored={true}
-          screenshotQuality={0.5}
-        />
+        {renderWebcamArea()}
         <div className="emotion-container">
           <div className="emotion-title-wrapper">
             <h4 className="emotion-title font-title-small">실시간 나의 감정</h4>
@@ -696,19 +902,23 @@ const WatchPage = (): ReactElement => {
                 style={{ display: 'block' }}
                 opts={opts}
                 onReady={handleVideoReady}
+                onStateChange={handleVideoStateChange}
                 onError={handleVideoError}
               />
+            ) : isVideoError ? (
+              <div className="video-status-placeholder">
+                <p className="video-status-text font-body-medium">
+                  영상 정보를 불러오지 못했어요
+                </p>
+                <button
+                  type="button"
+                  className="video-retry-button font-label-large"
+                  onClick={() => refetchVideoDetail()}>
+                  다시 시도
+                </button>
+              </div>
             ) : (
-              <div
-                style={{
-                  width: '100%',
-                  aspectRatio: '16 / 9',
-                  backgroundColor: '#1a1a2e',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  borderRadius: '8px',
-                }}>
+              <div className="video-status-placeholder">
                 <div className="video-loading-spinner" />
               </div>
             )}
@@ -716,12 +926,12 @@ const WatchPage = (): ReactElement => {
               {videoGraphData && videoGraphData.length > 0 && (
                 <ResponsiveLine
                   data={videoGraphData}
-                  colors={BAR_CHART_COLORS}
+                  colors={LINE_CHART_COLORS}
                   margin={LINE_CHART_MARGIN}
                   xScale={{
                     type: 'linear',
                     min: 0,
-                    max: videoData?.duration || 100,
+                    max: effectiveDuration || 100,
                   }}
                   yScale={{
                     type: 'linear',
@@ -738,8 +948,10 @@ const WatchPage = (): ReactElement => {
                   enableGridX={false}
                   enableGridY={false}
                   enablePoints={false}
-                  useMesh={true}
-                  enableSlices={false}
+                  useMesh={false}
+                  enableSlices="x"
+                  sliceTooltip={TimelineSliceTooltip}
+                  onClick={handleTimelineClick}
                   lineWidth={2}
                   legends={[]}
                 />
@@ -800,10 +1012,12 @@ const WatchPage = (): ReactElement => {
               }}
               placeholder={'영상에 대한 의견을 남겨보아요'}
               aria-label="댓글 입력"
+              disabled={commentMutation.isPending}
             />
             <UploadButton
               onClick={handleCommentSubmit}
               aria-label="댓글 등록"
+              isDisabled={commentMutation.isPending}
               style={{
                 marginLeft: '12px',
                 display: comment.length > 0 ? 'block' : 'none',
@@ -816,10 +1030,25 @@ const WatchPage = (): ReactElement => {
                 ? 'comment-info-text font-title-mini'
                 : 'comment-info-text font-title-small'
             }>
-            댓글 {commentList.length || 0}개
+            {isCommentsLoading ? '댓글' : `댓글 ${commentList.length}개`}
           </div>
           <div className="comment-list-container">
-            {commentList.length > 0 ? (
+            {isCommentsLoading ? (
+              [0, 1, 2].map((index) => (
+                <div
+                  className="comment-skeleton"
+                  key={index}
+                  role="status"
+                  aria-busy="true"
+                  aria-label="댓글 불러오는 중">
+                  <div className="comment-skeleton-avatar" />
+                  <div className="comment-skeleton-lines">
+                    <div className="comment-skeleton-line short" />
+                    <div className="comment-skeleton-line" />
+                  </div>
+                </div>
+              ))
+            ) : commentList.length > 0 ? (
               commentList.map((comment) =>
                 comment.comment_id === editingcommentindex ? (
                   <div
@@ -858,7 +1087,10 @@ const WatchPage = (): ReactElement => {
                         <button
                           type="button"
                           className="comment-modifying-save font-label-small"
-                          disabled={modifyingComment.length === 0}
+                          disabled={
+                            modifyingComment.length === 0 ||
+                            modifyCommentMutation.isPending
+                          }
                           onClick={() => {
                             if (editingcommentindex !== null) {
                               modifyCommentMutation.mutate({
@@ -919,6 +1151,7 @@ const WatchPage = (): ReactElement => {
                   <Button
                     label={'확인'}
                     variant={'cta-fixed'}
+                    disabled={deleteCommentMutation.isPending}
                     onClick={() => {
                       if (deletingCommentId) {
                         deleteCommentMutation.mutate(deletingCommentId);
@@ -937,15 +1170,7 @@ const WatchPage = (): ReactElement => {
       <div className="side-container">
         {!isMobile && (
           <>
-            <Webcam
-              style={WEBCAM_STYLE}
-              audio={false}
-              ref={webcamRef}
-              screenshotFormat="image/jpeg"
-              videoConstraints={webcamOptions}
-              mirrored={true}
-              screenshotQuality={0.5}
-            />
+            {renderWebcamArea()}
             <div className="emotion-container">
               <div className="emotion-title-wrapper">
                 <h4 className="emotion-title font-title-small">
@@ -1045,6 +1270,14 @@ const WatchPage = (): ReactElement => {
             이 영상은 어때요?
           </h4>
           <div className="recommend-video-container">
+            {isRelatedLoading &&
+              [0, 1, 2].map((index) => (
+                <VideoCardSkeleton
+                  key={index}
+                  width="100%"
+                  style={{ marginBottom: '24px' }}
+                />
+              ))}
             {relatedVideoList.map((v, index) => (
               <VideoItem
                 key={v.video_id || index}

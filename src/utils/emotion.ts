@@ -95,46 +95,38 @@ export const getScaledTimelineGraphData = (
 
   const graphDuration =
     Number.isFinite(duration) && duration > 0 ? duration : 100;
-  const allXValues = graphData.flatMap((series) =>
-    series.data
-      .map((point) =>
-        typeof point.x === 'number' ? point.x : Number(point.x),
-      )
-      .filter((x) => Number.isFinite(x)),
-  );
 
-  if (allXValues.length === 0) {
-    return [];
-  }
-
-  const firstX = allXValues[0];
-  if (firstX === undefined) return [];
-
-  const minGraphX = allXValues.reduce(
-    (min, v) => (v < min ? v : min),
-    firstX,
-  );
-  const maxGraphX = allXValues.reduce(
-    (max, v) => (v > max ? v : max),
-    firstX,
-  );
-  const hasXRange = maxGraphX > minGraphX;
+  // [백엔드 계약] timeline_data 의 x 는 진행률 bin 인덱스. 100분율을 의도했지만
+  // 백엔드 처리 한계로 bin 개수가 정확히 100 이 아니라 100 근처의 불특정 수다
+  // (적을 수도, 많을 수도 있음). 시청 기록이 없는 구간은 bin 이 빠질 수 있다.
+  // 분모를 max(100, 실제 최대 x) 로 잡으면:
+  //  - bin 이 100 을 넘는 영상: 마지막 bin 이 영상 끝에 정확히 붙는다
+  //  - bin 이 100 이하(끝까지 시청되지 않은 경우 포함): 100분율 근사로 배치되어
+  //    부분 시청 데이터가 전체 길이로 늘어나는 왜곡을 막는다
+  // bin k 는 영상 구간 ((k-1)..k]/G 를 대표하므로 bin "중심" (k-0.5)/G 위치에
+  // 그려야 반 bin 우측 밀림이 없다. 실제 시각(초) = (x - 0.5) / 분모 * duration.
+  // 남는 오차는 실제 bin 총수(G)가 100 에서 벗어난 만큼이며, 백엔드가 응답에
+  // bin 총수(total_bins 등)를 내려주면 분모를 그 값으로 바꿔 제거할 수 있다.
+  const maxBinX = graphData.reduce((max, series) => {
+    for (const point of series.data) {
+      const x = typeof point.x === 'number' ? point.x : Number(point.x);
+      if (Number.isFinite(x) && x > max) max = x;
+    }
+    return max;
+  }, 0);
+  const scale = graphDuration / Math.max(100, maxBinX);
 
   return graphData.map((series) => {
     let newData = series.data
-      .map((point) => {
-        const pointX =
-          typeof point.x === 'number' ? point.x : Number(point.x);
-        const rawX = Number.isFinite(pointX) ? pointX : minGraphX;
-        const scaledX = hasXRange
-          ? ((rawX - minGraphX) / (maxGraphX - minGraphX)) * graphDuration
-          : 0;
-
-        return {
-          x: Math.min(Math.max(scaledX, 0), graphDuration),
-          y: point.y,
-        };
-      })
+      .map((point) => ({
+        x: typeof point.x === 'number' ? point.x : Number(point.x),
+        y: point.y,
+      }))
+      .filter((point) => Number.isFinite(point.x))
+      .map((point) => ({
+        x: Math.min(Math.max((point.x - 0.5) * scale, 0), graphDuration),
+        y: point.y,
+      }))
       .sort((a, b) => a.x - b.x);
 
     if (newData.length === 0) {

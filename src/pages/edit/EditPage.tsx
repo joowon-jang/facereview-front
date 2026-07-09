@@ -13,13 +13,9 @@ import { updateProfile } from 'api/auth';
 import { withdraw } from 'api/mypage';
 import { mapEmotionToNumber, mapNumberToEmotion } from 'utils/index';
 import CategoryList from 'components/CategoryList/CategoryList';
-import { useIsMobile } from 'hooks/useMediaQuery';
-import useWindowSize from 'hooks/useWindowSize';
 import { useLogout } from 'hooks/useLogout';
 
 const EditPage = () => {
-  const isMobile = useIsMobile();
-  const windowWidth = useWindowSize();
   const setUserName = useAuthStorage((s) => s.setUserName);
   const setUserProfile = useAuthStorage((s) => s.setUserProfile);
   const setUserFavoriteGenres = useAuthStorage((s) => s.setUserFavoriteGenres);
@@ -42,6 +38,7 @@ const EditPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
   const [isWithdrawing, setIsWithdrawing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleColorSelect = (color: EmotionType) => {
     setSelectedColor(color);
@@ -79,6 +76,8 @@ const EditPage = () => {
   };
 
   const handleEditButtonClick = () => {
+    if (isSaving) return;
+    setIsSaving(true);
     updateProfile({
       name: nickName,
       profile_image_id: mapEmotionToNumber(committedColor),
@@ -97,7 +96,8 @@ const EditPage = () => {
       .catch((error) => {
         console.error(error);
         toast.error('회원정보 수정에 실패했어요');
-      });
+      })
+      .finally(() => setIsSaving(false));
   };
 
   const handleWithdrawClick = () => {
@@ -122,7 +122,10 @@ const EditPage = () => {
   return (
     <>
       <div className="edit-page-container">
-        <h2 className="font-title-large">프로필 편집</h2>
+        <h2 className="edit-page-title font-title-large">프로필 편집</h2>
+        <p className="edit-page-subtitle font-body-medium">
+          닉네임, 프로필 아이콘, 관심사를 바꿀 수 있어요.
+        </p>
         <div className="edit-page-user-container">
           <ProfileIcon
             type={'icon-large'}
@@ -167,7 +170,9 @@ const EditPage = () => {
           </ModalDialog>
           <div className="edit-page-edit-container">
             <div className="edit-page-input-container">
-              <label htmlFor="editNickName" className="font-title-mini edit-page-input-label">
+              <label
+                htmlFor="editNickName"
+                className="font-title-mini edit-page-input-label">
                 닉네임
               </label>
               <TextInput
@@ -175,17 +180,6 @@ const EditPage = () => {
                 value={nickName}
                 onChange={(e) => setNickName(e.target.value)}
                 placeholder={'하하호호'}
-                style={
-                  isMobile
-                    ? {
-                        width: windowWidth - 32,
-                        marginBottom: '24px',
-                      }
-                    : {
-                        width: '380px',
-                        marginBottom: '48px',
-                      }
-                }
               />
               {nickName.length < 2 && (
                 <p className="edit-page-input-alert-message font-body-large">
@@ -212,19 +206,16 @@ const EditPage = () => {
               )}
             </div>
           </div>
-        </div>
 
-        <Button
-          label="수정"
-          variant="cta-full"
-          style={
-            isMobile
-              ? { width: windowWidth - 32 }
-              : { width: '380px' }
-          }
-          disabled={nickName.length < 2 || selectedCategories.length < 1}
-          onClick={handleEditButtonClick}
-        />
+          <Button
+            label={isSaving ? '저장 중...' : '수정'}
+            variant="cta-full"
+            disabled={
+              nickName.length < 2 || selectedCategories.length < 1 || isSaving
+            }
+            onClick={handleEditButtonClick}
+          />
+        </div>
 
         <div className="edit-page-withdraw-container">
           <button

@@ -1,51 +1,15 @@
 @use 'styles/abstracts' as variables;
 
-/* ─── Animations ─── */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(24px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+/* fadeInUp keyframes / reduced-motion 은 styles/base/_motion.scss 에 전역 정의,
+   glass-card 믹스인은 styles/abstracts/_mixins.scss 공용 정의를 사용한다. */
 
 @keyframes floatBadge {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {
     transform: translateY(-2px);
-  }
-}
-
-/* ─── Reduced motion (accessibility) ─── */
-@media (prefers-reduced-motion: reduce) {
-  .my-page-container,
-  .my-page-container *,
-  .my-page-container *::before,
-  .my-page-container *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-
-/* ─── Glassmorphism Card Mixin ─── */
-@mixin glass-card {
-  background: rgba(37, 37, 47, 0.6);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 20px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2), 0 4px 16px rgba(0, 0, 0, 0.12);
-  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
-
-  &:hover {
-    border-color: rgba(255, 255, 255, 0.1);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25), 0 12px 32px rgba(0, 0, 0, 0.2);
   }
 }
 
@@ -63,7 +27,8 @@
   }
 
   @include variables.desktop {
-    padding: clamp(80px, 8vw, 120px) clamp(16px, 4vw, 48px) clamp(100px, 10vw, 160px);
+    padding: clamp(80px, 8vw, 120px) clamp(16px, 4vw, 48px)
+      clamp(100px, 10vw, 160px);
     width: 100%;
     max-width: 1200px;
     margin-inline: auto;
@@ -134,7 +99,7 @@
 
   /* ─── Profile Section (Hero Card) ─── */
   .my-page-user-container {
-    @include glass-card;
+    @include variables.glass-card;
     overflow: hidden;
     position: relative;
     animation: fadeInUp 0.6s ease-out 0.1s both;
@@ -178,7 +143,9 @@
           height: 24px;
           border-radius: 50%;
           background: variables.$primary-basic;
-          box-shadow: 0 0 0 3px variables.$bg, 0 2px 8px rgba(118, 255, 206, 0.4);
+          box-shadow:
+            0 0 0 3px variables.$bg,
+            0 2px 8px rgba(118, 255, 206, 0.4);
           color: variables.$bg;
           z-index: 2;
           animation: floatBadge 3s ease-in-out infinite;
@@ -199,7 +166,9 @@
             height: 18px;
             bottom: 0;
             right: 0;
-            box-shadow: 0 0 0 2px variables.$bg, 0 2px 6px rgba(118, 255, 206, 0.3);
+            box-shadow:
+              0 0 0 2px variables.$bg,
+              0 2px 6px rgba(118, 255, 206, 0.3);
 
             &::before {
               width: 3.5px;
@@ -296,35 +265,7 @@
       .my-page-section-header {
         display: flex;
         align-items: center;
-        gap: 12px;
         margin-bottom: 4px;
-
-        .section-icon {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          width: 36px;
-          height: 36px;
-          border-radius: 10px;
-          background: rgba(118, 255, 206, 0.1);
-          color: variables.$primary-basic;
-
-          svg {
-            width: 20px;
-            height: 20px;
-          }
-
-          @include variables.mobile {
-            width: 30px;
-            height: 30px;
-            border-radius: 8px;
-
-            svg {
-              width: 16px;
-              height: 16px;
-            }
-          }
-        }
 
         .my-page-title {
           color: variables.$gray-900;
@@ -390,7 +331,7 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        @include glass-card;
+        @include variables.glass-card;
         padding: 48px 24px;
 
         @include variables.mobile {
@@ -432,35 +373,7 @@
     .my-page-section-header {
       display: flex;
       align-items: center;
-      gap: 12px;
       margin-bottom: 4px;
-
-      .section-icon {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 36px;
-        height: 36px;
-        border-radius: 10px;
-        background: rgba(255, 152, 113, 0.1);
-        color: variables.$brand-peach;
-
-        svg {
-          width: 20px;
-          height: 20px;
-        }
-
-        @include variables.mobile {
-          width: 30px;
-          height: 30px;
-          border-radius: 8px;
-
-          svg {
-            width: 16px;
-            height: 16px;
-          }
-        }
-      }
     }
 
     .my-page-emotion-graph-container {
@@ -481,7 +394,7 @@
 
       /* ─── Donut Chart Card ─── */
       .pie-graph-card {
-        @include glass-card;
+        @include variables.glass-card;
         padding: 32px 40px;
         display: flex;
         flex-direction: column;
@@ -591,7 +504,7 @@
 
       /* ─── Emotion Time Stats Card ─── */
       .emotion-time-card {
-        @include glass-card;
+        @include variables.glass-card;
         flex: 1;
         min-width: 0;
         display: flex;
@@ -675,11 +588,21 @@
               font-variant-numeric: tabular-nums;
               flex-shrink: 0;
 
-              &.happy { color: variables.$category-joyful-basic; }
-              &.sad { color: variables.$category-sad-basic; }
-              &.surprise { color: variables.$category-surprised-basic; }
-              &.angry { color: variables.$category-angry-basic; }
-              &.neutral { color: variables.$category-neutral-basic; }
+              &.happy {
+                color: variables.$category-joyful-basic;
+              }
+              &.sad {
+                color: variables.$category-sad-basic;
+              }
+              &.surprise {
+                color: variables.$category-surprised-basic;
+              }
+              &.angry {
+                color: variables.$category-angry-basic;
+              }
+              &.neutral {
+                color: variables.$category-neutral-basic;
+              }
 
               @include variables.mobile {
                 font-size: 18px;

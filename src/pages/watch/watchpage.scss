@@ -30,7 +30,9 @@
       position: relative;
       width: 100%;
       aspect-ratio: 16 / 9;
-      overflow: hidden;
+      // 그래프 툴팁이 영상 밖으로 뻗어도 잘리지 않도록 visible.
+      // 모서리 라운딩은 iframe 자체에 준다.
+      overflow: visible;
       border-radius: 8px;
       margin-bottom: 20px;
 
@@ -43,16 +45,21 @@
         inset: 0;
         width: 100% !important;
         height: 100% !important;
+        border-radius: 8px;
       }
 
       &:hover .video-graph-container {
         opacity: 1;
+        pointer-events: auto;
       }
 
       .video-graph-container {
         position: absolute;
-        left: 3.5%;
-        right: 3.5%;
+        // 유튜브 진행바의 실측 inset 과 일치시켜 그래프 x축과 시간막대를
+        // 수직 정렬한다. 실측: 플레이어 폭 394px 이상 = 좌우 30px 고정,
+        // 393px 이하(small mode) = 좌우 12px.
+        left: 30px;
+        right: 30px;
         bottom: 17%;
         height: 16%;
         color: variables.$gray-900;
@@ -61,15 +68,54 @@
         opacity: 0;
         transition: opacity 0.2s;
         pointer-events: none;
-        overflow: hidden;
+        // 툴팁이 그래프 밴드 위로 뻗을 수 있도록 visible (라인 자체는 svg 가 클리핑)
+        overflow: visible;
+        cursor: pointer;
         z-index: 2;
 
         @include variables.mobile {
-          left: 7.3%;
-          right: 7.3%;
           bottom: 36%;
           height: 12%;
           opacity: 1;
+          pointer-events: auto;
+        }
+
+        // 모바일에서 플레이어는 100vw 이므로 뷰포트 폭 = 플레이어 폭
+        @media (max-width: 393px) {
+          left: 12px;
+          right: 12px;
+        }
+      }
+
+      .video-status-placeholder {
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        background-color: #1a1a2e;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
+        border-radius: 8px;
+
+        .video-status-text {
+          color: variables.$gray-700;
+        }
+
+        .video-retry-button {
+          padding: 10px 24px;
+          border: none;
+          border-radius: 8px;
+          background: variables.$gray-80;
+          color: variables.$gray-900;
+          cursor: pointer;
+          font-family: inherit;
+
+          @media (hover: hover) and (pointer: fine) {
+            &:hover {
+              background: variables.$gray-100;
+            }
+          }
         }
       }
     }
@@ -145,10 +191,12 @@
         padding-bottom: 32px;
 
         .emotion-container {
+          @include variables.glass-card(16px);
+          padding: 20px;
           display: flex;
           width: 100%;
           flex-direction: column;
-          margin-bottom: 48px;
+          margin-bottom: 24px;
 
           .emotion-title-wrapper {
             display: flex;
@@ -399,6 +447,46 @@
         .no-comments-text {
           color: variables.$gray-600;
         }
+
+        .comment-skeleton {
+          display: flex;
+          align-items: flex-start;
+          margin-bottom: 24px;
+
+          .comment-skeleton-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            margin-right: 12px;
+            flex-shrink: 0;
+            background: variables.$gray-80;
+          }
+
+          .comment-skeleton-lines {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding-top: 4px;
+
+            .comment-skeleton-line {
+              height: 12px;
+              border-radius: 4px;
+              background: linear-gradient(
+                110deg,
+                variables.$gray-80 8%,
+                #3c3c4b 18%,
+                variables.$gray-80 33%
+              );
+              background-size: 200% 100%;
+              animation: watch-skeleton-shine 1.5s linear infinite;
+
+              &.short {
+                width: 30%;
+              }
+            }
+          }
+        }
       }
     }
   }
@@ -414,7 +502,9 @@
     }
 
     .emotion-container {
-      margin-bottom: 48px;
+      @include variables.glass-card(16px);
+      padding: 20px;
+      margin-bottom: 24px;
 
       .emotion-title-wrapper {
         display: flex;
@@ -470,9 +560,10 @@
       @include variables.mobile {
         width: 100%;
       }
+
       .recommend-title {
         color: variables.$gray-900;
-        margin-bottom: 32px;
+        margin-bottom: 24px;
       }
 
       .recommend-video-container {
@@ -613,6 +704,94 @@
     display: flex;
     width: 100%;
     justify-content: space-between;
+  }
+}
+
+// 웹캠 자리 표시 (비로그인 안내 / 카메라 오류)
+.webcam-placeholder-container {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  padding: 16px;
+  background: variables.$gray-80;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  text-align: center;
+
+  .webcam-placeholder-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: variables.$gray-500;
+  }
+
+  .webcam-placeholder-text {
+    color: variables.$gray-700;
+    word-break: keep-all;
+    line-height: 1.5;
+  }
+
+  .webcam-placeholder-button {
+    padding: 8px 20px;
+    border: none;
+    border-radius: 8px;
+    background: variables.$primary-basic;
+    color: variables.$bg;
+    cursor: pointer;
+    font-family: inherit;
+
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        background: #5df0bf;
+      }
+    }
+  }
+}
+
+// 타임라인 그래프 슬라이스 툴팁
+.timeline-tooltip {
+  background: variables.$gray-80;
+  border-radius: 8px;
+  padding: 8px 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  white-space: nowrap;
+
+  .timeline-tooltip-time {
+    color: variables.$gray-900;
+    margin-bottom: 6px;
+  }
+
+  .timeline-tooltip-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+
+    .timeline-tooltip-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .timeline-tooltip-label {
+      color: variables.$gray-800;
+    }
+  }
+
+  .timeline-tooltip-hint {
+    margin-top: 6px;
+    color: variables.$gray-500;
+  }
+}
+
+@keyframes watch-skeleton-shine {
+  to {
+    background-position-x: -200%;
   }
 }
 
