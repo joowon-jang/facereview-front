@@ -107,6 +107,64 @@ const createInitialEmotionGraphData = (graphId: string) => [
   ),
 ];
 
+// 실시간 감정 패널 (제목 + 막대 그래프 + 감정별 상세).
+// 모바일/데스크톱 × 나/다른 사람들 4곳에서 동일 마크업을 공유한다.
+const EmotionPanel = ({
+  title,
+  graphData,
+  mostEmotion,
+}: {
+  title: string;
+  graphData: Record<string, string | number>[];
+  mostEmotion: EmotionType;
+}): ReactElement => (
+  <div className="emotion-container">
+    <div className="emotion-title-wrapper">
+      <h4 className="emotion-title font-title-small">{title}</h4>
+      <EmotionBadge type="big" emotion={mostEmotion} />
+    </div>
+    <div className="graph-container">
+      <ResponsiveBar
+        data={graphData}
+        keys={EMOTIONS as unknown as string[]}
+        indexBy="id"
+        padding={0.3}
+        layout="horizontal"
+        valueScale={{ type: 'linear' }}
+        indexScale={{ type: 'band', round: true }}
+        colors={BAR_CHART_COLORS}
+        borderColor={BAR_CHART_BORDER_COLOR}
+        axisTop={null}
+        axisRight={null}
+        axisBottom={null}
+        axisLeft={null}
+        enableGridY={false}
+        enableLabel={false}
+        labelSkipWidth={12}
+        labelSkipHeight={12}
+        labelTextColor={BAR_CHART_LABEL_TEXT_COLOR}
+        margin={BAR_CHART_MARGIN}
+        legends={[]}
+        role="application"
+        ariaLabel={`${title} 차트`}
+        barAriaLabel={(e) => `${e.id}: ${e.formattedValue}%`}
+        tooltip={() => null}
+      />
+    </div>
+    <div className="graph-detail-container">
+      {EMOTION_BY_EMOTION_TEXT.map((e) => (
+        <GraphDetailDataItem
+          key={e.emotion}
+          graphData={graphData}
+          emotion={e.emotion}
+          emotionText={e.emotionText}
+          mostEmotion={mostEmotion}
+        />
+      ))}
+    </div>
+  </div>
+);
+
 const formatSecondsToClock = (seconds: number): string => {
   const total = Math.max(0, Math.floor(seconds));
   const minutes = Math.floor(total / 60);
@@ -783,100 +841,16 @@ const WatchPage = (): ReactElement => {
     return (
       <div className="watch-page-cam-container">
         {renderWebcamArea()}
-        <div className="emotion-container">
-          <div className="emotion-title-wrapper">
-            <h4 className="emotion-title font-title-small">실시간 나의 감정</h4>
-            <EmotionBadge type="big" emotion={currentMyEmotion} />
-          </div>
-          <div className="graph-container">
-            <ResponsiveBar
-              data={myGraphData}
-              keys={EMOTIONS as unknown as string[]}
-              indexBy="id"
-              padding={0.3}
-              layout="horizontal"
-              valueScale={{ type: 'linear' }}
-              indexScale={{ type: 'band', round: true }}
-              colors={BAR_CHART_COLORS}
-              borderColor={BAR_CHART_BORDER_COLOR}
-              axisTop={null}
-              axisRight={null}
-              axisBottom={null}
-              axisLeft={null}
-              enableGridY={false}
-              enableLabel={false}
-              labelSkipWidth={12}
-              labelSkipHeight={12}
-              labelTextColor={BAR_CHART_LABEL_TEXT_COLOR}
-              margin={BAR_CHART_MARGIN}
-              legends={[]}
-              role="application"
-              ariaLabel="실시간 감정 분석 차트"
-              barAriaLabel={(e) => `${e.id}: ${e.formattedValue}%`}
-              tooltip={() => null}
-            />
-          </div>
-
-          <div className="graph-detail-container">
-            {EMOTION_BY_EMOTION_TEXT.map((e) => (
-              <GraphDetailDataItem
-                key={e.emotion}
-                graphData={myGraphData}
-                emotion={e.emotion}
-                emotionText={e.emotionText}
-                mostEmotion={currentMyEmotion}
-              />
-            ))}
-          </div>
-        </div>
-        <div className="emotion-container">
-          <div className="emotion-title-wrapper">
-            <h4 className="emotion-title font-title-small">
-              실시간 다른 사람들의 감정
-            </h4>
-            <EmotionBadge type="big" emotion={currentOthersEmotion} />
-          </div>
-
-          <div className="graph-container">
-            <ResponsiveBar
-              data={othersGraphData}
-              keys={EMOTIONS as unknown as string[]}
-              indexBy="id"
-              padding={0.3}
-              layout="horizontal"
-              valueScale={{ type: 'linear' }}
-              indexScale={{ type: 'band', round: true }}
-              colors={BAR_CHART_COLORS}
-              borderColor={BAR_CHART_BORDER_COLOR}
-              axisTop={null}
-              axisRight={null}
-              axisBottom={null}
-              axisLeft={null}
-              enableGridY={false}
-              enableLabel={false}
-              labelSkipWidth={12}
-              labelSkipHeight={12}
-              labelTextColor={BAR_CHART_LABEL_TEXT_COLOR}
-              margin={BAR_CHART_MARGIN}
-              legends={[]}
-              role="application"
-              ariaLabel="실시간 감정 분석 차트"
-              barAriaLabel={(e) => `${e.id}: ${e.formattedValue}%`}
-              tooltip={() => null}
-            />
-          </div>
-          <div className="graph-detail-container">
-            {EMOTION_BY_EMOTION_TEXT.map((e) => (
-              <GraphDetailDataItem
-                key={e.emotion}
-                graphData={othersGraphData}
-                emotion={e.emotion}
-                emotionText={e.emotionText}
-                mostEmotion={currentOthersEmotion}
-              />
-            ))}
-          </div>
-        </div>
+        <EmotionPanel
+          title="실시간 나의 감정"
+          graphData={myGraphData}
+          mostEmotion={currentMyEmotion}
+        />
+        <EmotionPanel
+          title="실시간 다른 사람들의 감정"
+          graphData={othersGraphData}
+          mostEmotion={currentOthersEmotion}
+        />
       </div>
     );
   };
@@ -1229,100 +1203,16 @@ const WatchPage = (): ReactElement => {
         {!isMobile && (
           <>
             {renderWebcamArea()}
-            <div className="emotion-container">
-              <div className="emotion-title-wrapper">
-                <h4 className="emotion-title font-title-small">
-                  실시간 나의 감정
-                </h4>
-                <EmotionBadge type="big" emotion={currentMyEmotion} />
-              </div>
-              <div className="graph-container">
-                <ResponsiveBar
-                  data={myGraphData}
-                  keys={EMOTIONS as unknown as string[]}
-                  indexBy="id"
-                  padding={0.3}
-                  layout="horizontal"
-                  valueScale={{ type: 'linear' }}
-                  indexScale={{ type: 'band', round: true }}
-                  colors={BAR_CHART_COLORS}
-                  borderColor={BAR_CHART_BORDER_COLOR}
-                  axisTop={null}
-                  axisRight={null}
-                  axisBottom={null}
-                  axisLeft={null}
-                  enableGridY={false}
-                  enableLabel={false}
-                  labelSkipWidth={12}
-                  labelSkipHeight={12}
-                  labelTextColor={BAR_CHART_LABEL_TEXT_COLOR}
-                  margin={BAR_CHART_MARGIN}
-                  legends={[]}
-                  role="application"
-                  ariaLabel="실시간 감정 분석 차트"
-                  barAriaLabel={(e) => `${e.id}: ${e.formattedValue}%`}
-                  tooltip={() => null}
-                />
-              </div>
-              <div className="graph-detail-container">
-                {EMOTION_BY_EMOTION_TEXT.map((e) => (
-                  <GraphDetailDataItem
-                    key={e.emotion}
-                    graphData={myGraphData}
-                    emotion={e.emotion}
-                    emotionText={e.emotionText}
-                    mostEmotion={currentMyEmotion}
-                  />
-                ))}
-              </div>
-            </div>
-            <div className="emotion-container">
-              <div className="emotion-title-wrapper">
-                <h4 className="emotion-title font-title-small">
-                  실시간 다른 사람들의 감정
-                </h4>
-                <EmotionBadge type="big" emotion={currentOthersEmotion} />
-              </div>
-              <div className="graph-container">
-                <ResponsiveBar
-                  data={othersGraphData}
-                  keys={EMOTIONS as unknown as string[]}
-                  indexBy="id"
-                  padding={0.3}
-                  layout="horizontal"
-                  valueScale={{ type: 'linear' }}
-                  indexScale={{ type: 'band', round: true }}
-                  colors={BAR_CHART_COLORS}
-                  borderColor={BAR_CHART_BORDER_COLOR}
-                  axisTop={null}
-                  axisRight={null}
-                  axisBottom={null}
-                  axisLeft={null}
-                  enableGridY={false}
-                  enableLabel={false}
-                  labelSkipWidth={12}
-                  labelSkipHeight={12}
-                  labelTextColor={BAR_CHART_LABEL_TEXT_COLOR}
-                  margin={BAR_CHART_MARGIN}
-                  legends={[]}
-                  role="application"
-                  ariaLabel="실시간 감정 분석 차트"
-                  barAriaLabel={(e) => `${e.id}: ${e.formattedValue}%`}
-                  tooltip={() => null}
-                />
-              </div>
-              <div className="graph-detail-container">
-                {EMOTION_BY_EMOTION_TEXT.map((e) => (
-                  <GraphDetailDataItem
-                    key={e.emotion}
-                    graphData={othersGraphData}
-                    emotion={e.emotion}
-                    emotionText={e.emotionText}
-                    mostEmotion={currentOthersEmotion}
-                  />
-                ))}
-              </div>
-            </div>
+            <EmotionPanel
+              title="실시간 나의 감정"
+              graphData={myGraphData}
+              mostEmotion={currentMyEmotion}
+            />
+            <EmotionPanel
+              title="실시간 다른 사람들의 감정"
+              graphData={othersGraphData}
+              mostEmotion={currentOthersEmotion}
+            />
           </>
         )}
         <div className="recommend-container">
