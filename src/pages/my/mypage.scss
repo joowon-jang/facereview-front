@@ -1,38 +1,26 @@
 @use 'styles/abstracts' as variables;
 
-/* fadeInUp keyframes / reduced-motion 은 styles/base/_motion.scss 에 전역 정의,
-   glass-card 믹스인은 styles/abstracts/_mixins.scss 공용 정의를 사용한다. */
-
-@keyframes floatBadge {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-2px);
-  }
-}
+/* fadeInUp keyframes / reduced-motion 은 styles/base/_motion.scss 에 전역 정의 */
 
 /* ─── My Page Container ─── */
 .my-page-container {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
-  animation: fadeInUp 0.6s ease-out;
+  min-height: 100%;
+  width: 100%;
+  max-width: variables.$layout-max-width;
+  margin-inline: auto;
+  box-sizing: border-box;
+  animation: fadeInUp 0.5s ease-out;
+  padding: 20px 0 80px;
+  gap: 0;
 
-  @include variables.mobile {
-    width: 100%;
-    padding: 80px 16px 120px;
-    gap: 24px;
+  @include variables.tablet {
+    padding: 16px 0 64px;
   }
 
-  @include variables.desktop {
-    padding: clamp(80px, 8vw, 120px) clamp(16px, 4vw, 48px)
-      clamp(100px, 10vw, 160px);
-    width: 100%;
-    max-width: 1200px;
-    margin-inline: auto;
-    gap: clamp(24px, 3vw, 32px);
+  @include variables.mobile {
+    padding: 12px 0 56px;
   }
 
   /* ─── Email Verification Banner ─── */
@@ -40,20 +28,14 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: rgba(variables.$brand-peach, 0.1);
-    border: 1px solid rgba(255, 152, 113, 0.2);
-    border-radius: 12px;
-    padding: 10px 16px;
-    animation: fadeInUp 0.5s ease-out;
-    transition: all 0.3s ease;
-
-    &:hover {
-      background: rgba(variables.$brand-peach, 0.15);
-      border-color: rgba(255, 152, 113, 0.35);
-    }
+    background: rgba(255, 152, 0, 0.1);
+    border: none;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 28px;
 
     .banner-text {
-      color: variables.$brand-peach;
+      color: #ffb74d;
       font-size: 13px;
       font-weight: 500;
       line-height: 1.4;
@@ -63,54 +45,58 @@
       color: #fff;
       font-size: 12px;
       font-weight: 600;
-      background: variables.$brand-coral;
-      padding: 5px 14px;
-      border-radius: 8px;
+      background: #ff9800;
+      padding: 6px 14px;
+      border-radius: 6px;
       margin-left: 16px;
       flex-shrink: 0;
       cursor: pointer;
       border: none;
-      transition: all 0.25s ease;
 
       &:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 2px 8px rgba(255, 152, 113, 0.3);
+        background: #f57c00;
       }
 
-      &:active {
-        transform: translateY(0);
+      &:focus-visible {
+        outline: 2px solid #ffb74d;
+        outline-offset: 2px;
       }
     }
 
     @include variables.mobile {
-      padding: 10px 14px;
-      border-radius: 10px;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 14px;
+      margin-bottom: 22px;
 
       .banner-text {
         font-size: 12px;
       }
 
       .banner-action {
-        padding: 5px 12px;
-        font-size: 11px;
+        margin-left: 0;
+        width: 100%;
+        text-align: center;
+        padding: 8px 14px;
       }
     }
   }
 
-  /* ─── Profile Section (Hero Card) ─── */
+  /* ─── Profile Section (열린 히어로 — 카드 없음) ─── */
   .my-page-user-container {
-    @include variables.glass-card;
-    overflow: hidden;
     position: relative;
-    animation: fadeInUp 0.6s ease-out 0.1s both;
+    animation: fadeInUp 0.5s ease-out 0.05s both;
+    padding: 8px 0 28px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid variables.$gray-80;
 
     @include variables.mobile {
-      padding: 24px;
-      border-radius: 16px;
+      padding: 4px 0 22px;
     }
 
     @include variables.desktop {
-      padding: 32px 40px;
+      padding: 12px 0 32px;
     }
 
     .my-page-user-info-container {
@@ -143,12 +129,9 @@
           height: 24px;
           border-radius: 50%;
           background: variables.$primary-basic;
-          box-shadow:
-            0 0 0 3px variables.$bg,
-            0 2px 8px rgba(118, 255, 206, 0.4);
+          box-shadow: 0 0 0 3px variables.$bg;
           color: variables.$bg;
           z-index: 2;
-          animation: floatBadge 3s ease-in-out infinite;
 
           &::before {
             content: '';
@@ -166,9 +149,7 @@
             height: 18px;
             bottom: 0;
             right: 0;
-            box-shadow:
-              0 0 0 2px variables.$bg,
-              0 2px 6px rgba(118, 255, 206, 0.3);
+            box-shadow: 0 0 0 2px variables.$bg;
 
             &::before {
               width: 3.5px;
@@ -216,7 +197,7 @@
 
           h3 {
             color: variables.$gray-400;
-            margin-top: 4px;
+            margin: 2px 0 0;
             font-weight: 400;
           }
         }
@@ -232,11 +213,10 @@
       }
     }
 
-    /* Mobile action buttons row */
     .my-page-mobile-actions {
       display: flex;
       gap: 8px;
-      margin-top: 20px;
+      margin-top: 18px;
 
       button {
         flex: 1;
@@ -248,14 +228,13 @@
   .my-page-watched-contents-container {
     display: flex;
     flex-direction: column;
-    animation: fadeInUp 0.6s ease-out 0.2s both;
+    animation: fadeInUp 0.5s ease-out 0.1s both;
+    padding: 28px 0 32px;
+    border-bottom: 1px solid variables.$gray-80;
+    margin-bottom: 8px;
 
     @include variables.mobile {
-      margin-top: 8px;
-    }
-
-    @include variables.desktop {
-      margin-top: 8px;
+      padding: 22px 0 24px;
     }
 
     .my-page-watched-title-container {
@@ -269,6 +248,7 @@
 
         .my-page-title {
           color: variables.$gray-900;
+          margin: 0;
         }
       }
 
@@ -288,11 +268,11 @@
           white-space: nowrap;
 
           @include variables.mobile {
-            padding: 16px 0 14px;
+            padding: 14px 0 12px;
           }
 
           @include variables.desktop {
-            padding: 20px 0 16px;
+            padding: 16px 0 14px;
           }
         }
       }
@@ -307,21 +287,71 @@
         padding-top: 8px;
       }
 
+      // 최근 본 영상 로딩 스켈레톤 (캐러셀 slidesPerView=3 과 동일 열)
+      .my-page-recent-skeleton {
+        display: grid;
+        width: 100%;
+        gap: 16px;
+        padding-top: 8px;
+        grid-template-columns: 1fr;
+
+        @include variables.desktop {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        @media (min-width: 1100px) {
+          grid-template-columns: repeat(3, 1fr);
+        }
+      }
+
+      // VideoItem + 감정 라인 그래프를 하나의 카드 덩어리로
       .recent-video-item {
         width: 100%;
+        background: variables.$gray-50;
+        border-radius: 8px;
+        overflow: hidden;
+
+        // 중첩 카드 느낌 제거 — 부모 면이 단일 카드 역할
+        .video-item-container {
+          border-radius: 0;
+
+          // 카드 단위 hover 스케일이 그래프와 어긋나지 않게
+          &:hover {
+            transform: none;
+            box-shadow: none;
+          }
+        }
 
         .video-graph-container {
           width: 100%;
-          height: 100px;
-          padding: 4px;
-          background: variables.$gray-50;
-          border-radius: 12px;
-          margin-top: 10px;
-          border: 1px solid rgba(255, 255, 255, 0.04);
-          transition: border-color 0.3s ease;
+          height: 96px;
+          padding: 0 10px 14px;
+          margin-top: 0;
+          background: transparent;
+          box-sizing: border-box;
+        }
 
-          &:hover {
-            border-color: rgba(118, 255, 206, 0.12);
+        &--skeleton {
+          .video-card-skeleton {
+            .info-skeleton {
+              // 카드 면이 이미 gray-50 — 스켈레톤 info 배경 이중 처리 방지
+              background: transparent;
+            }
+          }
+
+          .video-graph-skeleton {
+            margin: 0 10px 14px;
+            padding: 0;
+            height: 72px;
+            border-radius: 6px;
+            background: linear-gradient(
+              90deg,
+              variables.$gray-80 0%,
+              variables.$gray-100 40%,
+              variables.$gray-80 80%
+            );
+            background-size: 200% 100%;
+            animation: myPageSkeletonShimmer 1.4s ease-in-out infinite;
           }
         }
       }
@@ -331,11 +361,13 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        @include variables.glass-card;
         padding: 48px 24px;
+        border: 1px dashed variables.$gray-100;
+        border-radius: 10px;
 
         @include variables.mobile {
           width: 100%;
+          padding: 36px 20px;
         }
 
         @include variables.desktop {
@@ -343,8 +375,7 @@
         }
 
         .my-page-video-empty-img {
-          opacity: 0.6;
-          transition: opacity 0.3s ease;
+          opacity: 0.55;
 
           @include variables.mobile {
             width: 72px;
@@ -361,6 +392,7 @@
 
         p {
           color: variables.$gray-400;
+          margin: 0;
         }
       }
     }
@@ -368,81 +400,165 @@
 
   /* ─── Emotion Graph Section ─── */
   .my-page-emotion-container {
-    animation: fadeInUp 0.6s ease-out 0.3s both;
+    animation: fadeInUp 0.5s ease-out 0.15s both;
+    padding: 28px 0 0;
+
+    @include variables.mobile {
+      padding: 22px 0 0;
+    }
 
     .my-page-section-header {
       display: flex;
       align-items: center;
       margin-bottom: 4px;
+
+      h2 {
+        margin: 0;
+        color: variables.$gray-900;
+      }
     }
 
     .my-page-emotion-graph-container {
       display: flex;
-      margin-top: 20px;
+      margin-top: 24px;
       gap: 0;
 
       @include variables.desktop {
         flex-direction: row;
-        gap: clamp(16px, 2vw, 24px);
+        gap: 40px;
+        align-items: center;
       }
 
       @include variables.mobile {
         flex-direction: column;
         gap: 24px;
-        align-items: center;
+        align-items: stretch;
       }
 
-      /* ─── Donut Chart Card ─── */
+      // 감정 그래프 로딩 — 0% / 0초 깜빡임 방지
+      .my-page-emotion-skeleton {
+        display: flex;
+        width: 100%;
+        gap: 40px;
+        align-items: center;
+
+        @include variables.mobile {
+          flex-direction: column;
+          gap: 24px;
+        }
+
+        .emotion-skeleton-donut {
+          flex-shrink: 0;
+          width: min(220px, 56vw);
+          aspect-ratio: 1;
+          border-radius: 50%;
+          background: radial-gradient(
+            circle,
+            transparent 0 36%,
+            variables.$gray-80 37% 48%,
+            transparent 49%
+          );
+          animation: myPageSkeletonShimmer 1.4s ease-in-out infinite;
+          background-size: 200% 100%;
+
+          @include variables.mobile {
+            width: min(200px, 56vw);
+          }
+        }
+
+        .emotion-skeleton-stats {
+          flex: 1;
+          width: 100%;
+          min-width: 0;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+
+          .emotion-skeleton-row {
+            height: 44px;
+            border-radius: 6px;
+            background: linear-gradient(
+              90deg,
+              variables.$gray-80 0%,
+              variables.$gray-100 40%,
+              variables.$gray-80 80%
+            );
+            background-size: 200% 100%;
+            animation: myPageSkeletonShimmer 1.4s ease-in-out infinite;
+          }
+        }
+      }
+
+      /* ─── Donut + 범례 ─── */
       .pie-graph-card {
-        @include variables.glass-card;
-        padding: 32px 40px;
+        padding: 0;
         display: flex;
         flex-direction: column;
         align-items: center;
+        background: transparent;
 
         @include variables.desktop {
-          flex: 0 0 clamp(260px, 32%, 380px);
+          flex: 0 0 clamp(220px, 28%, 300px);
         }
 
         @include variables.mobile {
           width: 100%;
-          padding: 24px;
-          border-radius: 16px;
         }
 
         .pie-chart-wrapper {
           position: relative;
-          width: min(260px, 60vw);
+          width: min(220px, 56vw);
           aspect-ratio: 1;
+          // 중앙 텍스트를 차트 실측 크기에 연동 (cqmin)
+          container-type: size;
 
           @include variables.mobile {
-            width: min(220px, 60vw);
+            width: min(200px, 56vw);
           }
 
+          // 도넛 구멍(innerRadius 0.72) 안 — 초 단위까지 전체 표기
+          // 폰트: vw 폴백 + 지원 시 cqmin 으로 차트 실측 연동
           .pie-center-label {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
+            width: 54%;
+            max-width: 118px;
             text-align: center;
             pointer-events: none;
+            box-sizing: border-box;
 
             .pie-center-title {
-              font-size: 13px;
+              font-size: clamp(10px, 2.8vw, 13px);
+              font-size: clamp(10px, 6.5cqmin, 13px);
               font-weight: 500;
               color: variables.$gray-400;
-              margin-bottom: 4px;
+              margin-bottom: 0.2em;
+              line-height: 1.2;
             }
 
             .pie-center-value {
-              font-size: 28px;
+              font-size: clamp(12px, 4.2vw, 20px);
+              font-size: clamp(12px, 10cqmin, 20px);
               font-weight: 700;
               letter-spacing: -0.02em;
               font-variant-numeric: tabular-nums;
               color: variables.$gray-900;
+              line-height: 1.3;
+              word-break: keep-all;
+              overflow-wrap: break-word;
+              white-space: normal;
 
-              @include variables.mobile {
-                font-size: 24px;
+              &.is-mid {
+                font-size: clamp(11px, 3.4vw, 16px);
+                font-size: clamp(11px, 8cqmin, 16px);
+              }
+
+              &.is-long {
+                font-size: clamp(10px, 2.8vw, 13px);
+                font-size: clamp(10px, 6.5cqmin, 13px);
+                line-height: 1.35;
               }
             }
           }
@@ -452,13 +568,13 @@
           display: flex;
           flex-wrap: wrap;
           justify-content: center;
-          gap: 12px 24px;
-          margin-top: 24px;
+          gap: 10px 16px;
+          margin-top: 16px;
           width: 100%;
 
           @include variables.mobile {
-            gap: 10px 20px;
-            margin-top: 20px;
+            gap: 8px 14px;
+            margin-top: 14px;
           }
 
           .legend-item-wrapper {
@@ -467,9 +583,9 @@
             gap: 8px;
 
             .legend-item-color {
-              width: 10px;
-              height: 10px;
-              border-radius: 3px;
+              width: 8px;
+              height: 8px;
+              border-radius: 2px;
 
               &.happy {
                 background: variables.$category-joyful-basic;
@@ -497,73 +613,63 @@
               font-size: 14px;
               font-weight: 600;
               color: variables.$gray-800;
+              font-variant-numeric: tabular-nums;
             }
           }
         }
       }
 
-      /* ─── Emotion Time Stats Card ─── */
+      /* ─── Emotion Time Stats ─── */
       .emotion-time-card {
-        @include variables.glass-card;
         flex: 1;
         min-width: 0;
         display: flex;
         flex-direction: column;
         justify-content: center;
-        padding: 32px 40px;
+        padding: 0;
 
         @include variables.mobile {
           width: 100%;
-          padding: 24px;
-          border-radius: 16px;
         }
 
         .emotion-time-title {
           color: variables.$gray-900;
-          margin-bottom: 28px;
-          font-size: 26px;
-          font-weight: 700;
-          line-height: 1.4;
+          margin: 0 0 12px;
+          font-size: 16px;
+          font-weight: 600;
+          line-height: 1.35;
 
           @include variables.mobile {
-            font-size: 22px;
-            margin-bottom: 24px;
-            text-align: center;
+            font-size: 15px;
+            margin-bottom: 10px;
           }
         }
 
         .emotion-stats-grid {
           display: flex;
           flex-direction: column;
-          gap: 16px;
-
-          @include variables.mobile {
-            gap: 12px;
-          }
+          gap: 0;
 
           .emotion-stat-row {
             display: flex;
             align-items: center;
-            gap: 16px;
-            padding: 12px 16px;
-            border-radius: 12px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.04);
-            transition: all 0.25s ease;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid variables.$gray-80;
+            background: transparent;
+            border-radius: 0;
 
-            &:hover {
-              background: rgba(255, 255, 255, 0.06);
-              border-color: rgba(255, 255, 255, 0.08);
-              transform: translateX(2px);
+            &:first-child {
+              border-top: 1px solid variables.$gray-80;
             }
 
             @include variables.mobile {
-              padding: 10px 14px;
-              gap: 12px;
+              padding: 11px 0;
+              gap: 10px;
             }
 
             .stat-emoji {
-              font-size: 24px;
+              font-size: 22px;
               flex-shrink: 0;
 
               @include variables.mobile {
@@ -583,7 +689,7 @@
             }
 
             .stat-value {
-              font-size: 20px;
+              font-size: 18px;
               font-weight: 700;
               font-variant-numeric: tabular-nums;
               flex-shrink: 0;
@@ -605,19 +711,22 @@
               }
 
               @include variables.mobile {
-                font-size: 18px;
+                font-size: 16px;
               }
-            }
-
-            .stat-unit {
-              font-size: 13px;
-              color: variables.$gray-400;
-              flex-shrink: 0;
             }
           }
         }
       }
     }
+  }
+}
+
+@keyframes myPageSkeletonShimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
   }
 }
 

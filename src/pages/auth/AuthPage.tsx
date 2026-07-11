@@ -245,24 +245,6 @@ const AuthPage = () => {
   const categoryAlertMessage =
     categories.length < 1 ? '최소 1개의 카테고리를 선택해주세요' : ' ';
 
-  const headingTitle =
-    currentStep === 1
-      ? '이메일로 시작해요'
-      : currentStep === 2
-        ? isSignIn
-          ? '다시 만나서 반가워요'
-          : '비밀번호를 만들어주세요'
-        : '거의 다 왔어요';
-
-  const headingSubtitle =
-    currentStep === 1
-      ? '가입된 이메일이면 로그인, 처음이면 회원가입으로 이어져요.'
-      : currentStep === 2
-        ? isSignIn
-          ? '비밀번호를 입력하면 바로 이어서 볼 수 있어요.'
-          : '최소 8자의 비밀번호를 두 번 입력해주세요.'
-        : '닉네임과 관심 카테고리를 알려주시면 추천이 시작돼요.';
-
   return (
     <>
       <Seo
@@ -278,141 +260,134 @@ const AuthPage = () => {
         path={`/auth/${currentStep}`}
       />
       <div className="auth-container">
-        <div className="auth-card">
-          <div className="logo-wrapper">
-            <Link to="/" aria-label="홈으로 이동">
-              <AnimatedLogo
-                animationType="once"
-                animatedWrapperWidth={73}
-                gap={7}
-                style={{ height: '84px' }}
-              />
-            </Link>
-          </div>
+        <StepIndicator step={isSingInSuccess ? 3 : currentStep} maxStep={3} />
 
-          <StepIndicator step={isSingInSuccess ? 3 : currentStep} maxStep={3} />
-
-          <div className="auth-heading">
-            <h1 className="auth-title font-title-medium">{headingTitle}</h1>
-            <p className="auth-subtitle font-body-medium">{headingSubtitle}</p>
-          </div>
-
-          <form
-            className="input-container"
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleSubmitButtonClick();
-            }}>
-            {currentStep !== 3 ? (
-              <div className="input-item-container">
-                <label
-                  htmlFor="authEmail"
-                  className="input-label font-title-mini">
-                  이메일 주소
-                </label>
-                <TextInput
-                  ref={emailInputRef}
-                  id="authEmail"
-                  value={email}
-                  onChange={(e) => handleEmailChange(e.target.value)}
-                  placeholder="ex) haha@facereview.com"
-                  autoFocus={true}
-                  disabled={currentStep > 1}
-                />
-                <p className="input-alert-message font-body-large">
-                  {emailAlertMessage}
-                </p>
-              </div>
-            ) : null}
-
-            {currentStep === 2 ? (
-              <div className="input-item-container">
-                <label
-                  htmlFor="authPassword"
-                  className="input-label font-title-mini">
-                  비밀번호
-                </label>
-                <TextInput
-                  ref={passwordInputRef}
-                  id="authPassword"
-                  type="password"
-                  value={password}
-                  onChange={(e) => handlePasswordChange(e.target.value)}
-                  placeholder="최소 8자의 비밀번호를 입력해주세요"
-                  maxLength={60}
-                />
-                <p className="input-alert-message font-body-large">
-                  {passwordAlertMessage}
-                </p>
-              </div>
-            ) : null}
-            {currentStep === 2 && !isSignIn ? (
-              <div className="input-item-container">
-                <label
-                  htmlFor="authPasswordConfirm"
-                  className="input-label font-title-mini">
-                  비밀번호 확인
-                </label>
-                <TextInput
-                  id="authPasswordConfirm"
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => handleConfirmPasswordChange(e.target.value)}
-                  placeholder="비밀번호를 다시 한 번 입력해주세요"
-                  maxLength={60}
-                />
-                <p className="input-alert-message font-body-large">
-                  {confirmPasswordAlertMessage}
-                </p>
-              </div>
-            ) : null}
-            {currentStep === 3 && !isSignIn ? (
-              <>
-                <div className="input-item-container">
-                  <label
-                    htmlFor="authNickname"
-                    className="input-label font-title-mini">
-                    닉네임
-                  </label>
-                  <TextInput
-                    ref={nicknameInputRef}
-                    id="authNickname"
-                    value={nickname}
-                    onChange={(e) => handleNicknameChange(e.target.value)}
-                    placeholder="최소 2자의 닉네임을 입력해주세요"
-                    maxLength={60}
-                  />
-                  <p className="input-alert-message font-body-large">
-                    {nicknameAlertMessage}
-                  </p>
-                </div>
-                <div className="input-item-container">
-                  <label
-                    htmlFor="authCategory"
-                    className="input-label font-title-mini">
-                    관심 카테고리 (필수)
-                  </label>
-                  <div className="category-wrapper">
-                    <CategoryList
-                      selected={categories}
-                      onChange={setCategories}
-                    />
-                  </div>
-                  <p className="input-alert-message font-body-large">
-                    {categoryAlertMessage}
-                  </p>
-                </div>
-              </>
-            ) : null}
-            <Button
-              label={isSubmitting ? '확인 중...' : getConfirmButtonLabel()}
-              variant="cta-full"
-              type="submit"
-              style={{ marginTop: '24px' }}
-              disabled={!isConfirmButtonVisible() || isSubmitting}
+        <div className="logo-wrapper">
+          <Link to="/" aria-label="홈으로 이동">
+            <AnimatedLogo
+              animationType="once"
+              animatedWrapperWidth={73}
+              gap={7}
+              style={{ height: '84px' }}
             />
-          </form>
+          </Link>
         </div>
+
+        <form
+          className="input-container"
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSubmitButtonClick();
+          }}>
+          {currentStep !== 3 ? (
+            <div className="input-item-container">
+              <label
+                htmlFor="authEmail"
+                className="input-label font-title-mini">
+                이메일 주소
+              </label>
+              <TextInput
+                ref={emailInputRef}
+                id="authEmail"
+                value={email}
+                onChange={(e) => handleEmailChange(e.target.value)}
+                placeholder="ex) haha@facereview.com"
+                autoFocus={true}
+                disabled={currentStep > 1}
+              />
+              <p className="input-alert-message font-body-large">
+                {emailAlertMessage}
+              </p>
+            </div>
+          ) : null}
+
+          {currentStep === 2 ? (
+            <div className="input-item-container">
+              <label
+                htmlFor="authPassword"
+                className="input-label font-title-mini">
+                비밀번호
+              </label>
+              <TextInput
+                ref={passwordInputRef}
+                id="authPassword"
+                type="password"
+                value={password}
+                onChange={(e) => handlePasswordChange(e.target.value)}
+                placeholder="최소 8자의 비밀번호를 입력해주세요"
+                maxLength={60}
+              />
+              <p className="input-alert-message font-body-large">
+                {passwordAlertMessage}
+              </p>
+            </div>
+          ) : null}
+          {currentStep === 2 && !isSignIn ? (
+            <div className="input-item-container">
+              <label
+                htmlFor="authPasswordConfirm"
+                className="input-label font-title-mini">
+                비밀번호 확인
+              </label>
+              <TextInput
+                id="authPasswordConfirm"
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => handleConfirmPasswordChange(e.target.value)}
+                placeholder="비밀번호를 다시 한 번 입력해주세요"
+                maxLength={60}
+              />
+              <p className="input-alert-message font-body-large">
+                {confirmPasswordAlertMessage}
+              </p>
+            </div>
+          ) : null}
+          {currentStep === 3 && !isSignIn ? (
+            <>
+              <div className="input-item-container">
+                <label
+                  htmlFor="authNickname"
+                  className="input-label font-title-mini">
+                  닉네임
+                </label>
+                <TextInput
+                  ref={nicknameInputRef}
+                  id="authNickname"
+                  value={nickname}
+                  onChange={(e) => handleNicknameChange(e.target.value)}
+                  placeholder="최소 2자의 닉네임을 입력해주세요"
+                  maxLength={60}
+                />
+                <p className="input-alert-message font-body-large">
+                  {nicknameAlertMessage}
+                </p>
+              </div>
+              <div className="input-item-container">
+                <label
+                  htmlFor="authCategory"
+                  className="input-label font-title-mini">
+                  관심 카테고리 (필수)
+                </label>
+                <div className="category-wrapper">
+                  <CategoryList
+                    selected={categories}
+                    onChange={setCategories}
+                  />
+                </div>
+                <p className="input-alert-message font-body-large">
+                  {categoryAlertMessage}
+                </p>
+              </div>
+            </>
+          ) : null}
+          <Button
+            label={isSubmitting ? '확인 중...' : getConfirmButtonLabel()}
+            variant="cta-full"
+            type="submit"
+            className="auth-submit"
+            disabled={!isConfirmButtonVisible() || isSubmitting}
+          />
+        </form>
       </div>
     </>
   );

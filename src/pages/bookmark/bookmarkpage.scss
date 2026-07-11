@@ -1,32 +1,44 @@
 @use 'styles/abstracts' as variables;
 
 .bookmark-page-container {
-  padding-bottom: 98px;
+  padding-bottom: 72px;
   @include variables.rise;
 
-  @include variables.mobile {
-    padding-top: 70px;
-    padding-inline: 16px;
-  }
-  @include variables.desktop {
-    padding-top: 110px;
+  @include variables.desktop-lg {
+    padding-top: 20px;
     @include variables.page-shell;
+  }
+
+  @include variables.tablet {
+    padding-top: 16px;
+    padding-bottom: 56px;
+  }
+
+  @include variables.mobile {
+    padding-top: 12px;
+    padding-bottom: 48px;
   }
 
   .title {
     color: variables.$gray-900;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
+
+    @include variables.mobile {
+      margin-bottom: 8px;
+    }
   }
 
   .subtitle {
     color: variables.$gray-400;
     margin-top: 0;
+    margin-bottom: 32px;
+
+    @include variables.tablet {
+      margin-bottom: 24px;
+    }
 
     @include variables.mobile {
-      margin-bottom: 40px;
-    }
-    @include variables.desktop {
-      margin-bottom: 48px;
+      margin-bottom: 20px;
     }
   }
 
@@ -36,8 +48,6 @@
     overflow-x: auto;
     margin-left: -8px;
 
-    // Hide scrollbar on the scroll container itself (overflow is here,
-    // not on .chip-wrapper — hiding it on the child had no effect).
     -ms-overflow-style: none;
     scrollbar-width: none;
     &::-webkit-scrollbar {
@@ -49,13 +59,17 @@
       white-space: nowrap;
       padding-left: 8px;
 
+      padding-top: 16px;
+      padding-bottom: 56px;
+
+      @include variables.tablet {
+        padding-top: 14px;
+        padding-bottom: 36px;
+      }
+
       @include variables.mobile {
         padding-top: 24px;
         padding-bottom: 32px;
-      }
-      @include variables.desktop {
-        padding-top: 16px;
-        padding-bottom: 56px;
       }
     }
   }
@@ -67,16 +81,28 @@
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 24px;
+
+    @include variables.tablet {
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 16px;
+    }
+  }
+
+  .video-grid-sentinel {
+    grid-column: 1 / -1;
+    width: 100%;
+    height: 1px;
+    pointer-events: none;
   }
 
   .bookmark-empty {
-    @include variables.glass-card(16px);
     grid-column: 1 / -1;
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
-    padding: 56px 24px;
+    padding: 48px 24px;
+    background: transparent;
 
     .bookmark-empty-title {
       color: variables.$gray-800;
@@ -90,29 +116,20 @@
     }
 
     .bookmark-empty-cta {
-      margin-top: 24px;
-      padding: 12px 24px;
+      margin-top: 20px;
+      padding: 11px 20px;
       border: none;
-      border-radius: 10px;
+      border-radius: 8px;
       background: variables.$primary-basic;
       color: variables.$bg;
       cursor: pointer;
       font-family: inherit;
-      transition:
-        transform 0.25s ease,
-        box-shadow 0.25s ease,
-        background 0.25s ease;
+      transition: background 0.15s ease;
 
       @media (hover: hover) and (pointer: fine) {
         &:hover {
           background: #5df0bf;
-          transform: translateY(-1px);
-          box-shadow: 0 6px 20px rgba(118, 255, 206, 0.25);
         }
-      }
-
-      &:active {
-        transform: translateY(0);
       }
     }
   }

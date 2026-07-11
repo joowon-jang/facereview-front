@@ -14,11 +14,11 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    background: rgba(118, 255, 206, 0.12);
-    color: variables.$brand-mint;
+    width: 56px;
+    height: 56px;
+    border-radius: 8px;
+    background: variables.$gray-50;
+    color: variables.$primary-basic;
     margin-bottom: 24px;
   }
 

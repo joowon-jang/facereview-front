@@ -1,61 +1,54 @@
 @use 'styles/abstracts' as variables;
 
+// 기존 구조 유지: 중앙 정렬, 카드 없음, 단순 세로 폼
 .edit-page-container {
-  @include variables.emotion-aura;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-bottom: 102px;
+  padding: 48px 0 80px;
 
-  @include variables.mobile {
-    padding-top: 90px;
-    padding-inline: 16px;
+  @include variables.tablet {
+    padding: 36px 0 72px;
   }
 
-  @include variables.desktop {
-    padding-top: 110px;
+  @include variables.mobile {
+    padding: 28px 0 64px;
   }
 
   .edit-page-title {
     color: variables.$gray-900;
-    margin-bottom: 8px;
-    @include variables.rise;
-  }
+    margin: 0 0 40px;
 
-  .edit-page-subtitle {
-    color: variables.$gray-400;
-    text-align: center;
-    word-break: keep-all;
-    @include variables.rise;
+    @include variables.tablet {
+      margin-bottom: 32px;
+    }
+
+    @include variables.mobile {
+      margin-bottom: 24px;
+    }
   }
 
   .edit-page-user-container {
-    @include variables.glass-card;
-    @include variables.rise(0.1s);
     display: flex;
     flex-direction: column;
     align-items: center;
     width: 100%;
-    max-width: 460px;
-    margin-bottom: 16px;
-
-    @include variables.mobile {
-      margin-top: 32px;
-      padding: 32px 20px 28px;
-      border-radius: 16px;
-    }
-
-    @include variables.desktop {
-      margin-top: 40px;
-      padding: 40px 40px 36px;
-    }
+    max-width: 380px;
 
     .edit-page-edit-container {
       width: 100%;
       display: flex;
       flex-direction: column;
       align-items: flex-start;
-      margin-top: 36px;
+      margin-top: 40px;
+
+      @include variables.tablet {
+        margin-top: 32px;
+      }
+
+      @include variables.mobile {
+        margin-top: 28px;
+      }
     }
 
     .edit-page-input-container {
@@ -63,14 +56,19 @@
       flex-direction: column;
       align-items: flex-start;
       width: 100%;
-      margin-bottom: 32px;
+      margin-bottom: 28px;
+
+      @include variables.mobile {
+        margin-bottom: 22px;
+      }
 
       .edit-page-input-label {
-        color: variables.$gray-800;
+        color: variables.$gray-900;
         margin-bottom: 12px;
       }
 
       .text-input {
+        width: 100%;
         margin-bottom: 8px;
       }
     }
@@ -79,12 +77,24 @@
       width: 100%;
       display: flex;
       flex-direction: column;
-      margin-bottom: 32px;
+      margin-bottom: 28px;
+
+      @include variables.mobile {
+        margin-bottom: 22px;
+      }
 
       .edit-page-category-label {
-        color: variables.$gray-800;
+        color: variables.$gray-900;
         margin-bottom: 16px;
+
+        @include variables.mobile {
+          margin-bottom: 12px;
+        }
       }
+    }
+
+    button.button {
+      width: 100%;
     }
   }
 
@@ -93,11 +103,18 @@
   }
 
   .edit-page-withdraw-container {
-    @include variables.rise(0.2s);
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-top: 32px;
+    margin-top: 40px;
+
+    @include variables.tablet {
+      margin-top: 32px;
+    }
+
+    @include variables.mobile {
+      margin-top: 28px;
+    }
 
     .edit-page-withdraw-button {
       background: none;
@@ -125,8 +142,8 @@
 }
 
 .withdraw-modal-container {
-  padding: 48px 32px 32px 32px;
-  width: 400px;
+  padding: 36px 28px 28px;
+  width: 420px;
   max-width: 90vw;
   display: flex;
   flex-direction: column;
@@ -134,34 +151,107 @@
   text-align: center;
 
   @include variables.mobile {
-    padding: 32px 20px 24px 20px;
+    padding: 28px 18px 22px;
     width: 90vw;
   }
 
-  h2 {
-    margin-bottom: 12px;
+  .withdraw-modal-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 14px;
+    border-radius: 50%;
+    background: rgba(variables.$brand-warm-red, 0.14);
+    color: variables.$brand-warm-red;
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .withdraw-modal-eyebrow {
+    margin: 0 0 8px;
+    color: variables.$brand-warm-red;
+    letter-spacing: 0.02em;
+  }
+
+  .withdraw-modal-title {
+    margin: 0 0 12px;
     color: variables.$gray-900;
   }
 
   .withdraw-modal-description {
-    margin-bottom: 40px;
+    margin: 0 0 16px;
     color: variables.$gray-400;
-    line-height: 1.5;
+    line-height: 1.55;
+    word-break: keep-all;
+  }
+
+  .withdraw-modal-checklist {
+    width: 100%;
+    margin: 0 0 28px;
+    padding: 14px 16px;
+    list-style: none;
+    text-align: left;
+    background: rgba(variables.$brand-warm-red, 0.08);
+    border-radius: 8px;
+    border-left: 3px solid variables.$brand-warm-red;
+
+    li {
+      position: relative;
+      padding-left: 14px;
+      margin: 0;
+      color: variables.$gray-500;
+      font-size: 13px;
+      line-height: 1.5;
+      word-break: keep-all;
+
+      & + li {
+        margin-top: 8px;
+      }
+
+      &::before {
+        content: '·';
+        position: absolute;
+        left: 0;
+        color: variables.$brand-warm-red;
+        font-weight: 700;
+      }
+    }
   }
 
   .withdraw-modal-button-wrapper {
     display: flex;
     width: 100%;
-    justify-content: space-between;
-    gap: 16px;
+    flex-direction: column;
+    gap: 10px;
 
-    @include variables.mobile {
+    // 데스크톱: 취소(안전) 왼쪽 · 탈퇴(위험) 오른쪽
+    @include variables.desktop-lg {
+      flex-direction: row;
       gap: 12px;
     }
 
     button {
       flex: 1;
       margin-right: 0 !important;
+      width: 100%;
+    }
+
+    // 파괴적 확인 — 민트 CTA 대신 강한 경고 레드
+    .withdraw-modal-confirm {
+      background: variables.$brand-warm-red !important;
+      color: #fff !important;
+
+      &:hover:not(.disabled) .dim {
+        background: rgba(0, 0, 0, 0.12);
+      }
+
+      &.disabled {
+        background: variables.$gray-200 !important;
+        color: variables.$gray-400 !important;
+      }
     }
   }
 }

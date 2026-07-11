@@ -1,5 +1,11 @@
 @use "styles/abstracts" as variables;
 
+// fixed header 높이 — spacer 와 반드시 동일하게 유지
+// 640 태블릿 구간에 맞춰 단계: 48 → 56 → 80
+$header-height-mobile: 48px;
+$header-height-tablet: 56px;
+$header-height-desktop: 80px;
+
 .header-background {
   background: variables.$bg;
   position: fixed;
@@ -8,31 +14,57 @@
   z-index: 998;
 
   @include variables.mobile {
-    height: 48px;
+    height: $header-height-mobile;
   }
-  @include variables.desktop {
-    height: 92px;
+  @include variables.tablet {
+    height: $header-height-tablet;
+  }
+  @include variables.desktop-lg {
+    height: $header-height-desktop;
+  }
+}
+
+// fixed 헤더와 동일한 높이를 문서 흐름에서 차지
+.header-spacer {
+  width: 100%;
+  flex-shrink: 0;
+  pointer-events: none;
+
+  @include variables.mobile {
+    height: $header-height-mobile;
+  }
+  @include variables.tablet {
+    height: $header-height-tablet;
+  }
+  @include variables.desktop-lg {
+    height: $header-height-desktop;
   }
 }
 
 .header {
   display: flex;
   background: variables.$bg;
-  width: 100%;
-  max-width: 1200px;
+  // 본문(.screen-container)과 동일한 레이아웃 셸
+  @include variables.layout-shell;
   left: 0;
   right: 0;
-  margin-inline: auto;
-  padding: 24px clamp(16px, 4vw, 48px);
+  height: $header-height-desktop;
+  padding: 16px 0;
   justify-content: space-between;
   align-items: center;
   position: fixed;
   top: 0;
   z-index: 998;
+  box-sizing: border-box;
+
+  @include variables.tablet {
+    height: $header-height-tablet;
+    padding: 10px 0;
+  }
 
   @include variables.mobile {
-    height: 48px;
-    padding: 8px 16px 8px 16px;
+    height: $header-height-mobile;
+    padding: 8px 0;
   }
 
   .header-logo {

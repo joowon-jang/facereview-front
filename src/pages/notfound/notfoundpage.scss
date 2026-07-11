@@ -1,18 +1,5 @@
 @use 'styles/abstracts' as variables;
 
-@keyframes notFoundBlink {
-  0%,
-  100% {
-    transform: translateY(0) rotate(0deg);
-  }
-  30% {
-    transform: translateY(-8px) rotate(-6deg);
-  }
-  60% {
-    transform: translateY(0) rotate(4deg);
-  }
-}
-
 .not-found-container {
   @include variables.emotion-aura;
   @include variables.rise;
@@ -21,7 +8,8 @@
   align-items: center;
   justify-content: center;
   min-height: 80vh;
-  padding: 120px 16px 60px;
+  // 헤더 높이는 .header-spacer 가 담당
+  padding: 24px 16px 48px;
   text-align: center;
 
   .not-found-code {
@@ -34,14 +22,17 @@
     color: variables.$gray-900;
     margin: 0 0 16px;
 
+    @include variables.tablet {
+      font-size: 80px;
+    }
+
     @include variables.mobile {
-      font-size: 72px;
+      font-size: 64px;
     }
 
     .not-found-emoji {
       font-size: 80px;
       display: inline-block;
-      animation: notFoundBlink 3.2s ease-in-out infinite;
 
       @include variables.mobile {
         font-size: 60px;
@@ -57,7 +48,7 @@
 
   .not-found-text {
     color: variables.$gray-400;
-    margin-bottom: 32px;
+    margin-bottom: 24px;
     word-break: keep-all;
   }
 }

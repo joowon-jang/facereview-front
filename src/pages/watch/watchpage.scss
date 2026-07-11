@@ -2,23 +2,21 @@
 
 .watch-page-container {
   display: flex;
-  padding-bottom: 98px;
+  padding-bottom: 72px;
 
   @include variables.mobile {
     flex-direction: column;
-    margin-left: 16px;
-    margin-right: 16px;
-    padding-top: 92px;
+    padding-top: 16px;
   }
   @include variables.desktop {
-    padding-top: 110px;
-    padding-inline: clamp(16px, 4vw, 48px);
-    gap: 28px;
+    padding-top: 16px;
+    gap: 24px;
     flex-direction: row;
 
-    // 태블릿(768~1023px)은 1단으로 전환
-    @media (max-width: 1023px) {
+    // 태블릿(640~1023)은 1단으로 전환
+    @include variables.tablet {
       flex-direction: column;
+      gap: 20px;
     }
   }
 
@@ -34,7 +32,7 @@
       // 모서리 라운딩은 iframe 자체에 준다.
       overflow: visible;
       border-radius: 8px;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
 
       @include variables.desktop {
         max-width: 852px;
@@ -123,12 +121,13 @@
     .video-information-container {
       display: flex;
       justify-content: space-between;
+      align-items: flex-start;
 
       @include variables.mobile {
-        padding: 20px 16px 20px 16px;
+        padding: 14px 0 10px;
       }
       @include variables.desktop {
-        margin-bottom: 60px;
+        margin-bottom: 18px;
       }
 
       .title {
@@ -142,9 +141,6 @@
           max-width: calc(100vw - 112px);
           height: 24px;
           text-overflow: ellipsis;
-        }
-        @include variables.desktop {
-          margin-bottom: 60px;
         }
       }
 
@@ -177,7 +173,7 @@
         background: variables.$bg;
         width: 100%;
         left: 0;
-        top: 44px;
+        top: 48px; // 모바일 헤더 높이
         z-index: 1000;
         contain: layout;
       }
@@ -186,21 +182,21 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        margin-top: calc(100vw * (9 / 16) + 60px);
-        padding-top: 32px;
-        padding-bottom: 32px;
+        margin-top: calc(100vw * (9 / 16) + 52px);
+        padding-top: 24px;
+        padding-bottom: 24px;
 
         .emotion-container {
-          @include variables.glass-card(16px);
-          padding: 20px;
+          padding: 8px 0 18px;
           display: flex;
           width: 100%;
           flex-direction: column;
-          margin-bottom: 24px;
+          margin-bottom: 18px;
+          background: transparent;
 
           .emotion-title-wrapper {
             display: flex;
-            margin-bottom: 22px;
+            margin-bottom: 16px;
 
             .emotion-title {
               color: variables.$gray-900;
@@ -211,7 +207,7 @@
           .graph-container {
             height: 12px;
             border-radius: 2px;
-            margin-bottom: 22px;
+            margin-bottom: 16px;
 
             .graph-tooltip-container {
               width: 80px;
@@ -230,11 +226,11 @@
           }
         }
         .emotion-container:last-child {
-          margin-bottom: 32px;
+          margin-bottom: 24px;
         }
 
         .others-emotion-container {
-          margin-bottom: 60px;
+          margin-bottom: 40px;
 
           .others-emotion-title-wrapper {
             display: flex;
@@ -250,16 +246,16 @@
 
     .comment-container {
       @include variables.mobile {
-        padding-top: 24px;
+        padding-top: 8px;
         padding-bottom: 24px;
       }
       .comment-input-container {
         display: flex;
         align-items: center;
-        margin-bottom: 44px;
+        margin-bottom: 22px;
 
         @include variables.mobile {
-          margin-bottom: 32px;
+          margin-bottom: 18px;
         }
 
         .comment-input {
@@ -269,13 +265,13 @@
 
       .comment-info-text {
         color: variables.$gray-900;
-        margin-bottom: 32px;
+        margin-bottom: 20px;
       }
 
       .comment-list-container {
         .comment-modifying-container {
           display: flex;
-          margin-bottom: 24px;
+          margin-bottom: 18px;
 
           .comment-modifying-wrapper {
             width: 100%;
@@ -333,7 +329,7 @@
         .comment-item-container {
           display: flex;
           align-items: flex-start;
-          margin-bottom: 24px;
+          margin-bottom: 18px;
           cursor: pointer;
           .comment-right-container {
             width: 100%;
@@ -451,7 +447,7 @@
         .comment-skeleton {
           display: flex;
           align-items: flex-start;
-          margin-bottom: 24px;
+          margin-bottom: 18px;
 
           .comment-skeleton-avatar {
             width: 36px;
@@ -495,20 +491,20 @@
     flex: 0 0 320px;
     min-width: 0;
 
-    // 태블릿(768~1023px)에서는 풀폭으로 아래로
-    @media (min-width: 768px) and (max-width: 1023px) {
+    // 태블릿에서는 풀폭으로 아래로
+    @include variables.tablet {
       flex: none;
       width: 100%;
     }
 
     .emotion-container {
-      @include variables.glass-card(16px);
-      padding: 20px;
-      margin-bottom: 24px;
+      padding: 8px 0 18px;
+      margin-bottom: 18px;
+      background: transparent;
 
       .emotion-title-wrapper {
         display: flex;
-        margin-bottom: 22px;
+        margin-bottom: 16px;
 
         .emotion-title {
           color: variables.$gray-900;
@@ -519,7 +515,7 @@
       .graph-container {
         height: 12px;
         border-radius: 2px;
-        margin-bottom: 22px;
+        margin-bottom: 16px;
 
         .graph-tooltip-container {
           width: 80px;
@@ -563,7 +559,7 @@
 
       .recommend-title {
         color: variables.$gray-900;
-        margin-bottom: 24px;
+        margin-bottom: 16px;
       }
 
       .recommend-video-container {

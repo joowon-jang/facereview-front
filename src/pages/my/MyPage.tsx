@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import './mypage.scss';
@@ -13,6 +13,7 @@ import Etc from 'assets/img/etc.png';
 import { useAuthStorage } from 'store/authStore';
 import VideoItem from 'components/VideoItem/VideoItem';
 import VideoCarousel from 'components/VideoCarousel/VideoCarousel';
+import VideoCardSkeleton from 'components/Skeleton/VideoCardSkeleton';
 import ModalDialog from 'components/ModalDialog/ModalDialog';
 import TextInput from 'components/TextInput/TextInput';
 import { sendEmailVerification, verifyEmailCode } from 'api/mypage';
@@ -23,6 +24,7 @@ import { EmotionType, VideoWatchedType } from 'types/index';
 import { getScaledTimelineGraphData, mapNumberToEmotion } from 'utils/index';
 import { ResponsiveLine } from '@nivo/line';
 import { useIsMobile } from 'hooks/useMediaQuery';
+import useWindowSize from 'hooks/useWindowSize';
 import {
   EMOTION_COLORS,
   EMOTION_EMOJIS,
@@ -64,12 +66,27 @@ const LINE_CHART_COLORS = (serie: { id: string }) =>
   EMOTION_COLORS[serie.id as EmotionType] ?? EMOTION_COLORS.neutral;
 const LINE_CHART_MARGIN = { top: 2, right: 0, bottom: 2, left: 0 };
 
-const formatSeconds = (seconds: number): string => {
-  if (seconds < 60) return `${seconds}초`;
-  const min = Math.floor(seconds / 60);
-  const sec = seconds % 60;
-  if (sec === 0) return `${min}분`;
-  return `${min}분 ${sec}초`;
+const DURATION_UNITS = [
+  { divisor: 365 * 24 * 60 * 60, label: '년' },
+  { divisor: 30 * 24 * 60 * 60, label: '개월' },
+  { divisor: 24 * 60 * 60, label: '일' },
+  { divisor: 60 * 60, label: '시간' },
+  { divisor: 60, label: '분' },
+  { divisor: 1, label: '초' },
+] as const;
+
+/** 리스트 등 전체 단위 표기 */
+const formatDuration = (seconds: number): string => {
+  let remaining = Math.max(0, Math.floor(seconds || 0));
+  const parts: string[] = [];
+
+  for (const { divisor, label } of DURATION_UNITS) {
+    const value = Math.floor(remaining / divisor);
+    remaining %= divisor;
+    if (value > 0) parts.push(`${value}${label}`);
+  }
+
+  return parts.join(' ') || '0초';
 };
 
 const MyPage = () => {
@@ -80,6 +97,7 @@ const MyPage = () => {
   const setVerifyEmailDone = useAuthStorage((s) => s.setVerifyEmailDone);
 
   const isMobile = useIsMobile();
+  const windowWidth = useWindowSize();
 
   const navigate = useNavigate();
   const { handleLogout } = useLogout();
@@ -92,14 +110,23 @@ const MyPage = () => {
   );
 
   // React Query: fetch recent videos
-  const { data: recentVideo = [] } = useQuery<VideoWatchedType[]>({
+  const { data: recentVideo = [], isLoading: isRecentLoading } = useQuery<
+    VideoWatchedType[]
+  >({
     queryKey: ['mypage', 'recentVideos'],
     queryFn: () => getRecentVideo(),
     enabled: is_sign_in,
   });
 
+  // VideoCarousel desktopSlidesPerView={3} 과 동일한 스켈레톤 개수
+  const recentSkeletonCount = isMobile
+    ? 1
+    : windowWidth >= 1100
+      ? 3
+      : 2;
+
   // React Query: fetch emotion summary
-  const { data: emotionSummaryData } = useQuery({
+  const { data: emotionSummaryData, isLoading: isEmotionLoading } = useQuery({
     queryKey: ['mypage', 'emotionSummary'],
     queryFn: () => getEmotionSummary(),
     enabled: is_sign_in,
@@ -124,6 +151,17 @@ const MyPage = () => {
       ),
     }));
   }, [emotionSummaryData]);
+
+  const totalWatchLabel = useMemo(() => {
+    if (totalSeconds <= 0) return '—';
+    return formatDuration(totalSeconds);
+  }, [totalSeconds]);
+
+  const totalWatchSizeClass = useMemo(() => {
+    if (totalWatchLabel.length >= 14) return ' is-long';
+    if (totalWatchLabel.length >= 8) return ' is-mid';
+    return '';
+  }, [totalWatchLabel]);
 
   const filteredRecentVideos = useMemo(
     () =>
@@ -236,11 +274,7 @@ const MyPage = () => {
               <div className="my-page-name-container">
                 <div className="my-page-name-wrapper">
                   <h2
-                    className={
-                      isMobile
-                        ? 'my-page-username font-title-medium'
-                        : 'my-page-username font-title-large'
-                    }
+                    className="my-page-username font-title-medium"
                     style={{ display: 'flex', alignItems: 'center' }}>
                     {user_name}님
                   </h2>
@@ -251,7 +285,7 @@ const MyPage = () => {
                 </div>
                 <h3
                   className={
-                    isMobile ? 'font-title-mini' : 'font-title-medium'
+                    isMobile ? 'font-title-mini' : 'font-title-small'
                   }>
                   오늘은 어떤 기분이신가요?
                 </h3>
@@ -324,7 +358,25 @@ const MyPage = () => {
           </div>
           <div className="my-page-video-container">
             <div className="my-page-video-wrapper">
-              {filteredRecentVideos.length > 0 ? (
+              {isRecentLoading ? (
+                <div
+                  className="my-page-recent-skeleton"
+                  role="status"
+                  aria-busy="true"
+                  aria-label="최근 본 영상 불러오는 중">
+                  {Array.from({ length: recentSkeletonCount }).map((_, i) => (
+                    <div
+                      className="recent-video-item recent-video-item--skeleton"
+                      key={`recent-skeleton-${i}`}>
+                      <VideoCardSkeleton width="100%" />
+                      <div
+                        className="video-graph-container video-graph-skeleton"
+                        aria-hidden="true"
+                      />
+                    </div>
+                  ))}
+                </div>
+              ) : filteredRecentVideos.length > 0 ? (
                 <VideoCarousel
                   videos={filteredRecentVideos}
                   desktopSlidesPerView={3}
@@ -357,6 +409,9 @@ const MyPage = () => {
                               type: 'linear',
                               min: 0,
                               max: v.duration || 100,
+                              // d3 nice() 의 도메인 확장(예: 471→500)을 막아
+                              // 그래프가 카드 오른쪽 끝까지 정확히 차게 한다
+                              nice: false,
                             }}
                             yScale={{
                               type: 'linear',
@@ -390,7 +445,7 @@ const MyPage = () => {
                   />
                   <p
                     className={
-                      isMobile ? 'font-lebel-medium' : 'font-label-large'
+                      isMobile ? 'font-label-medium' : 'font-label-large'
                     }>
                     아직 본 영상이 없어요
                   </p>
@@ -408,77 +463,99 @@ const MyPage = () => {
             </h2>
           </div>
           <div className="my-page-emotion-graph-container">
-            {/* Donut Chart Card */}
-            <div className="pie-graph-card">
-              <div className="pie-chart-wrapper">
-                {donutGraphData.every((d) => d.value === 0) ? (
-                  <ResponsivePie
-                    data={[{ id: 'empty', label: 'empty', value: 1 }]}
-                    colors={['#4B4B5C']}
-                    margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
-                    innerRadius={0.72}
-                    enableArcLabels={false}
-                    enableArcLinkLabels={false}
-                    tooltip={() => null}
-                    isInteractive={false}
-                  />
-                ) : (
-                  <ResponsivePie
-                    colors={EMOTION_COLOR_LIST}
-                    data={donutGraphData}
-                    sortByValue={false}
-                    margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
-                    activeOuterRadiusOffset={6}
-                    borderWidth={0}
-                    innerRadius={0.72}
-                    padAngle={2}
-                    cornerRadius={4}
-                    enableArcLabels={false}
-                    enableArcLinkLabels={false}
-                    tooltip={() => null}
-                  />
-                )}
-                <div className="pie-center-label">
-                  <div className="pie-center-title">총 시청</div>
-                  <div className="pie-center-value">
-                    {totalSeconds > 0 ? formatSeconds(totalSeconds) : '—'}
-                  </div>
+            {isEmotionLoading ? (
+              <div
+                className="my-page-emotion-skeleton"
+                role="status"
+                aria-busy="true"
+                aria-label="감정 그래프 불러오는 중">
+                <div className="emotion-skeleton-donut" aria-hidden="true" />
+                <div className="emotion-skeleton-stats" aria-hidden="true">
+                  {EMOTIONS.map((emotion) => (
+                    <div
+                      key={`emotion-skeleton-${emotion}`}
+                      className="emotion-skeleton-row"
+                    />
+                  ))}
                 </div>
               </div>
-              <div className="pie-legend-container">
-                {donutGraphData.map((item) => (
-                  <div key={item.originalId} className="legend-item-wrapper">
-                    <div
-                      className={`legend-item-color ${item.originalId}`}></div>
-                    <span className="legend-item-label">
-                      {EMOTION_LABELS[item.originalId]}
-                    </span>
-                    <span className="legend-item-text">{item.value || 0}%</span>
+            ) : (
+              <>
+                <div className="pie-graph-card">
+                  <div className="pie-chart-wrapper">
+                    {donutGraphData.every((d) => d.value === 0) ? (
+                      <ResponsivePie
+                        data={[{ id: 'empty', label: 'empty', value: 1 }]}
+                        colors={['#4B4B5C']}
+                        margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
+                        innerRadius={0.72}
+                        enableArcLabels={false}
+                        enableArcLinkLabels={false}
+                        tooltip={() => null}
+                        isInteractive={false}
+                      />
+                    ) : (
+                      <ResponsivePie
+                        colors={EMOTION_COLOR_LIST}
+                        data={donutGraphData}
+                        sortByValue={false}
+                        margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
+                        activeOuterRadiusOffset={6}
+                        borderWidth={0}
+                        innerRadius={0.72}
+                        padAngle={2}
+                        cornerRadius={4}
+                        enableArcLabels={false}
+                        enableArcLinkLabels={false}
+                        tooltip={() => null}
+                      />
+                    )}
+                    <div className="pie-center-label">
+                      <div className="pie-center-title">총 시청</div>
+                      <div
+                        className={`pie-center-value${totalWatchSizeClass}`}>
+                        {totalWatchLabel}
+                      </div>
+                    </div>
                   </div>
-                ))}
-              </div>
-            </div>
+                  <div className="pie-legend-container">
+                    {donutGraphData.map((item) => (
+                      <div
+                        key={item.originalId}
+                        className="legend-item-wrapper">
+                        <div
+                          className={`legend-item-color ${item.originalId}`}></div>
+                        <span className="legend-item-label">
+                          {EMOTION_LABELS[item.originalId]}
+                        </span>
+                        <span className="legend-item-text">
+                          {item.value || 0}%
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
 
-            {/* Emotion Time Stats Card */}
-            <div className="emotion-time-card">
-              <h3 className="emotion-time-title">그동안 영상을 보며</h3>
-              <div className="emotion-stats-grid">
-                {EMOTIONS.map((emotion) => (
-                  <div key={emotion} className="emotion-stat-row">
-                    <span className="stat-emoji">
-                      {EMOTION_EMOJIS[emotion]}
-                    </span>
-                    <span className="stat-label">
-                      {PAST_TENSE_LABELS[emotion]}
-                    </span>
-                    <span className={`stat-value ${emotion}`}>
-                      {emotionTimeData?.[emotion] || 0}
-                    </span>
-                    <span className="stat-unit">초</span>
+                <div className="emotion-time-card">
+                  <h3 className="emotion-time-title">그동안 영상을 보며</h3>
+                  <div className="emotion-stats-grid">
+                    {EMOTIONS.map((emotion) => (
+                      <div key={emotion} className="emotion-stat-row">
+                        <span className="stat-emoji">
+                          {EMOTION_EMOJIS[emotion]}
+                        </span>
+                        <span className="stat-label">
+                          {PAST_TENSE_LABELS[emotion]}
+                        </span>
+                        <span className={`stat-value ${emotion}`}>
+                          {formatDuration(emotionTimeData?.[emotion] || 0)}
+                        </span>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>

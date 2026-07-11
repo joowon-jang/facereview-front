@@ -123,9 +123,7 @@ const EditPage = () => {
     <>
       <div className="edit-page-container">
         <h2 className="edit-page-title font-title-large">프로필 편집</h2>
-        <p className="edit-page-subtitle font-body-medium">
-          닉네임, 프로필 아이콘, 관심사를 바꿀 수 있어요.
-        </p>
+
         <div className="edit-page-user-container">
           <ProfileIcon
             type={'icon-large'}
@@ -133,41 +131,7 @@ const EditPage = () => {
             isEditable={true}
             onEditClick={openModal}
           />
-          <ModalDialog isOpen={isModalOpen} onClose={closeModal}>
-            <div className="edit-page-modal-container">
-              <h3 className="font-title-mini edit-page-modal-title">
-                아이콘을 선택해주세요
-              </h3>
-              <div className="edit-page-modal-icon-wrapper">
-                {EMOTIONS.map((emotion, index) => (
-                  <ProfileIcon
-                    key={emotion}
-                    type="icon-medium"
-                    color={emotion}
-                    onSelectClick={() => handleColorSelect(emotion)}
-                    style={{
-                      cursor: 'pointer',
-                      marginRight: index !== EMOTIONS.length - 1 ? '10px' : 0,
-                      border:
-                        selectedColor === emotion
-                          ? '3px solid #76FFCE'
-                          : 'none',
-                    }}
-                  />
-                ))}
-              </div>
-              <div className="edit-page-modal-button-wrapper">
-                <Button
-                  label={'확인'}
-                  variant={'cta-full'}
-                  onClick={() => {
-                    closeModal();
-                    handleModalCheck();
-                  }}
-                />
-              </div>
-            </div>
-          </ModalDialog>
+
           <div className="edit-page-edit-container">
             <div className="edit-page-input-container">
               <label
@@ -187,6 +151,7 @@ const EditPage = () => {
                 </p>
               )}
             </div>
+
             <div className="edit-page-category-wrapper">
               <label
                 htmlFor="editCategory"
@@ -231,28 +196,72 @@ const EditPage = () => {
         </div>
       </div>
 
+      <ModalDialog isOpen={isModalOpen} onClose={closeModal}>
+        <div className="edit-page-modal-container">
+          <h3 className="font-title-mini edit-page-modal-title">
+            아이콘을 선택해주세요
+          </h3>
+          <div className="edit-page-modal-icon-wrapper">
+            {EMOTIONS.map((emotion, index) => (
+              <ProfileIcon
+                key={emotion}
+                type="icon-medium"
+                color={emotion}
+                onSelectClick={() => handleColorSelect(emotion)}
+                style={{
+                  cursor: 'pointer',
+                  marginRight: index !== EMOTIONS.length - 1 ? '10px' : 0,
+                  border:
+                    selectedColor === emotion ? '3px solid #76FFCE' : 'none',
+                }}
+              />
+            ))}
+          </div>
+          <div className="edit-page-modal-button-wrapper">
+            <Button
+              label={'확인'}
+              variant={'cta-full'}
+              onClick={() => {
+                closeModal();
+                handleModalCheck();
+              }}
+            />
+          </div>
+        </div>
+      </ModalDialog>
+
       <ModalDialog
         isOpen={isWithdrawModalOpen}
-        onClose={() => !isWithdrawing && setIsWithdrawModalOpen(false)}>
-        <div className="withdraw-modal-container">
-          <h2 className="font-title-medium">정말 탈퇴하시겠어요?</h2>
-          <p className="withdraw-modal-description font-body-large">
-            탈퇴해도 분석된 감정 데이터는 남아있어요
+        onClose={() => !isWithdrawing && setIsWithdrawModalOpen(false)}
+        contentLabel="회원 탈퇴 확인">
+        <div className="withdraw-modal-container" role="alertdialog">
+          <div className="withdraw-modal-icon" aria-hidden="true">
+            !
+          </div>
+          <p className="withdraw-modal-eyebrow font-label-small">위험 · 되돌릴 수 없음</p>
+          <h2 className="withdraw-modal-title font-title-medium">
+            정말 탈퇴하시겠어요?
+          </h2>
+          <p className="withdraw-modal-description font-body-medium">
+            탈퇴하면 계정이 삭제되고, 같은 이메일로 다시 가입해도 이전
+            정보는 복구되지 않아요.
           </p>
+          <ul className="withdraw-modal-checklist">
+            <li>닉네임, 프로필, 관심사 설정이 삭제됩니다</li>
+            <li>즐겨찾기 등 개인 이용 기록이 사라질 수 있습니다</li>
+            <li>분석된 감정 데이터는 서비스에 남을 수 있습니다</li>
+          </ul>
           <div className="withdraw-modal-button-wrapper">
             <Button
-              label={'취소'}
-              variant={'cta-fixed-secondary'}
-              style={{
-                marginRight: '12px',
-                background: '#5D5D6D',
-              }}
+              label="취소하고 유지하기"
+              variant="cta-fixed-secondary"
               disabled={isWithdrawing}
               onClick={() => setIsWithdrawModalOpen(false)}
             />
             <Button
-              label={isWithdrawing ? '탈퇴 중...' : '확인'}
-              variant={'cta-fixed'}
+              label={isWithdrawing ? '탈퇴 처리 중...' : '탈퇴하기'}
+              variant="cta-fixed"
+              className="withdraw-modal-confirm"
               disabled={isWithdrawing}
               onClick={handleWithdrawConfirm}
             />

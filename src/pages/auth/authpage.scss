@@ -1,81 +1,88 @@
 @use 'styles/abstracts' as variables;
 
+// 카드 없는 열린 레이아웃 — 배경 위 인디케이터 · 로고 · 폼
 .auth-container {
-  @include variables.emotion-aura;
   display: flex;
   flex-direction: column;
   align-items: center;
   min-height: 100vh;
-  padding: 128px 16px 98px;
+  box-sizing: border-box;
+  padding: 96px 16px 80px;
+
+  @include variables.tablet {
+    padding: 80px 16px 72px;
+  }
 
   @include variables.mobile {
-    padding-top: 84px;
+    padding: 56px 16px 56px;
   }
 
-  .auth-card {
-    @include variables.glass-card;
-    @include variables.rise;
-    width: 100%;
-    max-width: 440px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+  .indicator-container {
+    justify-content: center;
+  }
+
+  .logo-wrapper {
+    margin-top: 64px;
+    margin-bottom: 72px;
+
+    @include variables.tablet {
+      margin-top: 48px;
+      margin-bottom: 56px;
+    }
 
     @include variables.mobile {
-      padding: 32px 20px 36px;
-      border-radius: 16px;
-    }
-
-    @include variables.desktop {
-      padding: 40px 40px 44px;
-    }
-
-    .logo-wrapper {
-      margin-bottom: 28px;
-    }
-
-    .indicator-container {
-      margin-bottom: 28px;
-    }
-
-    .auth-heading {
-      text-align: center;
-      margin-bottom: 32px;
-
-      .auth-title {
-        color: variables.$gray-900;
-        margin-bottom: 8px;
-      }
-
-      .auth-subtitle {
-        color: variables.$gray-400;
-        line-height: 1.6;
-        word-break: keep-all;
-      }
+      margin-top: 32px;
+      margin-bottom: 40px;
     }
   }
-}
 
-.input-container {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-
-  .input-item-container {
+  .input-container {
     display: flex;
     flex-direction: column;
     width: 100%;
-    margin-bottom: 12px;
+    max-width: 380px;
 
-    .input-label {
-      color: variables.$gray-800;
-      margin-bottom: 12px;
+    @include variables.mobile {
+      max-width: 100%;
     }
 
-    .input-alert-message {
-      color: variables.$system-error;
+    .input-item-container {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      margin-bottom: 20px;
+
+      @include variables.tablet {
+        margin-bottom: 16px;
+      }
+
+      @include variables.mobile {
+        margin-bottom: 14px;
+      }
+
+      .input-label {
+        color: variables.$gray-900;
+        margin-bottom: 12px;
+
+        @include variables.mobile {
+          margin-bottom: 10px;
+        }
+      }
+
+      .text-input:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+      }
+
+      .input-alert-message {
+        color: variables.$system-error;
+        margin-top: 8px;
+        min-height: 22px;
+      }
+    }
+
+    .auth-submit {
       margin-top: 8px;
-      min-height: 24px;
     }
   }
 }

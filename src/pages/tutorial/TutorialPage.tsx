@@ -8,14 +8,26 @@ import StepIndicator from 'components/StepIndicator/StepIndicator';
 import { ReactElement, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { useIsMobile } from 'hooks/useMediaQuery';
+import { useIsDesktopLg } from 'hooks/useMediaQuery';
 import './tutorialpage.scss';
 
-const TUTORIAL_TEXT = [
-  '',
-  '다른 사람들이 영상을 보며 가장 많이 느낀 감정을 토대로 영상을 추천받아요.',
-  '영상을 시청하며 보여지는 나의 생생한 표정이 실시간으로 기록돼요.',
-  '영상을 많이 볼수록 내가 좋아할만한 영상을 더 정확히 추천받을 수 있어요.',
+type TutorialContent = { headline: string; desc: string };
+
+// index 0은 사용하지 않음 — step은 1부터 시작
+const TUTORIAL: (TutorialContent | null)[] = [
+  null,
+  {
+    headline: '감정 기반 영상 추천',
+    desc: '다른 사람들이 영상을 보며 가장 많이 느낀 감정을 토대로 영상을 추천받아요.',
+  },
+  {
+    headline: '실시간 표정 기록',
+    desc: '영상을 시청하며 보여지는 나의 생생한 표정이 실시간으로 기록돼요.',
+  },
+  {
+    headline: '더 정확한 맞춤 추천',
+    desc: '영상을 많이 볼수록 내가 좋아할만한 영상을 더 정확히 추천받을 수 있어요.',
+  },
 ];
 const TUTORIAL_IMG = [null, tutorial1, tutorial2, tutorial3];
 const TUTORIAL_ALT = [
@@ -26,7 +38,8 @@ const TUTORIAL_ALT = [
 ];
 
 const TutorialPage = (): ReactElement => {
-  const isMobile = useIsMobile();
+  // 2열 레이아웃은 넓은 데스크톱에서만 — 태블릿·모바일은 1열
+  const isDesktopLg = useIsDesktopLg();
   const { step } = useParams();
   const navigate = useNavigate();
 
@@ -56,6 +69,15 @@ const TutorialPage = (): ReactElement => {
     handleSkipClick();
   };
 
+  const visual = (
+    <div className="visual-wrapper">
+      <img
+        src={TUTORIAL_IMG[currentStep] ?? ''}
+        alt={TUTORIAL_ALT[currentStep] ?? '튜토리얼 이미지'}
+      />
+    </div>
+  );
+
   return (
     <div className="tutorial-container">
       <Seo
@@ -65,36 +87,33 @@ const TutorialPage = (): ReactElement => {
         path={`/tutorial/${currentStep}`}
       />
       <div className="tutorial-content" key={currentStep}>
-        {!isMobile && (
-          <div className="tutorial-left-container">
-            <div className="visual-wrapper">
-              <img
-                src={TUTORIAL_IMG[currentStep] ?? ''}
-                alt={TUTORIAL_ALT[currentStep] ?? '튜토리얼 이미지'}
-              />
-            </div>
-          </div>
+        {isDesktopLg && (
+          <div className="tutorial-left-container">{visual}</div>
         )}
+
         <div className="tutorial-right-container">
-          {!isMobile && <StepIndicator step={currentStep} maxStep={3} />}
-          <h6 className="step-title">
-            {currentStep.toString().padStart(2, '0')}
-            <span className="step-total"> / 03</span>
-          </h6>
-          <p className="tutorial-text font-title-large">
-            {TUTORIAL_TEXT[currentStep]}
-          </p>
-          {isMobile && (
-            <div className="tutorial-mobile-container">
-              <div className="visual-wrapper">
-                <img
-                  src={TUTORIAL_IMG[currentStep] ?? ''}
-                  alt={TUTORIAL_ALT[currentStep] ?? '튜토리얼 이미지'}
-                />
-              </div>
-              <StepIndicator step={currentStep} maxStep={3} />{' '}
+          <div className="tutorial-body">
+            {isDesktopLg && <StepIndicator step={currentStep} maxStep={3} />}
+
+            <div className="step-number">
+              {currentStep.toString().padStart(2, '0')}
+              <span className="step-total"> / 03</span>
             </div>
-          )}
+
+            <h2 className="tutorial-headline">
+              {TUTORIAL[currentStep]?.headline}
+            </h2>
+
+            <p className="tutorial-text">{TUTORIAL[currentStep]?.desc}</p>
+
+            {!isDesktopLg && (
+              <div className="tutorial-compact-visual">
+                {visual}
+                <StepIndicator step={currentStep} maxStep={3} />
+              </div>
+            )}
+          </div>
+
           <div className="button-container">
             {currentStep !== 3 ? (
               <Button

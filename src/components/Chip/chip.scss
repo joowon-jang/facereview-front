@@ -8,22 +8,25 @@
   border-radius: 8px;
   cursor: pointer;
   overflow: hidden;
-  transition: transform 0.2s;
+  transition: background-color 0.15s ease, color 0.15s ease;
 
   &.category-big {
-    padding: 8px 16px 8px 16px;
+    padding: 8px 16px;
     height: 39px;
+
+    @include variables.tablet {
+      padding: 7px 14px;
+      height: 36px;
+    }
   }
 
   &.category-small {
-    padding: 8px 12px 8px 12px;
+    padding: 8px 12px;
     height: 32px;
   }
 
   @media (hover: hover) and (pointer: fine) {
-    &:hover {
-      transform: scale(1.2);
-
+    &:hover:not(.selected) {
       &.all {
         color: variables.$gray-50;
         background: variables.$gray-900;
@@ -46,6 +49,11 @@
 
       &.angry {
         background: variables.$category-angry-tinted;
+        color: variables.$gray-900;
+      }
+
+      &.neutral {
+        background: variables.$category-neutral-tinted;
         color: variables.$gray-900;
       }
 
@@ -78,6 +86,11 @@
 
     &.angry {
       background: variables.$category-angry-basic;
+      color: variables.$gray-900;
+    }
+
+    &.neutral {
+      background: variables.$category-neutral-basic;
       color: variables.$gray-900;
     }
   }
