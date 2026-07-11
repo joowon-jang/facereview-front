@@ -54,7 +54,12 @@ const VideoCarousel = <T,>({
 
   // 고정 간격 + VideoItem width="100%" — 부모(최대 1280) 폭을 perView 로 분배
   const DESKTOP_SPACE_BETWEEN = 16;
-  const TABLET_SPACE_BETWEEN = 14;
+  const TABLET_SPACE_BETWEEN = 16;
+
+  // hover scale(1.04) 오버행(카드 ~300px 기준 좌우 각 ~6px) 수용 폭.
+  // 모든 breakpoint 의 spaceBetween 이하여야 한다 — 넘으면 잘림 경계가
+  // 다음 슬라이드 시작점을 지나 옆 카드 앞부분이 새어 보인다.
+  const HOVER_BLEED = 8;
 
   // 태블릿(640~1023)은 카드 크기 유지를 위해 perView 한 단계 축소
   const midSlidesPerView = Math.max(2, desktopSlidesPerView - 1);
@@ -157,11 +162,17 @@ const VideoCarousel = <T,>({
           {
             paddingTop: '16px',
             paddingBottom: isMobile ? '16px' : '6px',
-            // 좌우 0 — 부모 셸 폭을 그대로 사용
-            paddingLeft: 0,
-            paddingRight: 0,
-            marginLeft: 0,
-            marginRight: 0,
+            // Swiper 는 overflow: hidden 이라 양끝 카드의 hover scale(1.04)이
+            // 셸 경계에서 잘린다. 패딩 + 같은 크기 음수 마진으로 콘텐츠 정렬은
+            // 유지한 채 잘림 경계만 바깥으로 넓힌다(스켈레톤 정렬도 불변).
+            // scss 의 width: 100% 는 음수 마진으로 늘어나지 않으므로(왼쪽으로
+            // 밀리기만 함) 마진만큼 폭을 직접 보정한다. border-box 라 콘텐츠
+            // 폭은 정확히 부모 100% 로 유지된다.
+            width: `calc(100% + ${HOVER_BLEED * 2}px)`,
+            paddingLeft: HOVER_BLEED,
+            paddingRight: HOVER_BLEED,
+            marginLeft: -HOVER_BLEED,
+            marginRight: -HOVER_BLEED,
             '--swiper-pagination-color': '#76FECE',
             '--swiper-pagination-bullet-inactive-color': '#76FECE',
             '--swiper-pagination-bullet-inactive-opacity': '0.4',
