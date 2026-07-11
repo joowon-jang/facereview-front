@@ -1,10 +1,14 @@
-import { ReactElement, useCallback, useMemo } from 'react';
+import { ReactElement, useCallback, useMemo, useRef } from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { searchVideos } from 'api/youtube';
 import VideoItem from 'components/VideoItem/VideoItem';
 import VideoCardSkeleton from 'components/Skeleton/VideoCardSkeleton';
 import { useIsMobile } from 'hooks/useMediaQuery';
 import useIntersectionObserver from 'hooks/useIntersectionObserver';
+import useGridColumnCount from 'hooks/useGridColumnCount';
+
+const VIDEO_GRID_MIN_WIDTH = 300;
+const VIDEO_GRID_GAP = 24;
 
 type SearchResultsSectionProps = {
   query: string;
@@ -14,6 +18,14 @@ const SearchResultsSection = ({
   query,
 }: SearchResultsSectionProps): ReactElement => {
   const isMobile = useIsMobile();
+  const videoGridRef = useRef<HTMLDivElement>(null);
+  const gridColumns = useGridColumnCount(
+    videoGridRef,
+    VIDEO_GRID_MIN_WIDTH,
+    VIDEO_GRID_GAP,
+  );
+  const initialSkeletonCount = gridColumns * 2;
+  const moreSkeletonCount = gridColumns;
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useInfiniteQuery({
@@ -58,10 +70,10 @@ const SearchResultsSection = ({
         '{query}' 검색 결과
       </h2>
       <div className="video-container">
-        <div className="video-wrapper">
+        <div className="video-wrapper" ref={videoGridRef}>
           {isLoading ? (
             <>
-              {Array.from({ length: 8 }).map((_, i) => (
+              {Array.from({ length: initialSkeletonCount }).map((_, i) => (
                 <VideoCardSkeleton key={`search-loading-${i}`} width="100%" />
               ))}
             </>
@@ -80,10 +92,10 @@ const SearchResultsSection = ({
                 />
               ))}
               {isFetchingNextPage &&
-                Array.from({ length: 4 }).map((_, i) => (
+                Array.from({ length: moreSkeletonCount }).map((_, i) => (
                   <VideoCardSkeleton key={`search-more-${i}`} width="100%" />
                 ))}
-              <div ref={targetRef} style={{ width: '100%', height: '20px' }} />
+              <div ref={targetRef} className="video-grid-sentinel" />
             </>
           ) : (
             <div role="status" className="search-empty">

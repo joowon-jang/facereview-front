@@ -5,11 +5,12 @@ import {
   getVideoList,
 } from 'api/youtube';
 import VideoItem from 'components/VideoItem/VideoItem';
-import { ReactElement, useCallback, useMemo, useState } from 'react';
+import { ReactElement, useCallback, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStorage } from 'store/authStore';
 import { EmotionType } from 'types';
 import VideoCarousel from 'components/VideoCarousel/VideoCarousel';
+import VideoCarouselSkeleton from 'components/VideoCarousel/VideoCarouselSkeleton';
 
 import Chip from 'components/Chip/Chip';
 import VideoCardSkeleton from 'components/Skeleton/VideoCardSkeleton';
@@ -21,24 +22,44 @@ import {
 } from 'constants/index';
 import useIntersectionObserver from 'hooks/useIntersectionObserver';
 import { useIsMobile } from 'hooks/useMediaQuery';
+import useGridColumnCount from 'hooks/useGridColumnCount';
+
+// mainpage.scss `.video-wrapper` 와 동기화 (1280 기준 4열)
+const VIDEO_GRID_MIN_WIDTH = 300;
+const VIDEO_GRID_GAP = 24;
 
 const HomeContentSection = (): ReactElement => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const is_sign_in = useAuthStorage((s) => s.is_sign_in);
   const user_name = useAuthStorage((s) => s.user_name);
+  const videoGridRef = useRef<HTMLDivElement>(null);
+  const gridColumns = useGridColumnCount(
+    videoGridRef,
+    VIDEO_GRID_MIN_WIDTH,
+    VIDEO_GRID_GAP,
+  );
+  // 초기 로딩: 2줄, 추가 로딩: 1줄 — 열 수와 항상 맞춤
+  const initialSkeletonCount = gridColumns * 2;
+  const moreSkeletonCount = gridColumns;
 
   const [selectedEmotion, setSelectedEmotion] = useState<'all' | EmotionType>(
     'all',
   );
 
   // React Query: personal recommended videos
-  const { data: personalRecommendedVideo = [] } = useQuery({
+  const {
+    data: personalRecommendedVideo = [],
+    isLoading: isPersonalLoading,
+  } = useQuery({
     queryKey: ['personalRecommended'],
     queryFn: () => getPersonalRecommendedVideo(),
     enabled: is_sign_in,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
+  // 캐시가 없을 때만 스켈레톤 (백그라운드 refetch 중엔 기존 데이터 유지)
+  const showPersonalSkeleton =
+    is_sign_in && isPersonalLoading && personalRecommendedVideo.length === 0;
 
   // React Query: infinite scroll for all videos
   const {
@@ -64,7 +85,10 @@ const HomeContentSection = (): ReactElement => {
   );
 
   // Fetch ALL category data
-  const { data: allCategoryList = [] } = useQuery({
+  const {
+    data: allCategoryList = [],
+    isLoading: isGenreLoading,
+  } = useQuery({
     queryKey: ['videos', 'all'],
     queryFn: () => getVideoList(),
     staleTime: 1000 * 60 * 5, // 5 minutes
@@ -76,6 +100,8 @@ const HomeContentSection = (): ReactElement => {
     allCategoryList.find(
       (category) => category.category_name === CATEGORIES[genreCurrentIndex],
     )?.videos || [];
+
+  const showGenreSkeleton = isGenreLoading && allCategoryList.length === 0;
 
   const genreTitle: Array<string> = CATEGORY_ITEMS.map((item) => item.label);
 
@@ -164,7 +190,11 @@ const HomeContentSection = (): ReactElement => {
           </h3>
           <div className="video-container">
             <div className="genre-video-container">
-              <VideoCarousel videos={personalRecommendedVideo} />
+              {showPersonalSkeleton ? (
+                <VideoCarouselSkeleton />
+              ) : (
+                <VideoCarousel videos={personalRecommendedVideo} />
+              )}
             </div>
           </div>
         </div>
@@ -223,7 +253,11 @@ const HomeContentSection = (): ReactElement => {
           추천 영상을 준비했어요.
         </h3>
         <div className="genre-video-container">
-          <VideoCarousel videos={currentGenreVideos} />
+          {showGenreSkeleton ? (
+            <VideoCarouselSkeleton />
+          ) : (
+            <VideoCarousel videos={currentGenreVideos} />
+          )}
         </div>
       </div>
 
@@ -265,7 +299,7 @@ const HomeContentSection = (): ReactElement => {
               ))}
             </div>
           </div>
-          <div className="video-wrapper">
+          <div className="video-wrapper" ref={videoGridRef}>
             {allVideo.map((v, i) => (
               <VideoItem
                 type="small-emoji"
@@ -279,14 +313,14 @@ const HomeContentSection = (): ReactElement => {
               />
             ))}
             {isLoading &&
-              Array.from({ length: 4 }).map((_, i) => (
+              Array.from({ length: initialSkeletonCount }).map((_, i) => (
                 <VideoCardSkeleton key={`skeleton-${i}`} width="100%" />
               ))}
             {isFetchingNextPage &&
-              Array.from({ length: 4 }).map((_, i) => (
+              Array.from({ length: moreSkeletonCount }).map((_, i) => (
                 <VideoCardSkeleton key={`more-skeleton-${i}`} width="100%" />
               ))}
-            <div ref={targetRef} style={{ width: '100%', height: '20px' }} />
+            <div ref={targetRef} className="video-grid-sentinel" />
           </div>
         </div>
       </div>

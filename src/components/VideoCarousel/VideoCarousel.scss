@@ -1,5 +1,28 @@
 @use 'styles/abstracts' as variables;
 
+// VideoCarousel breakpoints 와 동일한 한 줄 스켈레톤
+.video-carousel-skeleton {
+  display: grid;
+  width: 100%;
+  // Swiper 컨테이너 패딩과 시각적으로 맞춘다
+  padding-top: 16px;
+  padding-bottom: 16px;
+  gap: 16px;
+  grid-template-columns: 1fr;
+
+  @include variables.desktop {
+    padding-bottom: 6px;
+    gap: 16px;
+    // 640~1099: midSlidesPerView (기본 3)
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  @media (min-width: 1100px) {
+    // ≥1100: desktopSlidesPerView (기본 4)
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
 .video-carousel-container {
   display: flex;
   flex-direction: column;

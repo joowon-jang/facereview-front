@@ -8,7 +8,7 @@ import 'swiper/css/navigation';
 import './VideoCarousel.scss';
 
 import { useIsMobile } from 'hooks/useMediaQuery';
-import { BREAKPOINT_PX } from 'constants/index';
+import { BREAKPOINT_PX, TABLET_BREAKPOINT_PX } from 'constants/index';
 import VideoItem from 'components/VideoItem/VideoItem';
 import { VideoDataType } from 'types';
 import { SwiperOptions } from 'swiper/types';
@@ -52,25 +52,25 @@ const VideoCarousel = <T,>({
 
   if (!videos || videos.length === 0) return null;
 
-  // 고정 간격 + VideoItem width="100%" 조합 — Swiper 가 컨테이너 폭을 perView 로 자동 분배.
-  // (이전 desktopContainerWidth 역산은 부모 폭과 무관하게 1200px 을 가정해 좁은 화면에서 깨졌다)
-  const DESKTOP_SPACE_BETWEEN = 24;
+  // 고정 간격 + VideoItem width="100%" — 부모(최대 1280) 폭을 perView 로 분배
+  const DESKTOP_SPACE_BETWEEN = 16;
+  const TABLET_SPACE_BETWEEN = 14;
 
-  // 태블릿 구간(768~1099px)에서는 카드가 너무 작아지지게 perView 를 한 단계 줄인다.
+  // 태블릿(640~1023)은 카드 크기 유지를 위해 perView 한 단계 축소
   const midSlidesPerView = Math.max(2, desktopSlidesPerView - 1);
 
   const dynamicBreakpoints: SwiperOptions['breakpoints'] = {
     0: {
       slidesPerView: 1,
       slidesPerGroup: 1,
-      spaceBetween: 28, // 모바일 기본 간격
+      spaceBetween: 20,
     },
     [BREAKPOINT_PX]: {
       slidesPerView: midSlidesPerView,
       slidesPerGroup: midSlidesPerView,
-      spaceBetween: DESKTOP_SPACE_BETWEEN,
+      spaceBetween: TABLET_SPACE_BETWEEN,
     },
-    1100: {
+    [TABLET_BREAKPOINT_PX]: {
       slidesPerView: desktopSlidesPerView,
       slidesPerGroup: desktopSlidesPerView,
       spaceBetween: DESKTOP_SPACE_BETWEEN,
@@ -155,12 +155,13 @@ const VideoCarousel = <T,>({
         breakpoints={dynamicBreakpoints}
         style={
           {
-            paddingTop: '20px',
-            paddingBottom: isMobile ? '24px' : '8px',
-            paddingLeft: isMobile ? '16px' : '20px',
-            paddingRight: isMobile ? '16px' : '20px',
-            marginLeft: isMobile ? '-16px' : '-20px',
-            marginRight: isMobile ? '-16px' : '-20px',
+            paddingTop: '16px',
+            paddingBottom: isMobile ? '16px' : '6px',
+            // 좌우 0 — 부모 셸 폭을 그대로 사용
+            paddingLeft: 0,
+            paddingRight: 0,
+            marginLeft: 0,
+            marginRight: 0,
             '--swiper-pagination-color': '#76FECE',
             '--swiper-pagination-bullet-inactive-color': '#76FECE',
             '--swiper-pagination-bullet-inactive-opacity': '0.4',
@@ -190,8 +191,8 @@ const VideoCarousel = <T,>({
                     videoMostEmotionPercentage={video.dominant_emotion_per}
                     style={
                       isMobile
-                        ? { marginTop: '14px', marginBottom: '14px' }
-                        : { marginBottom: '56px' }
+                        ? { marginTop: '10px', marginBottom: '10px' }
+                        : { marginBottom: '24px' }
                     }
                     hoverToPlay={hoverToPlay}
                   />

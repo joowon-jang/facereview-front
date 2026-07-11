@@ -7,15 +7,27 @@ import VideoItem from 'components/VideoItem/VideoItem';
 import { EMOTIONS } from 'constants/index';
 import useIntersectionObserver from 'hooks/useIntersectionObserver';
 import { useIsMobile } from 'hooks/useMediaQuery';
-import { ReactElement, useCallback, useMemo, useState } from 'react';
+import useGridColumnCount from 'hooks/useGridColumnCount';
+import { ReactElement, useCallback, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { EmotionType } from 'types';
 
 import './bookmarkpage.scss';
 
+const VIDEO_GRID_MIN_WIDTH = 300;
+const VIDEO_GRID_GAP = 24;
+
 const BookmarkPage = (): ReactElement => {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
+  const videoGridRef = useRef<HTMLDivElement>(null);
+  const gridColumns = useGridColumnCount(
+    videoGridRef,
+    VIDEO_GRID_MIN_WIDTH,
+    VIDEO_GRID_GAP,
+  );
+  const initialSkeletonCount = gridColumns * 2;
+  const moreSkeletonCount = gridColumns;
   const [selectedEmotion, setSelectedEmotion] = useState<'all' | EmotionType>(
     'all',
   );
@@ -96,10 +108,10 @@ const BookmarkPage = (): ReactElement => {
         </div>
       </div>
 
-      <div className="video-wrapper">
+      <div className="video-wrapper" ref={videoGridRef}>
         {isLoading ? (
           <>
-            {Array.from({ length: 8 }).map((_, i) => (
+            {Array.from({ length: initialSkeletonCount }).map((_, i) => (
               <VideoCardSkeleton key={`bookmark-loading-${i}`} width="100%" />
             ))}
           </>
@@ -119,10 +131,10 @@ const BookmarkPage = (): ReactElement => {
               />
             ))}
             {isFetchingNextPage &&
-              Array.from({ length: 4 }).map((_, i) => (
+              Array.from({ length: moreSkeletonCount }).map((_, i) => (
                 <VideoCardSkeleton key={`bookmark-more-${i}`} width="100%" />
               ))}
-            <div ref={targetRef} style={{ width: '100%', height: '20px' }} />
+            <div ref={targetRef} className="video-grid-sentinel" />
           </>
         ) : (
           <div role="status" className="bookmark-empty">
