@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { BREAKPOINT_PX } from 'constants/index';
+import { BREAKPOINT_PX, TABLET_BREAKPOINT_PX } from 'constants/index';
 
 const useMediaQuery = (query: string) => {
   const getMatches = (q: string): boolean =>
@@ -35,9 +35,19 @@ const useMediaQuery = (query: string) => {
   return matches;
 };
 
-// SCSS $breakpoint 와 단일 소스로 동기화되는 모바일 분기 훅.
-// SCSS mobile 믹스인(max-width: $breakpoint - 1px)과 경계를 정확히 일치시킨다.
+// SCSS mixins 와 동기화
+// mobile  < 640
+// tablet  640–1023
+// desktop ≥ 1024
 export const useIsMobile = () =>
   useMediaQuery(`(max-width: ${BREAKPOINT_PX - 1}px)`);
+
+export const useIsTablet = () =>
+  useMediaQuery(
+    `(min-width: ${BREAKPOINT_PX}px) and (max-width: ${TABLET_BREAKPOINT_PX - 1}px)`,
+  );
+
+export const useIsDesktopLg = () =>
+  useMediaQuery(`(min-width: ${TABLET_BREAKPOINT_PX}px)`);
 
 export default useMediaQuery;

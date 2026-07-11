@@ -2,112 +2,159 @@
 
 // ------------------
 // Typography
+// mobile < 640 / tablet 640–1023 / desktop ≥ 1024
+// 기본값 = desktop, tablet·mobile 에서 한 단계씩 축소
 // ------------------
 
 .font-title-large {
   font-weight: 700;
   font-size: 32px;
-  line-height: 48px;
-  letter-spacing: -2%;
+  line-height: 1.35;
+  letter-spacing: -0.02em;
+
+  @include tablet {
+    font-size: 26px;
+    line-height: 1.35;
+  }
 
   @include mobile {
-    font-size: 26px;
-    line-height: 36px;
+    font-size: 24px;
+    line-height: 1.35;
   }
 }
 
 .font-title-medium {
   font-weight: 500;
   font-size: 24px;
-  line-height: 32px;
-  letter-spacing: -2%;
+  line-height: 1.35;
+  letter-spacing: -0.02em;
+
+  @include tablet {
+    font-size: 20px;
+    line-height: 1.4;
+  }
 
   @include mobile {
-    font-size: 21px;
-    line-height: 30px;
+    font-size: 19px;
+    line-height: 1.4;
   }
 }
 
 .font-title-small {
   font-weight: 600;
   font-size: 20px;
-  line-height: 24px;
-  letter-spacing: -2%;
+  line-height: 1.35;
+  letter-spacing: -0.02em;
+
+  @include tablet {
+    font-size: 18px;
+    line-height: 1.4;
+  }
 
   @include mobile {
-    font-size: 18px;
-    line-height: 24px;
+    font-size: 17px;
+    line-height: 1.4;
   }
 }
 
 .font-title-mini {
   font-weight: 600;
   font-size: 16px;
-  line-height: 20px;
-  letter-spacing: -2%;
+  line-height: 1.4;
+  letter-spacing: -0.015em;
+
+  @include tablet {
+    font-size: 15px;
+    line-height: 1.4;
+  }
 
   @include mobile {
-    font-size: 15px;
-    line-height: 20px;
+    font-size: 14px;
+    line-height: 1.45;
   }
 }
 
 .font-body-large {
   font-weight: 400;
   font-size: 16px;
-  line-height: 24px;
-  letter-spacing: -2%;
+  line-height: 1.55;
+  letter-spacing: -0.01em;
+
+  @include tablet {
+    font-size: 15px;
+    line-height: 1.55;
+  }
 
   @include mobile {
-    font-size: 15px;
-    line-height: 22px;
+    font-size: 14px;
+    line-height: 1.55;
   }
 }
 
 .font-body-medium {
   font-weight: 400;
   font-size: 14px;
-  line-height: 20px;
-  letter-spacing: -2%;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+
+  @include tablet {
+    font-size: 13px;
+    line-height: 1.5;
+  }
 
   @include mobile {
-    font-size: 14px;
-    line-height: 20px;
+    font-size: 13px;
+    line-height: 1.5;
   }
 }
 
 .font-label-large {
   font-weight: 700;
   font-size: 16px;
-  line-height: 20px;
-  letter-spacing: -2%;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+
+  @include tablet {
+    font-size: 14px;
+    line-height: 1.25;
+  }
 
   @include mobile {
-    font-size: 15px;
-    line-height: 19px;
+    font-size: 14px;
+    line-height: 1.25;
   }
 }
 
 .font-label-medium {
   font-weight: 600;
   font-size: 14px;
-  line-height: 16px;
-  letter-spacing: -2%;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+
+  @include tablet {
+    font-size: 13px;
+    line-height: 1.2;
+  }
 
   @include mobile {
-    font-size: 14px;
-    line-height: 16px;
+    font-size: 13px;
+    line-height: 1.2;
   }
 }
 
 .font-label-small {
   font-weight: 600;
   font-size: 12px;
-  line-height: 16px;
-  letter-spacing: -2%;
+  line-height: 1.25;
+  letter-spacing: 0;
+
+  @include tablet {
+    font-size: 12px;
+    line-height: 1.25;
+  }
 
   @include mobile {
-    font-size: 12px;
-    line-height: 16px;
+    font-size: 11px;
+    line-height: 1.25;
   }
 }

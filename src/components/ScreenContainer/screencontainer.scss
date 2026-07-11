@@ -1,15 +1,9 @@
-@use "styles/abstracts" as variables;
+@use 'styles/abstracts' as variables;
 
+// 최대 1280px, 뷰포트 양옆 항상 40px 거터
+// 태블릿/좁은 화면에서도 같은 공식으로 폭이 줄어 레이아웃이 깨지지 않음
 .screen-container {
+  @include variables.layout-shell;
   overflow-x: visible;
-  width: 100%;
-  max-width: 1200px;
   min-height: 100vh;
-  margin-inline: auto;
-}
-
-@include variables.mobile {
-  .screen-container {
-    max-width: 100%;
-  }
 }

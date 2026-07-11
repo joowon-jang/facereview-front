@@ -1,79 +1,123 @@
 @use 'variables';
 
+// ─── Breakpoints ───
+// mobile  < 640
+// tablet  640–1023
+// desktop ≥ 1024
+
 @mixin mobile {
   @media (max-width: #{variables.$breakpoint - 1px}) {
     @content;
   }
 }
 
+// 태블릿 전용 (640 ~ 1023)
+@mixin tablet {
+  @media (min-width: #{variables.$breakpoint}) and (max-width: #{variables.$breakpoint-tablet - 1px}) {
+    @content;
+  }
+}
+
+// 태블릿 이상 (≥ 640) — 기존 desktop 호환
 @mixin desktop {
   @media (min-width: #{variables.$breakpoint}) {
     @content;
   }
 }
 
-// ─── 공용 디자인 언어 ───
-// mypage 리디자인에서 시작된 시각 언어를 전 페이지가 공유한다.
-// 유리 카드(surface), 페이지 셸(1200px), 등장 모션, 섹션 아이콘 칩, 감정 오라 배경.
-
-// 유리 카드 서피스 — 레이어 분리가 필요한 모든 콘텐츠 박스에 사용
-@mixin glass-card($radius: 20px) {
-  background: rgba(37, 37, 47, 0.6);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: $radius;
-  box-shadow:
-    0 1px 2px rgba(0, 0, 0, 0.2),
-    0 4px 16px rgba(0, 0, 0, 0.12);
-  transition:
-    transform 0.3s ease,
-    box-shadow 0.3s ease,
-    border-color 0.3s ease;
-
-  &:hover {
-    border-color: rgba(255, 255, 255, 0.1);
-    box-shadow:
-      0 2px 4px rgba(0, 0, 0, 0.25),
-      0 12px 32px rgba(0, 0, 0, 0.2);
+// 데스크톱 전용 (≥ 1024)
+@mixin desktop-lg {
+  @media (min-width: #{variables.$breakpoint-tablet}) {
+    @content;
   }
 }
 
-// 콘텐츠 페이지 셸 — 1200px 중앙 정렬 + 반응형 좌우 여백
+// ─── 공용 디자인 언어 ───
+
+// 카드 면 없음 — radius 만 (하위 호환용, 배경/테두리 부여 금지)
+@mixin glass-card($radius: 12px) {
+  border-radius: $radius;
+  background: transparent;
+}
+
+// 카드 면 없음 — radius 만
+@mixin surface-panel($radius: 10px) {
+  border-radius: $radius;
+  background: transparent;
+}
+
+// 계정/폼 페이지 공통 셸 — 플로팅 카드 대신 페이지 배경 위 열린 컬럼
+@mixin account-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  min-height: 100%;
+  box-sizing: border-box;
+  padding: 48px 0 96px;
+
+  @include tablet {
+    padding: 36px 0 80px;
+  }
+
+  @include mobile {
+    padding: 28px 0 72px;
+  }
+}
+
+// 계정/폼 본문 컬럼 (카드 박스 없음)
+@mixin account-column($max-width: 420px) {
+  width: 100%;
+  max-width: $max-width;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+// 섹션 구분선 (카드 대신 수평 규칙)
+@mixin section-rule {
+  border: 0;
+  border-top: 1px solid variables.$gray-80;
+  margin: 0;
+}
+
 @mixin page-shell {
   width: 100%;
-  max-width: 1200px;
+  max-width: variables.$layout-max-width;
   margin-inline: auto;
-  padding-inline: clamp(16px, 4vw, 48px);
+  box-sizing: border-box;
 }
 
-// 등장 모션 (keyframes 는 base/motion 에 전역 1회 정의)
-@mixin rise($delay: 0s) {
-  animation: fadeInUp 0.6s ease-out $delay both;
-}
+// 본문/헤더 공통 가로 셸
+// 모바일 16 / 태블릿 24 / 데스크톱 40 거터
+@mixin layout-shell {
+  max-width: variables.$layout-max-width;
+  margin-inline: auto;
+  box-sizing: border-box;
+  width: min(
+    #{variables.$layout-max-width},
+    calc(100% - #{variables.$layout-gutter-desktop * 2})
+  );
 
-// 무대형 페이지(인증·튜토리얼·404 등 단일 카드 페이지)의 감정 오라 배경.
-// 민트(위) + 피치(아래) 라디얼 글로우를 아주 옅게 깐다.
-@mixin emotion-aura {
-  position: relative;
-  isolation: isolate;
-
-  &::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    z-index: -1;
-    pointer-events: none;
-    background:
-      radial-gradient(
-        640px 640px at 14% -6%,
-        rgba(118, 255, 206, 0.06),
-        transparent 64%
-      ),
-      radial-gradient(
-        720px 720px at 88% 110%,
-        rgba(255, 152, 113, 0.05),
-        transparent 64%
-      );
+  @include tablet {
+    width: min(
+      #{variables.$layout-max-width},
+      calc(100% - #{variables.$layout-gutter-tablet * 2})
+    );
   }
+
+  @include mobile {
+    width: min(
+      #{variables.$layout-max-width},
+      calc(100% - #{variables.$layout-gutter-mobile * 2})
+    );
+  }
+}
+
+@mixin rise($delay: 0s) {
+  animation: fadeInUp 0.5s ease-out $delay both;
+}
+
+@mixin emotion-aura {
+  // no-op
 }

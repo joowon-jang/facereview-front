@@ -52,8 +52,11 @@ export const EMOTION_COLORS = {
   surprise: '#92C624',
   sad: '#479CFF',
   angry: '#FF6B4B',
-  neutral: '#5d5d6d',
+  neutral: '#7E8FA6',
 } as const;
 
-// 반응형 분기점(데스크톱 = 이 값 이상). SCSS 의 $breakpoint 와 단일 소스로 동기화.
-export const BREAKPOINT_PX = 768;
+// 반응형 분기점 — SCSS $breakpoint / $breakpoint-tablet 과 동기화
+// 관례: Tailwind sm=640 / md≈768 계열, lg=1024
+// mobile < 640 ≤ tablet < 1024 ≤ desktop
+export const BREAKPOINT_PX = 640;
+export const TABLET_BREAKPOINT_PX = 1024;

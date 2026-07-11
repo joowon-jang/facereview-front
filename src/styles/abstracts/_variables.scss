@@ -18,8 +18,8 @@ $category-sad-basic: #479cff;
 $category-sad-tinted: rgba(71, 156, 255, 0.6);
 $category-angry-basic: #ff6b4b;
 $category-angry-tinted: rgba(255, 108, 75, 0.6);
-$category-neutral-basic: #5d5d6d;
-$category-neutral-tinted: rgba(93, 93, 109, 0.6);
+$category-neutral-basic: #7e8fa6;
+$category-neutral-tinted: rgba(126, 143, 166, 0.6);
 
 $primary-basic: #76ffce;
 $primary-02: rgba(118, 255, 206, 0.2);
@@ -42,4 +42,20 @@ $system-error: #e74d4d;
 $system-dim-black: rgba(21, 21, 29, 0.7);
 $system-dim-white: rgba(255, 255, 255, 0.2);
 
-$breakpoint: 768px; // constants/index.ts 의 BREAKPOINT_PX 와 동기화
+// 반응형 분기 — constants/index.ts 의 BREAKPOINT_* 와 동기화
+// 관례: Tailwind sm=640 / lg=1024
+// mobile:  < 640
+// tablet:  640 ~ 1023
+// desktop: >= 1024
+$breakpoint: 640px;
+$breakpoint-tablet: 1024px;
+
+// 레이아웃 셸 — 콘텐츠 최대 1280, 뷰포트 양옆 거터
+// 실제 폭: min(1280px, 100% - gutter*2)
+// 640 태블릿 구간에 맞춰 단계: 16 → 20 → 40
+$layout-max-width: 1280px;
+$layout-gutter-desktop: 40px;
+$layout-gutter-tablet: 20px;
+$layout-gutter-mobile: 16px;
+// 하위 호환 alias
+$layout-gutter: $layout-gutter-desktop;
