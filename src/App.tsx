@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Router from './components/Router';
+import ErrorBoundary from 'components/ErrorBoundary/ErrorBoundary';
 import { useAuthStorage } from 'store/authStore';
 import { getUserName } from 'api/auth';
 
@@ -48,7 +49,9 @@ function App() {
   }, []);
   return (
     <div className="App">
-      <Router />
+      <ErrorBoundary>
+        <Router />
+      </ErrorBoundary>
       <ToastContainer
         position="bottom-right"
         autoClose={3000}
