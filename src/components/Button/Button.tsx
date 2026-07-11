@@ -20,7 +20,6 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   className?: string;
   style?: React.CSSProperties;
   disabled?: boolean;
-  restProps?: ButtonHTMLAttributes<HTMLButtonElement>;
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(

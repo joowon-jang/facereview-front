@@ -303,7 +303,7 @@ const HomeContentSection = (): ReactElement => {
             {allVideo.map((v, i) => (
               <VideoItem
                 type="small-emoji"
-                key={v.youtube_url || i}
+                key={`${v.youtube_url}-${i}`}
                 width="100%"
                 videoId={v.youtube_url}
                 videoUuid={v.uuid ?? v.id ?? v.video_id}

@@ -114,8 +114,9 @@ const VideoItem = memo(
           style={typeof width === 'number' ? { width, height } : { width: '100%', aspectRatio: '16/9' }}>
           <img
             className={`video-thumbnail ${hoverToPlay ? '' : 'fix'}`}
-            width={typeof width === 'number' ? width : '100%'}
-            height={typeof width === 'number' ? height : '100%'}
+            // width/height HTML 속성은 숫자만 유효 — 반응형(%)일 땐 부모의
+            // width/aspectRatio 스타일이 크기를 결정하므로 속성을 생략한다.
+            {...(typeof width === 'number' ? { width, height } : {})}
             src={`https://img.youtube.com/vi/${parsedVideoId}/mqdefault.jpg`}
             alt={videoTitle}
             loading={priority ? 'eager' : 'lazy'}

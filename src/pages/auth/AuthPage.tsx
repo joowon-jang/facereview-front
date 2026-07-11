@@ -35,7 +35,7 @@ const AuthPage = () => {
     useState('');
   const [nicknameAlertMessage, setNicknameAlertMessage] = useState('');
   const [isSignIn, setIsSignIn] = useState(true);
-  const [isSingInSuccess, setIsSignInSuccess] = useState(false);
+  const [isSignInSuccess, setIsSignInSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const emailInputRef = useRef<HTMLInputElement>(null);
@@ -260,7 +260,7 @@ const AuthPage = () => {
         path={`/auth/${currentStep}`}
       />
       <div className="auth-container">
-        <StepIndicator step={isSingInSuccess ? 3 : currentStep} maxStep={3} />
+        <StepIndicator step={isSignInSuccess ? 3 : currentStep} maxStep={3} />
 
         <div className="logo-wrapper">
           <Link to="/" aria-label="홈으로 이동">
