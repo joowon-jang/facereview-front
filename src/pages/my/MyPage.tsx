@@ -619,6 +619,8 @@ const MyPage = () => {
               onChange={(e) => setVerificationCode(e.target.value)}
               placeholder="6자리 코드"
               maxLength={6}
+              inputMode="numeric"
+              autoComplete="one-time-code"
               aria-label="6자리 인증 코드"
               style={{
                 width: '100%',

@@ -200,7 +200,8 @@ const VideoRecommendModal = ({
               <img
                 className="main-page-modal-thumbnail-empty-image"
                 src={youtubeIcon}
-                alt="youtubeIcon"
+                alt=""
+                aria-hidden="true"
               />
             </div>
           )}

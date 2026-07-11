@@ -35,7 +35,7 @@ const AuthPage = () => {
     useState('');
   const [nicknameAlertMessage, setNicknameAlertMessage] = useState('');
   const [isSignIn, setIsSignIn] = useState(true);
-  const [isSingInSuccess, setIsSingInSuccess] = useState(false);
+  const [isSingInSuccess, setIsSignInSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const emailInputRef = useRef<HTMLInputElement>(null);
@@ -150,7 +150,7 @@ const AuthPage = () => {
 
                 if (userRes.status === 200) {
                   const userData = userRes.data;
-                  setIsSingInSuccess(true);
+                  setIsSignInSuccess(true);
 
                   setUserInfo({
                     is_admin: userData.role === 'ADMIN',
@@ -289,6 +289,8 @@ const AuthPage = () => {
               <TextInput
                 ref={emailInputRef}
                 id="authEmail"
+                type="email"
+                autoComplete="email"
                 value={email}
                 onChange={(e) => handleEmailChange(e.target.value)}
                 placeholder="ex) haha@facereview.com"
@@ -312,6 +314,7 @@ const AuthPage = () => {
                 ref={passwordInputRef}
                 id="authPassword"
                 type="password"
+                autoComplete={isSignIn ? 'current-password' : 'new-password'}
                 value={password}
                 onChange={(e) => handlePasswordChange(e.target.value)}
                 placeholder="최소 8자의 비밀번호를 입력해주세요"
@@ -332,6 +335,7 @@ const AuthPage = () => {
               <TextInput
                 id="authPasswordConfirm"
                 type="password"
+                autoComplete="new-password"
                 value={confirmPassword}
                 onChange={(e) => handleConfirmPasswordChange(e.target.value)}
                 placeholder="비밀번호를 다시 한 번 입력해주세요"
@@ -353,6 +357,7 @@ const AuthPage = () => {
                 <TextInput
                   ref={nicknameInputRef}
                   id="authNickname"
+                  autoComplete="nickname"
                   value={nickname}
                   onChange={(e) => handleNicknameChange(e.target.value)}
                   placeholder="최소 2자의 닉네임을 입력해주세요"

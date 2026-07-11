@@ -379,8 +379,9 @@ const WatchPage = (): ReactElement => {
   const handleCommentSubmit = () => {
     if (!requireSignIn()) return;
     if (commentMutation.isPending) return;
-    if (comment.length > 0) {
-      commentMutation.mutate(comment);
+    const trimmed = comment.trim();
+    if (trimmed.length > 0) {
+      commentMutation.mutate(trimmed);
     }
   };
 
@@ -652,6 +653,21 @@ const WatchPage = (): ReactElement => {
     openModal2();
   };
 
+  const handleModifyingCommentSave = () => {
+    const trimmed = modifyingComment.trim();
+    if (
+      editingcommentindex === null ||
+      trimmed.length === 0 ||
+      modifyCommentMutation.isPending
+    ) {
+      return;
+    }
+    modifyCommentMutation.mutate({
+      comment_id: editingcommentindex,
+      content: trimmed,
+    });
+  };
+
   const handleCommentStartEditing = (commentId: string) => {
     setIsEditVisible(null);
     setEditingcommentindex(commentId);
@@ -888,7 +904,8 @@ const WatchPage = (): ReactElement => {
             <img
               className="watch-page-modal-image"
               src={safeImage}
-              alt="safe-img"
+              alt=""
+              aria-hidden="true"
             />
           </div>
           <div className="watch-page-modal-label-container">
@@ -1061,7 +1078,7 @@ const WatchPage = (): ReactElement => {
               isDisabled={commentMutation.isPending}
               style={{
                 marginLeft: '12px',
-                display: comment.length > 0 ? 'block' : 'none',
+                display: comment.trim().length > 0 ? 'block' : 'none',
               }}
             />
           </div>
@@ -1113,7 +1130,14 @@ const WatchPage = (): ReactElement => {
                         variant="underline"
                         value={modifyingComment}
                         onChange={(e) => setModifyingComment(e.target.value)}
+                        onKeyDown={(e) => {
+                          // 한글 IME 조합 중 Enter 는 무시 (isComposing)
+                          if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
+                            handleModifyingCommentSave();
+                          }
+                        }}
                         placeholder={''}
+                        aria-label="댓글 수정"
                         style={{ marginBottom: '16px' }}
                       />
                       <div className="comment-modifying-button-wrapper">
@@ -1129,17 +1153,10 @@ const WatchPage = (): ReactElement => {
                           type="button"
                           className="comment-modifying-save font-label-small"
                           disabled={
-                            modifyingComment.length === 0 ||
+                            modifyingComment.trim().length === 0 ||
                             modifyCommentMutation.isPending
                           }
-                          onClick={() => {
-                            if (editingcommentindex !== null) {
-                              modifyCommentMutation.mutate({
-                                comment_id: editingcommentindex,
-                                content: modifyingComment,
-                              });
-                            }
-                          }}>
+                          onClick={handleModifyingCommentSave}>
                           저장
                         </button>
                       </div>

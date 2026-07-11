@@ -154,6 +154,7 @@ const PasswordChangePage = () => {
                     placeholder="6자리 코드"
                     maxLength={6}
                     inputMode="numeric"
+                    autoComplete="one-time-code"
                     aria-label="6자리 인증 코드"
                   />
                   <Button
@@ -192,6 +193,7 @@ const PasswordChangePage = () => {
                 id="newPassword"
                 className="password-input"
                 type="password"
+                autoComplete="new-password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 placeholder="새 비밀번호 입력"
@@ -201,6 +203,7 @@ const PasswordChangePage = () => {
                 id="newPasswordConfirm"
                 className="password-input"
                 type="password"
+                autoComplete="new-password"
                 value={newPasswordConfirm}
                 onChange={(e) => setNewPasswordConfirm(e.target.value)}
                 placeholder="새 비밀번호 다시 입력"
