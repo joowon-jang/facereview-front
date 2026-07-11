@@ -85,11 +85,27 @@ const WEBCAM_STYLE = {
   marginBottom: '24px',
 };
 const PROFILE_ICON_STYLE = { marginRight: '12px' };
+// videoConstraints 는 카메라 캡처 해상도(품질)만 결정. 렌더링 크기는 WEBCAM_STYLE(width:100%) 이 담당.
+const WEBCAM_OPTIONS = {
+  width: 640,
+  height: 360,
+};
 
 // 타임라인 그래프는 데이터 없는 감정 시리즈가 필터링되므로, 순서 기반 배열 대신
 // 시리즈 id 로 색상을 매핑해야 감정-색상이 어긋나지 않는다.
 const LINE_CHART_COLORS = (serie: ScaledGraphDistributionDataType) =>
   EMOTION_COLORS[serie.id];
+
+const createInitialEmotionGraphData = (graphId: string) => [
+  EMOTIONS.reduce(
+    (acc, emotion) => ({
+      ...acc,
+      [emotion]: emotion === 'neutral' ? 100 : 0,
+      [`${emotion}Color`]: EMOTION_COLORS[emotion],
+    }),
+    { id: graphId } as Record<string, string | number>,
+  ),
+];
 
 const formatSecondsToClock = (seconds: number): string => {
   const total = Math.max(0, Math.floor(seconds));
@@ -173,14 +189,9 @@ const WatchPage = (): ReactElement => {
   const user_announced = useAuthStorage((s) => s.user_announced);
   const setUserAnnounced = useAuthStorage((s) => s.setUserAnnounced);
 
-  const [videoViewLogId] = useState<string>(uuidv4()); // Generate log ID once
+  const [videoViewLogId, setVideoViewLogId] = useState<string>(() => uuidv4());
 
   const webcamRef = useRef<Webcam>(null);
-  // videoConstraints 는 카메라 캡처 해상도(품질)만 결정. 렌더링 크기는 WEBCAM_STYLE(width:100%) 이 담당.
-  const webcamOptions = {
-    width: 640,
-    height: 360,
-  };
 
   const [webcamError, setWebcamError] = useState<
     'denied' | 'unavailable' | null
@@ -201,26 +212,12 @@ const WatchPage = (): ReactElement => {
     setWebcamKey((prev) => prev + 1);
   };
 
-  const [myGraphData, setMyGraphData] = useState([
-    EMOTIONS.reduce(
-      (acc, emotion) => ({
-        ...acc,
-        [emotion]: emotion === 'neutral' ? 100 : 0,
-        [`${emotion}Color`]: EMOTION_COLORS[emotion],
-      }),
-      { id: 'my-emotion' } as Record<string, string | number>,
-    ),
-  ]);
-  const [othersGraphData, setOthersGraphData] = useState([
-    EMOTIONS.reduce(
-      (acc, emotion) => ({
-        ...acc,
-        [emotion]: emotion === 'neutral' ? 100 : 0,
-        [`${emotion}Color`]: EMOTION_COLORS[emotion],
-      }),
-      { id: 'others-emotion' } as Record<string, string | number>,
-    ),
-  ]);
+  const [myGraphData, setMyGraphData] = useState(() =>
+    createInitialEmotionGraphData('my-emotion'),
+  );
+  const [othersGraphData, setOthersGraphData] = useState(() =>
+    createInitialEmotionGraphData('others-emotion'),
+  );
   const queryClient = useQueryClient();
 
   const {
@@ -446,6 +443,22 @@ const WatchPage = (): ReactElement => {
     window.scrollTo(0, 0);
   }, [id]);
 
+  // 관련 영상으로 이동해도 컴포넌트는 리마운트되지 않으므로, 영상이 바뀌면
+  // 시청 로그 ID(백엔드가 세션 단위로 집계)와 이전 영상의 길이·감정 상태를
+  // 초기화해야 새 영상 데이터에 섞이지 않는다.
+  const prevVideoIdRef = useRef(id);
+  useEffect(() => {
+    if (prevVideoIdRef.current === id) return;
+    prevVideoIdRef.current = id;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setVideoViewLogId(uuidv4());
+    setPlayerDuration(null);
+    setCurrentMyEmotion('neutral');
+    setCurrentOthersEmotion('neutral');
+    setMyGraphData(createInitialEmotionGraphData('my-emotion'));
+    setOthersGraphData(createInitialEmotionGraphData('others-emotion'));
+  }, [id]);
+
   const effectiveDuration = playerDuration ?? videoData?.duration ?? 0;
 
   const videoGraphData = useMemo(() => {
@@ -534,10 +547,7 @@ const WatchPage = (): ReactElement => {
   }, [id, is_sign_in]);
 
   useEffect(() => {
-    const captureInterval = setInterval(() => {
-      capture();
-    }, 500);
-
+    // 0.5초마다 웹캠 프레임을 캡처해 감정 분석 서버로 전송한다.
     const frameDataInterval = setInterval(async () => {
       // Only emit if signed in, video is playing/ready, and actually playing (state 1)
       if (!is_sign_in || !video || !videoData) return;
@@ -596,11 +606,10 @@ const WatchPage = (): ReactElement => {
           }
         },
       );
-    }, 1000);
+    }, 500);
 
     return () => {
       clearInterval(frameDataInterval);
-      clearInterval(captureInterval);
     };
   }, [
     access_token,
@@ -746,7 +755,7 @@ const WatchPage = (): ReactElement => {
         audio={false}
         ref={webcamRef}
         screenshotFormat="image/jpeg"
-        videoConstraints={webcamOptions}
+        videoConstraints={WEBCAM_OPTIONS}
         mirrored={true}
         screenshotQuality={0.5}
         onUserMediaError={handleWebcamError}
