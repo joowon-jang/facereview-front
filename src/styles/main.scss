@@ -27,10 +27,21 @@ body {
   background-color: variables.$bg;
 }
 
-// Reserve space for the vertical scrollbar so toggling overflow
-// (modal open/close, content growing) never shifts the layout.
+// Reserve vertical scrollbar space so centered layouts never shift when
+// content grows past the viewport (MyPage charts, infinite grids, etc.).
 html {
+  height: 100%;
   scrollbar-gutter: stable;
+  // Fallback for browsers without scrollbar-gutter support
+  @supports not (scrollbar-gutter: stable) {
+    overflow-y: scroll;
+  }
+}
+
+body {
+  // Keep a single viewport scrollport (html) so gutter always applies.
+  min-height: 100%;
+  overflow-x: clip;
 }
 
 .srOnly {

@@ -1,5 +1,6 @@
 import React, { ReactElement, useEffect } from 'react';
 import ReactModal from 'react-modal';
+import { lockBodyScroll, unlockBodyScroll } from 'utils/scrollLock';
 import './modaldialog.scss';
 
 type ModalDialogPropTypes = {
@@ -20,6 +21,13 @@ const ModalDialog = ({
     const el = document.getElementById('root');
     if (el) ReactModal.setAppElement(el);
   }, []);
+
+  // Nested-safe scroll lock; html scrollbar-gutter keeps width stable.
+  useEffect(() => {
+    if (!isOpen) return;
+    lockBodyScroll();
+    return () => unlockBodyScroll();
+  }, [isOpen]);
 
   return (
     <ReactModal

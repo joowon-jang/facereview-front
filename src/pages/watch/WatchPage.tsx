@@ -387,14 +387,6 @@ const WatchPage = (): ReactElement => {
     }
   };
 
-  useEffect(() => {
-    if (isModalOpen1 || isModalOpen2) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'auto';
-    }
-  }, [isModalOpen1, isModalOpen2]);
-
   const openModal1 = () => {
     setIsModalOpen1(true);
   };
