@@ -109,6 +109,8 @@ const MyPage = () => {
     'all',
   );
 
+  const [showRawSeconds, setShowRawSeconds] = useState(false);
+
   // React Query: fetch recent videos
   const { data: recentVideo = [], isLoading: isRecentLoading } = useQuery<
     VideoWatchedType[]
@@ -154,8 +156,10 @@ const MyPage = () => {
 
   const totalWatchLabel = useMemo(() => {
     if (totalSeconds <= 0) return '—';
-    return formatDuration(totalSeconds);
-  }, [totalSeconds]);
+    return showRawSeconds
+      ? `${Math.floor(totalSeconds).toLocaleString()}초`
+      : formatDuration(totalSeconds);
+  }, [totalSeconds, showRawSeconds]);
 
   const totalWatchSizeClass = useMemo(() => {
     if (totalWatchLabel.length >= 14) return ' is-long';
@@ -461,6 +465,19 @@ const MyPage = () => {
             <h2 className={isMobile ? 'font-title-small' : 'font-title-medium'}>
               나의 감정 그래프
             </h2>
+            <label className="raw-seconds-toggle">
+              <span className="raw-seconds-toggle-label">초 단위로 보기</span>
+              <span className="raw-seconds-toggle-switch">
+                <input
+                  type="checkbox"
+                  checked={showRawSeconds}
+                  onChange={() => setShowRawSeconds((prev) => !prev)}
+                />
+                <span className="raw-seconds-toggle-track" aria-hidden="true">
+                  <span className="raw-seconds-toggle-thumb" />
+                </span>
+              </span>
+            </label>
           </div>
           <div className="my-page-emotion-graph-container">
             {isEmotionLoading ? (
@@ -548,7 +565,11 @@ const MyPage = () => {
                           {PAST_TENSE_LABELS[emotion]}
                         </span>
                         <span className={`stat-value ${emotion}`}>
-                          {formatDuration(emotionTimeData?.[emotion] || 0)}
+                          {showRawSeconds
+                            ? `${Math.floor(
+                                emotionTimeData?.[emotion] || 0,
+                              ).toLocaleString()}초`
+                            : formatDuration(emotionTimeData?.[emotion] || 0)}
                         </span>
                       </div>
                     ))}
