@@ -476,6 +476,42 @@ const WatchPage = (): ReactElement => {
     }
   }, [user_announced]);
 
+  // '실시간 다른 사람들의 감정'은 현재 재생 위치에 해당하는 timeline_data
+  // (과거 시청자들의 진행률 bin 별 감정 분포)로 표시한다. 소켓 응답의
+  // average_emotion 은 내 세션의 누적 평균만 담겨 와서 소스로 쓸 수 없다.
+  useEffect(() => {
+    const timelineData = videoData?.timeline_data;
+    if (!video || !timelineData || effectiveDuration <= 0) return;
+
+    const interval = setInterval(async () => {
+      const currentTime = await video.getCurrentTime();
+      if (!Number.isFinite(currentTime)) return;
+
+      // timeline_data 의 x 는 진행률 bin(1~100), bin k 는 ((k-1)..k]/100 구간
+      const bin = Math.min(
+        Math.max(Math.ceil((currentTime / effectiveDuration) * 100), 1),
+        100,
+      );
+
+      const values = EMOTIONS.map((emotion) => {
+        const point = timelineData[emotion]?.find((p) => Number(p.x) === bin);
+        return { emotion, y: typeof point?.y === 'number' ? point.y : 0 };
+      });
+      const total = values.reduce((sum, v) => sum + v.y, 0);
+      if (total <= 0) return; // 해당 구간에 시청 기록이 없으면 직전 값 유지
+
+      const percentages = Object.fromEntries(
+        values.map((v) => [v.emotion, Math.round((v.y / total) * 1000) / 10]),
+      );
+      const most = values.reduce((a, b) => (b.y > a.y ? b : a)).emotion;
+
+      setCurrentOthersEmotion(most);
+      setOthersGraphData((prev) => [{ ...prev[0], ...percentages }]);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [video, videoData, effectiveDuration]);
+
   useEffect(() => {
     if (is_sign_in) {
       if (disconnectTimerRef.current) {
@@ -540,30 +576,29 @@ const WatchPage = (): ReactElement => {
             user_emotion: {
               most_emotion: EmotionType;
               [key: string]: string | number;
-            };
+            } | null;
+            // 주의: average_emotion 은 '다른 사람들'이 아니라 내 세션에서 보낸
+            // 프레임들의 누적 평균만 담겨 온다(다른 세션 데이터 미포함).
+            // 세션 첫 프레임에서는 null. '다른 사람들의 감정'은 timeline_data
+            // 기반 효과가 담당하므로 여기서는 사용하지 않는다.
             average_emotion: {
               most_emotion: EmotionType;
               [key: string]: string | number;
-            };
+            } | null;
           };
         }) => {
           if (response?.status === 'success' && response?.response) {
-            const { user_emotion, average_emotion } = response.response;
+            const { user_emotion } = response.response;
 
-            setCurrentMyEmotion(user_emotion.most_emotion);
-            setMyGraphData((prev) => [
-              {
-                ...prev[0],
-                ...user_emotion, // This assumes user_emotion keys match graph data keys
-              },
-            ]);
-            setCurrentOthersEmotion(average_emotion.most_emotion);
-            setOthersGraphData((prev) => [
-              {
-                ...prev[0],
-                ...average_emotion,
-              },
-            ]);
+            if (user_emotion) {
+              setCurrentMyEmotion(user_emotion.most_emotion);
+              setMyGraphData((prev) => [
+                {
+                  ...prev[0],
+                  ...user_emotion, // This assumes user_emotion keys match graph data keys
+                },
+              ]);
+            }
           } else if (response?.status === 'error') {
             console.error('[Socket] watch_frame error:', response);
           }
@@ -761,6 +796,7 @@ const WatchPage = (): ReactElement => {
               role="application"
               ariaLabel="실시간 감정 분석 차트"
               barAriaLabel={(e) => `${e.id}: ${e.formattedValue}%`}
+              tooltip={() => null}
             />
           </div>
 
@@ -809,6 +845,7 @@ const WatchPage = (): ReactElement => {
               role="application"
               ariaLabel="실시간 감정 분석 차트"
               barAriaLabel={(e) => `${e.id}: ${e.formattedValue}%`}
+              tooltip={() => null}
             />
           </div>
           <div className="graph-detail-container">
@@ -932,6 +969,9 @@ const WatchPage = (): ReactElement => {
                     type: 'linear',
                     min: 0,
                     max: effectiveDuration || 100,
+                    // d3 nice() 가 도메인을 471→500 처럼 확장해 시간축이
+                    // 유튜브 진행바와 어긋나므로 반드시 꺼야 한다
+                    nice: false,
                   }}
                   yScale={{
                     type: 'linear',
@@ -1203,6 +1243,7 @@ const WatchPage = (): ReactElement => {
                   role="application"
                   ariaLabel="실시간 감정 분석 차트"
                   barAriaLabel={(e) => `${e.id}: ${e.formattedValue}%`}
+                  tooltip={() => null}
                 />
               </div>
               <div className="graph-detail-container">
@@ -1249,6 +1290,7 @@ const WatchPage = (): ReactElement => {
                   role="application"
                   ariaLabel="실시간 감정 분석 차트"
                   barAriaLabel={(e) => `${e.id}: ${e.formattedValue}%`}
+                  tooltip={() => null}
                 />
               </div>
               <div className="graph-detail-container">
