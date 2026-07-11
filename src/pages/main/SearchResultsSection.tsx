@@ -6,6 +6,7 @@ import VideoCardSkeleton from 'components/Skeleton/VideoCardSkeleton';
 import { useIsMobile } from 'hooks/useMediaQuery';
 import useIntersectionObserver from 'hooks/useIntersectionObserver';
 import useGridColumnCount from 'hooks/useGridColumnCount';
+import { useAvailableVideos } from 'hooks/useAvailableVideos';
 
 const VIDEO_GRID_MIN_WIDTH = 300;
 const VIDEO_GRID_GAP = 24;
@@ -44,9 +45,11 @@ const SearchResultsSection = ({
       initialPageParam: 1,
     });
 
-  const videos = useMemo(() => {
+  const videosRaw = useMemo(() => {
     return data?.pages.flatMap((page) => page.videos) || [];
   }, [data]);
+  // 유튜브에서 삭제/비공개 처리된 영상은 검색 결과에서 제외한다.
+  const videos = useAvailableVideos(videosRaw);
 
   const onIntersect: IntersectionObserverCallback = useCallback(
     ([entry]) => {

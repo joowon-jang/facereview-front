@@ -56,6 +56,7 @@ import type { ScaledGraphDistributionDataType } from 'utils/emotion';
 import { useIsMobile } from 'hooks/useMediaQuery';
 import useWindowSize from 'hooks/useWindowSize';
 import { useRequireSignIn } from 'hooks/useRequireSignIn';
+import { useAvailableVideos } from 'hooks/useAvailableVideos';
 import { EMOTION_COLORS, EMOTION_LABELS, EMOTIONS } from 'constants/index';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import GraphDetailDataItem from 'components/GraphDetailDataItem/GraphDetailDataItem';
@@ -288,13 +289,14 @@ const WatchPage = (): ReactElement => {
     enabled: !!id,
   });
 
-  const { data: relatedVideoList = [], isLoading: isRelatedLoading } = useQuery(
-    {
+  const { data: relatedVideoListRaw = [], isLoading: isRelatedLoading } =
+    useQuery({
       queryKey: ['relatedVideos', id],
       queryFn: () => getRelatedVideo({ video_id: id || '' }),
       enabled: !!id,
-    },
-  );
+    });
+  // 유튜브에서 삭제/비공개 처리된 영상은 추천 목록에서 제외한다.
+  const relatedVideoList = useAvailableVideos(relatedVideoListRaw);
 
   const { data: commentList = [], isLoading: isCommentsLoading } = useQuery({
     queryKey: ['videoComments', id],

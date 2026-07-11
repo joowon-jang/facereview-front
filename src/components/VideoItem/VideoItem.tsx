@@ -2,7 +2,7 @@ import { ReactElement, useState, useMemo, memo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import YouTube, { YouTubeEvent } from 'react-youtube';
 import { EmotionType } from 'types';
-import { emojiOfEmotion, labelOfEmotion } from 'utils';
+import { emojiOfEmotion, labelOfEmotion, parseYoutubeId } from 'utils';
 import { YouTubePlayer } from 'youtube-player/dist/types';
 import './videoitem.scss';
 
@@ -56,14 +56,7 @@ const VideoItem = memo(
     const [video, setVideo] = useState<YouTubePlayer | null>(null);
     const [isHovered, setIsHovered] = useState(false);
 
-    const parsedVideoId = useMemo(() => {
-      if (videoId?.includes('v=')) {
-        return videoId.split('v=')[1]?.split('&')[0] || videoId;
-      } else if (videoId?.includes('youtu.be/')) {
-        return videoId.split('youtu.be/')[1]?.split('?')[0] || videoId;
-      }
-      return videoId;
-    }, [videoId]);
+    const parsedVideoId = useMemo(() => parseYoutubeId(videoId), [videoId]);
 
     const loadedVideoMostEmotion: string = videoMostEmotion as string;
 

@@ -1,4 +1,5 @@
 export * from './emotion';
+export * from './youtube';
 
 export const getTimeToString = (time: string): string => {
   const currentDate = new Date();

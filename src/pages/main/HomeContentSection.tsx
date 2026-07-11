@@ -23,6 +23,7 @@ import {
 import useIntersectionObserver from 'hooks/useIntersectionObserver';
 import { useIsMobile } from 'hooks/useMediaQuery';
 import useGridColumnCount from 'hooks/useGridColumnCount';
+import { useAvailableVideos } from 'hooks/useAvailableVideos';
 
 // mainpage.scss `.video-wrapper` 와 동기화 (1280 기준 4열)
 const VIDEO_GRID_MIN_WIDTH = 300;
@@ -49,7 +50,7 @@ const HomeContentSection = (): ReactElement => {
 
   // React Query: personal recommended videos
   const {
-    data: personalRecommendedVideo = [],
+    data: personalRecommendedVideoRaw = [],
     isLoading: isPersonalLoading,
   } = useQuery({
     queryKey: ['personalRecommended'],
@@ -57,6 +58,10 @@ const HomeContentSection = (): ReactElement => {
     enabled: is_sign_in,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
+  // 유튜브에서 삭제/비공개 처리된 영상은 목록에서 제외한다.
+  const personalRecommendedVideo = useAvailableVideos(
+    personalRecommendedVideoRaw,
+  );
   // 캐시가 없을 때만 스켈레톤 (백그라운드 refetch 중엔 기존 데이터 유지)
   const showPersonalSkeleton =
     is_sign_in && isPersonalLoading && personalRecommendedVideo.length === 0;
@@ -79,10 +84,12 @@ const HomeContentSection = (): ReactElement => {
     initialPageParam: 1,
   });
 
-  const allVideo = useMemo(
+  const allVideoRaw = useMemo(
     () => allVideoData?.pages.flatMap((page) => page) || [],
     [allVideoData],
   );
+  // 유튜브에서 삭제/비공개 처리된 영상은 목록에서 제외한다.
+  const allVideo = useAvailableVideos(allVideoRaw);
 
   // Fetch ALL category data
   const {
@@ -96,10 +103,12 @@ const HomeContentSection = (): ReactElement => {
 
   const [genreCurrentIndex, setGenreCurrentIndex] = useState<number>(0);
 
-  const currentGenreVideos =
+  const currentGenreVideosRaw =
     allCategoryList.find(
       (category) => category.category_name === CATEGORIES[genreCurrentIndex],
     )?.videos || [];
+  // 유튜브에서 삭제/비공개 처리된 영상은 목록에서 제외한다.
+  const currentGenreVideos = useAvailableVideos(currentGenreVideosRaw);
 
   const showGenreSkeleton = isGenreLoading && allCategoryList.length === 0;
 
