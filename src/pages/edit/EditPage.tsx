@@ -44,12 +44,12 @@ const EditPage = () => {
     setSelectedColor(color);
   };
 
+  // 스크롤 잠금은 ModalDialog 가 담당 — 여기서 body.overflow 를 직접 만지면
+  // 잠금 카운터가 'hidden' 을 이전 값으로 저장해 닫은 뒤 스크롤이 풀리지 않는다.
   const openModal = () => {
-    document.body.style.overflow = 'hidden';
     setIsModalOpen(true);
   };
   const closeModal = () => {
-    document.body.style.overflow = 'auto';
     setIsModalOpen(false);
   };
   const handleModalCheck = () => {
