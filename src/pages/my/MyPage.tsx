@@ -30,6 +30,7 @@ import {
   EMOTION_EMOJIS,
   EMOTION_LABELS,
   EMOTIONS,
+  TABLET_BREAKPOINT_PX,
 } from 'constants/index';
 import { useQuery } from '@tanstack/react-query';
 
@@ -121,9 +122,10 @@ const MyPage = () => {
   });
 
   // VideoCarousel desktopSlidesPerView={3} 과 동일한 스켈레톤 개수
+  // (캐러셀 브레이크포인트와 동일하게 TABLET_BREAKPOINT_PX 기준으로 분기)
   const recentSkeletonCount = isMobile
     ? 1
-    : windowWidth >= 1100
+    : windowWidth >= TABLET_BREAKPOINT_PX
       ? 3
       : 2;
 
