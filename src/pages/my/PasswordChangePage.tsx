@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import Seo from 'components/Seo/Seo';
 import TextInput from 'components/TextInput/TextInput';
 import Button from 'components/Button/Button';
 import { toast } from 'react-toastify';
@@ -113,6 +114,13 @@ const PasswordChangePage = () => {
 
   return (
     <div className="password-change-container">
+      <Seo
+        title="비밀번호 변경 - FaceReview"
+        description="FaceReview 계정의 비밀번호를 이메일 인증으로 안전하게 변경하세요."
+        keywords="비밀번호 변경, 비밀번호 재설정, FaceReview, 페이스리뷰"
+        path="/my/password-change"
+        noindex
+      />
       <div className="password-card">
         {step === 1 && (
           <>

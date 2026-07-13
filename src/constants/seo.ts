@@ -9,7 +9,7 @@ export const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.png`;
 export const DEFAULT_OG_IMAGE_WIDTH = 1200;
 export const DEFAULT_OG_IMAGE_HEIGHT = 630;
 
-export const DEFAULT_TITLE = 'FaceReview - 감정 리뷰 영상 플랫폼';
+export const DEFAULT_TITLE = 'FaceReview';
 export const DEFAULT_DESCRIPTION =
   '영상을 보며 느끼는 감정을 분석하고 공유하세요. FaceReview에서 내 표정으로 리뷰하는 새로운 영상 경험을 시작해 보세요.';
 

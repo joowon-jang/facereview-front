@@ -77,6 +77,7 @@ const BookmarkPage = (): ReactElement => {
         description="내가 북마크한 영상들을 감정별로 모아보세요."
         keywords="즐겨찾기, 북마크, FaceReview, 페이스리뷰"
         path="/bookmark"
+        noindex
       />
       <h2
         className={

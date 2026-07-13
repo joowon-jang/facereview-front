@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { EMOTIONS } from 'constants/index';
 import { toast } from 'react-toastify';
 import Button from 'components/Button/Button';
+import Seo from 'components/Seo/Seo';
 import TextInput from 'components/TextInput/TextInput';
 import { useNavigate } from 'react-router-dom';
 import './editpage.scss';
@@ -121,6 +122,13 @@ const EditPage = () => {
 
   return (
     <>
+      <Seo
+        title="프로필 편집 - FaceReview"
+        description="닉네임, 프로필 이미지, 관심 장르를 수정하고 FaceReview를 나에게 맞게 설정하세요."
+        keywords="프로필 편집, 닉네임 변경, 관심 장르, FaceReview, 페이스리뷰"
+        path="/edit"
+        noindex
+      />
       <div className="edit-page-container">
         <h2 className="edit-page-title font-title-large">프로필 편집</h2>
 

@@ -5,6 +5,7 @@ import './mypage.scss';
 
 import Button from 'components/Button/Button';
 import Chip from 'components/Chip/Chip';
+import Seo from 'components/Seo/Seo';
 import ProfileIcon from 'components/ProfileIcon/ProfileIcon';
 import SomeIcon from 'components/SomeIcon/SomeIcon';
 
@@ -240,6 +241,13 @@ const MyPage = () => {
 
   return (
     <>
+      <Seo
+        title="마이페이지 - FaceReview"
+        description="내 감정 리뷰 통계와 최근 시청 영상을 FaceReview 마이페이지에서 확인하세요."
+        keywords="마이페이지, 감정 통계, 시청 기록, FaceReview, 페이스리뷰"
+        path="/my"
+        noindex
+      />
       <div className="my-page-container">
         {/* ── Email Verification Banner ── */}
         {!is_verify_email_done && (

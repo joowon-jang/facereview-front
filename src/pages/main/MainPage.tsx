@@ -12,7 +12,6 @@ const MainPage = (): ReactElement => {
   return (
     <div className="main-page-container">
       <Seo
-        title="홈 - 감정 기반 영상 추천"
         description="FaceReview 홈에서 감정 기반으로 추천되는 영상들을 만나보세요. 드라마, 예능, 먹방, 음악까지 다양한 장르의 인기 영상을 내 표정으로 리뷰하세요."
         keywords="감정 영상 추천, 영상 추천, 인기 영상, 드라마, 예능, 먹방, FaceReview 홈, 페이스리뷰"
         path="/main"
