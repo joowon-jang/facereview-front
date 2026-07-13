@@ -48,7 +48,12 @@
 
       &:hover .video-graph-container {
         opacity: 1;
-        pointer-events: auto;
+
+        // 컨테이너 전체가 아닌 interactive 영역만 클릭을 받아
+        // 오른쪽(전체화면 버튼)은 유튜브로 통과시킨다.
+        .video-graph-interactive {
+          pointer-events: auto;
+        }
       }
 
       .video-graph-container {
@@ -65,17 +70,32 @@
         border-radius: 0;
         opacity: 0;
         transition: opacity 0.2s;
+        // 배경/비주얼 영역은 항상 통과. 실제 히트는 .video-graph-interactive 만.
         pointer-events: none;
         // 툴팁이 그래프 밴드 위로 뻗을 수 있도록 visible (라인 자체는 svg 가 클리핑)
         overflow: visible;
         cursor: pointer;
         z-index: 2;
 
+        // 그래프 컨테이너(배경) 너비는 유지하고, 클릭/호버 히트만 오른쪽을 비워
+        // 유튜브 전체화면 버튼이 가려지지 않게 한다.
+        .video-graph-interactive {
+          position: absolute;
+          top: 0;
+          left: 0;
+          bottom: 0;
+          right: 40px;
+          pointer-events: none;
+        }
+
         @include variables.mobile {
           bottom: 36%;
           height: 12%;
           opacity: 1;
-          pointer-events: auto;
+
+          .video-graph-interactive {
+            pointer-events: auto;
+          }
         }
 
         // 모바일에서 플레이어는 100vw 이므로 뷰포트 폭 = 플레이어 폭

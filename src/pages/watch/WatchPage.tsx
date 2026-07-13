@@ -955,40 +955,43 @@ const WatchPage = (): ReactElement => {
             )}
             <div className="video-graph-container">
               {videoGraphData && videoGraphData.length > 0 && (
-                <ResponsiveLine
-                  data={videoGraphData}
-                  colors={LINE_CHART_COLORS}
-                  margin={LINE_CHART_MARGIN}
-                  xScale={{
-                    type: 'linear',
-                    min: 0,
-                    max: effectiveDuration || 100,
-                    // d3 nice() 가 도메인을 471→500 처럼 확장해 시간축이
-                    // 유튜브 진행바와 어긋나므로 반드시 꺼야 한다
-                    nice: false,
-                  }}
-                  yScale={{
-                    type: 'linear',
-                    min: 0,
-                    max: 100,
-                    stacked: false,
-                    reverse: false,
-                  }}
-                  curve="monotoneX"
-                  axisTop={null}
-                  axisRight={null}
-                  axisBottom={null}
-                  axisLeft={null}
-                  enableGridX={false}
-                  enableGridY={false}
-                  enablePoints={false}
-                  useMesh={false}
-                  enableSlices="x"
-                  sliceTooltip={TimelineSliceTooltip}
-                  onClick={handleTimelineClick}
-                  lineWidth={2}
-                  legends={[]}
-                />
+                // interactive 래퍼만 오른쪽을 비워 전체화면 버튼 클릭이 가려지지 않게 함
+                <div className="video-graph-interactive">
+                  <ResponsiveLine
+                    data={videoGraphData}
+                    colors={LINE_CHART_COLORS}
+                    margin={LINE_CHART_MARGIN}
+                    xScale={{
+                      type: 'linear',
+                      min: 0,
+                      max: effectiveDuration || 100,
+                      // d3 nice() 가 도메인을 471→500 처럼 확장해 시간축이
+                      // 유튜브 진행바와 어긋나므로 반드시 꺼야 한다
+                      nice: false,
+                    }}
+                    yScale={{
+                      type: 'linear',
+                      min: 0,
+                      max: 100,
+                      stacked: false,
+                      reverse: false,
+                    }}
+                    curve="monotoneX"
+                    axisTop={null}
+                    axisRight={null}
+                    axisBottom={null}
+                    axisLeft={null}
+                    enableGridX={false}
+                    enableGridY={false}
+                    enablePoints={false}
+                    useMesh={false}
+                    enableSlices="x"
+                    sliceTooltip={TimelineSliceTooltip}
+                    onClick={handleTimelineClick}
+                    lineWidth={2}
+                    legends={[]}
+                  />
+                </div>
               )}
             </div>
           </div>
