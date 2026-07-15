@@ -985,30 +985,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@nivo/bump@npm:^0.99.0":
-  version: 0.99.0
-  resolution: "@nivo/bump@npm:0.99.0"
-  dependencies:
-    "@nivo/axes": "npm:0.99.0"
-    "@nivo/colors": "npm:0.99.0"
-    "@nivo/core": "npm:0.99.0"
-    "@nivo/legends": "npm:0.99.0"
-    "@nivo/scales": "npm:0.99.0"
-    "@nivo/text": "npm:0.99.0"
-    "@nivo/theming": "npm:0.99.0"
-    "@nivo/tooltip": "npm:0.99.0"
-    "@nivo/voronoi": "npm:0.99.0"
-    "@react-spring/web": "npm:9.4.5 || ^9.7.2 || ^10.0"
-    "@types/d3-scale": "npm:^4.0.8"
-    "@types/d3-shape": "npm:^3.1.6"
-    d3-scale: "npm:^4.0.2"
-    d3-shape: "npm:^3.2.0"
-  peerDependencies:
-    react: ^16.14 || ^17.0 || ^18.0 || ^19.0
-  checksum: 10c0/993e85185dd28767a203167c098e61c727a47f2485da889a3e94e236a5a558f23228f39a00a326aecb9feb56e7b5e50fdde71c6ae2a5187852be190cacb0281c
-  languageName: node
-  linkType: hard
-
 "@nivo/canvas@npm:0.99.0":
   version: 0.99.0
   resolution: "@nivo/canvas@npm:0.99.0"
@@ -3548,7 +3524,6 @@ __metadata:
   dependencies:
     "@eslint/js": "npm:^9.39.2"
     "@nivo/bar": "npm:^0.99.0"
-    "@nivo/bump": "npm:^0.99.0"
     "@nivo/core": "npm:^0.99.0"
     "@nivo/line": "npm:^0.99.0"
     "@nivo/pie": "npm:^0.99.0"

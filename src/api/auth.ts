@@ -45,11 +45,6 @@ export const completeTutorial = async () => {
   return res;
 };
 
-/** @deprecated Use {@link completeTutorial} instead. */
-export const checkTutorial = completeTutorial;
-/** @deprecated Use {@link completeTutorial} instead. */
-export const tutorialComplete = completeTutorial;
-
 export const getUserName = async () => {
   const url = '/v2/auth/me';
   const res = await api.get<UserResponse>(url);

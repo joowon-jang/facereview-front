@@ -1,17 +1,6 @@
 export type { CategoryType } from 'constants/index';
 
 export type EmotionType = 'happy' | 'surprise' | 'sad' | 'angry' | 'neutral';
-export type UserInfoType = {
-  user_role: boolean;
-  user_name: string;
-  user_profile: number;
-  user_tutorial: number;
-  access_token: string;
-  refresh_token: string;
-  user_favorite_genre_1: string;
-  user_favorite_genre_2: string;
-  user_favorite_genre_3: string;
-};
 export type VideoDataType = {
   video_id: string;
   id?: string;

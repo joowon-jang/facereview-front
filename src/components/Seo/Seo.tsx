@@ -13,7 +13,7 @@ import {
   buildUrl,
 } from 'constants/seo';
 
-export type SeoProps = {
+type SeoProps = {
   title?: string;
   description?: string;
   keywords?: string;

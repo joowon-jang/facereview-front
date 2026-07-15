@@ -31,7 +31,7 @@ export const mapNumberToEmotion = (num: number): EmotionType => {
   return mapping[num] ?? 'neutral';
 };
 
-export const getDistributionToGraphData = (
+const getDistributionToGraphData = (
   dist: VideoDistributionDataType,
 ): GraphDistributionDataType[] => {
   if (!dist) return [];

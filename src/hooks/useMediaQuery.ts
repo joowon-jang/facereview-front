@@ -42,12 +42,5 @@ const useMediaQuery = (query: string) => {
 export const useIsMobile = () =>
   useMediaQuery(`(max-width: ${BREAKPOINT_PX - 1}px)`);
 
-export const useIsTablet = () =>
-  useMediaQuery(
-    `(min-width: ${BREAKPOINT_PX}px) and (max-width: ${TABLET_BREAKPOINT_PX - 1}px)`,
-  );
-
 export const useIsDesktopLg = () =>
   useMediaQuery(`(min-width: ${TABLET_BREAKPOINT_PX}px)`);
-
-export default useMediaQuery;

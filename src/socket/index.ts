@@ -8,7 +8,7 @@ let socketInstance: Socket | null = null;
  * The instance is created with autoConnect disabled so it only
  * connects when explicitly requested.
  */
-export const getSocket = (): Socket => {
+const getSocket = (): Socket => {
   if (socketInstance) return socketInstance;
 
   socketInstance = io(import.meta.env.VITE_SOCKET_URL ?? undefined, {

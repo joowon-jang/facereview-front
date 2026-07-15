@@ -5,7 +5,7 @@ import { BREAKPOINT_PX, TABLET_BREAKPOINT_PX } from 'constants/index';
  * CSS `grid-template-columns: repeat(auto-fill, minmax(minWidth, 1fr))`
  * 와 동일한 열 개수를 컨테이너 폭 기준으로 계산한다.
  */
-export const getGridColumnCount = (
+const getGridColumnCount = (
   containerWidth: number,
   minWidth = 300,
   gap = 24,
