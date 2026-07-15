@@ -8,7 +8,20 @@
 
   &.big {
     width: 24px;
+    height: 24px;
     padding: 4px;
+
+    @include variables.tablet {
+      width: 32px;
+      height: 32px;
+      padding: 5px;
+    }
+
+    @include variables.mobile {
+      width: 36px;
+      height: 36px;
+      padding: 6px;
+    }
   }
 
   &.small {
@@ -42,6 +55,16 @@
     &.big {
       font-size: 16px;
       line-height: 16px;
+
+      @include variables.tablet {
+        font-size: 22px;
+        line-height: 22px;
+      }
+
+      @include variables.mobile {
+        font-size: 24px;
+        line-height: 24px;
+      }
     }
 
     &.small {

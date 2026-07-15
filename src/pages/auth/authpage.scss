@@ -7,14 +7,14 @@
   align-items: center;
   min-height: 100vh;
   box-sizing: border-box;
-  padding: 96px 16px 80px;
+  padding: 96px variables.$layout-gutter-mobile 80px;
 
   @include variables.tablet {
-    padding: 80px 16px 72px;
+    padding: 80px variables.$layout-gutter-tablet 72px;
   }
 
   @include variables.mobile {
-    padding: 56px 16px 56px;
+    padding: 56px variables.$layout-gutter-mobile 56px;
   }
 
   .indicator-container {

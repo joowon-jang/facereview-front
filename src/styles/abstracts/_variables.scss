@@ -52,10 +52,10 @@ $breakpoint-tablet: 1024px;
 
 // 레이아웃 셸 — 콘텐츠 최대 1280, 뷰포트 양옆 거터
 // 실제 폭: min(1280px, 100% - gutter*2)
-// 640 태블릿 구간에 맞춰 단계: 16 → 20 → 40
+// 좁은 화면에서도 콘텐츠가 가장자리에 붙지 않도록 단계: 16 → 36 → 40
 $layout-max-width: 1280px;
 $layout-gutter-desktop: 40px;
-$layout-gutter-tablet: 20px;
+$layout-gutter-tablet: 36px;
 $layout-gutter-mobile: 16px;
 // 하위 호환 alias
 $layout-gutter: $layout-gutter-desktop;

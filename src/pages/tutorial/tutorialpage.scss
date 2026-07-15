@@ -17,12 +17,12 @@
   // 태블릿·모바일: 전체 높이 1열 레이아웃
   @include variables.tablet {
     align-items: stretch;
-    padding: 24px 20px 0;
+    padding: 24px variables.$layout-gutter-tablet 0;
   }
 
   @include variables.mobile {
     align-items: stretch;
-    padding: 16px 16px 0;
+    padding: 16px variables.$layout-gutter-mobile 0;
   }
 
   .tutorial-content {

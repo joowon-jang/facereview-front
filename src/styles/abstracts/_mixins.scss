@@ -89,7 +89,7 @@
 }
 
 // 본문/헤더 공통 가로 셸
-// 모바일 16 / 태블릿 24 / 데스크톱 40 거터
+// 모바일 16 / 태블릿 36 / 데스크톱 40 거터
 @mixin layout-shell {
   max-width: variables.$layout-max-width;
   margin-inline: auto;

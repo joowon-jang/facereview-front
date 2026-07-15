@@ -3,7 +3,7 @@
 // ------------------
 // Typography
 // mobile < 640 / tablet 640–1023 / desktop ≥ 1024
-// 기본값 = desktop, tablet·mobile 에서 한 단계씩 축소
+// 데스크톱·태블릿은 읽기 크기를 유지하고, 모바일만 밀도를 위해 축소
 // ------------------
 
 .font-title-large {
@@ -13,7 +13,7 @@
   letter-spacing: -0.02em;
 
   @include tablet {
-    font-size: 26px;
+    font-size: 28px;
     line-height: 1.35;
   }
 
@@ -30,12 +30,12 @@
   letter-spacing: -0.02em;
 
   @include tablet {
-    font-size: 20px;
+    font-size: 24px;
     line-height: 1.4;
   }
 
   @include mobile {
-    font-size: 19px;
+    font-size: 20px;
     line-height: 1.4;
   }
 }
@@ -47,12 +47,12 @@
   letter-spacing: -0.02em;
 
   @include tablet {
-    font-size: 18px;
+    font-size: 20px;
     line-height: 1.4;
   }
 
   @include mobile {
-    font-size: 17px;
+    font-size: 18px;
     line-height: 1.4;
   }
 }
@@ -64,12 +64,12 @@
   letter-spacing: -0.015em;
 
   @include tablet {
-    font-size: 15px;
+    font-size: 16px;
     line-height: 1.4;
   }
 
   @include mobile {
-    font-size: 14px;
+    font-size: 15px;
     line-height: 1.45;
   }
 }
@@ -81,12 +81,12 @@
   letter-spacing: -0.01em;
 
   @include tablet {
-    font-size: 15px;
+    font-size: 16px;
     line-height: 1.55;
   }
 
   @include mobile {
-    font-size: 14px;
+    font-size: 15px;
     line-height: 1.55;
   }
 }
@@ -98,12 +98,12 @@
   letter-spacing: -0.01em;
 
   @include tablet {
-    font-size: 13px;
+    font-size: 14px;
     line-height: 1.5;
   }
 
   @include mobile {
-    font-size: 13px;
+    font-size: 14px;
     line-height: 1.5;
   }
 }
@@ -115,12 +115,12 @@
   letter-spacing: -0.01em;
 
   @include tablet {
-    font-size: 14px;
+    font-size: 16px;
     line-height: 1.25;
   }
 
   @include mobile {
-    font-size: 14px;
+    font-size: 15px;
     line-height: 1.25;
   }
 }
@@ -132,7 +132,7 @@
   letter-spacing: -0.01em;
 
   @include tablet {
-    font-size: 13px;
+    font-size: 14px;
     line-height: 1.2;
   }
 

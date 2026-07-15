@@ -21,8 +21,8 @@ const GraphDetailDataItem = React.memo(
         }`}>
         <EmotionBadge type={'big'} emotion={emotion} />
 
-        <p className="font-label-medium emotion-text">{emotionText}</p>
-        <p className="font-label-medium emotion-percentage">
+        <p className="font-label-large emotion-text">{emotionText}</p>
+        <p className="font-label-large emotion-percentage">
           {value != null ? `${value}%` : '-'}
         </p>
       </div>
