@@ -21,8 +21,10 @@
   }
 
   @media (hover: hover) and (pointer: fine) {
-    &:hover {
-      color: variables.$gray-900;
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        color: variables.$gray-900;
+      }
       background: variables.$gray-50;
     }
     &.active:hover {

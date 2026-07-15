@@ -24,7 +24,9 @@
     height: 100%;
   }
 
-  &:hover .dim {
-    display: block;
+  @media (hover: hover) and (pointer: fine) {
+    &:hover .dim {
+      display: block;
+    }
   }
 }

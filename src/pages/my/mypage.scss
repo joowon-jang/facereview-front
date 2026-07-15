@@ -53,8 +53,10 @@
       cursor: pointer;
       border: none;
 
-      &:hover {
-        background: #f57c00;
+      @media (hover: hover) and (pointer: fine) {
+        &:hover {
+          background: #f57c00;
+        }
       }
 
       &:focus-visible {
@@ -316,9 +318,11 @@
           border-radius: 0;
 
           // 카드 단위 hover 스케일이 그래프와 어긋나지 않게
-          &:hover {
-            transform: none;
-            box-shadow: none;
+          @media (hover: hover) and (pointer: fine) {
+            &:hover {
+              transform: none;
+              box-shadow: none;
+            }
           }
         }
 
@@ -490,12 +494,14 @@
           color: variables.$gray-800;
         }
 
-        &:hover .raw-seconds-toggle-track {
-          background: variables.$gray-200;
-        }
+        @media (hover: hover) and (pointer: fine) {
+          &:hover .raw-seconds-toggle-track {
+            background: variables.$gray-200;
+          }
 
-        &:hover input:checked ~ .raw-seconds-toggle-track {
-          background: variables.$primary-02;
+          &:hover input:checked ~ .raw-seconds-toggle-track {
+            background: variables.$primary-02;
+          }
         }
       }
     }

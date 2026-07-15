@@ -60,8 +60,10 @@
       opacity: 0.4;
       transition: opacity 0.2s ease;
 
-      &:hover {
-        opacity: 0.7;
+      @media (hover: hover) and (pointer: fine) {
+        &:hover {
+          opacity: 0.7;
+        }
       }
 
       &.swiper-pagination-bullet-active {
@@ -86,8 +88,10 @@
     cursor: pointer;
     transition: opacity 0.2s ease;
 
-    &:hover:not(.swiper-button-disabled) {
-      opacity: 1;
+    @media (hover: hover) and (pointer: fine) {
+      &:hover:not(.swiper-button-disabled) {
+        opacity: 1;
+      }
     }
 
     &:active:not(.swiper-button-disabled) {

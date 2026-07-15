@@ -125,8 +125,10 @@
       text-decoration: underline;
       transition: color 0.2s ease;
 
-      &:hover {
-        color: variables.$gray-700;
+      @media (hover: hover) and (pointer: fine) {
+        &:hover {
+          color: variables.$gray-700;
+        }
       }
     }
 
@@ -244,8 +246,10 @@
       background: variables.$brand-warm-red !important;
       color: #fff !important;
 
-      &:hover:not(.disabled) .dim {
-        background: rgba(0, 0, 0, 0.12);
+      @media (hover: hover) and (pointer: fine) {
+        &:hover:not(.disabled) .dim {
+          background: rgba(0, 0, 0, 0.12);
+        }
       }
 
       &.disabled {

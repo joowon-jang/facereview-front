@@ -20,17 +20,16 @@
     height: 100%;
   }
 
-  &:hover .dim {
-    display: block;
+  @media (hover: hover) and (pointer: fine) {
+    &:hover .dim {
+      display: block;
+    }
   }
 
   &.disabled {
     background: variables.$gray-200 !important;
     cursor: not-allowed;
 
-    &:hover .dim {
-      display: none;
-    }
   }
 
   &.cta-full {
@@ -44,8 +43,10 @@
       background: variables.$gray-100;
       color: variables.$gray-900;
 
-      &:hover {
-        background: #2b2b35;
+      @media (hover: hover) and (pointer: fine) {
+        &:hover {
+          background: #2b2b35;
+        }
       }
     }
   }

@@ -25,8 +25,10 @@
     width: 24px;
     height: 24px;
 
-    &:hover {
-      background: variables.$system-dim-white;
+    @media (hover: hover) and (pointer: fine) {
+      &:hover {
+        background: variables.$system-dim-white;
+      }
     }
   }
 }

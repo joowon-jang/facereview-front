@@ -119,8 +119,10 @@ $header-height-desktop: 80px;
       background-color 0.2s ease;
 
     @media (hover: hover) and (pointer: fine) {
-      &:hover {
-        color: variables.$gray-900;
+      @media (hover: hover) and (pointer: fine) {
+        &:hover {
+          color: variables.$gray-900;
+        }
         background: variables.$gray-50;
       }
     }
@@ -212,8 +214,10 @@ $header-height-desktop: 80px;
         pointer-events: auto;
       }
 
-      &:hover {
-        color: variables.$gray-900;
+      @media (hover: hover) and (pointer: fine) {
+        &:hover {
+          color: variables.$gray-900;
+        }
       }
     }
 
@@ -245,9 +249,11 @@ $header-height-desktop: 80px;
       .header-icon-button {
         color: variables.$gray-700;
 
-        &:hover {
-          background: transparent;
-          color: variables.$gray-900;
+        @media (hover: hover) and (pointer: fine) {
+          &:hover {
+            background: transparent;
+            color: variables.$gray-900;
+          }
         }
       }
     }

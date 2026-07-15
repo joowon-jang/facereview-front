@@ -14,8 +14,10 @@
 
   transition: ease all 0.2s;
 
-  &:hover {
-    background-color: variables.$gray-200;
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      background-color: variables.$gray-200;
+    }
   }
 
   .like-image {
