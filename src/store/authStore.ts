@@ -138,6 +138,7 @@ export const useAuthStorage = create<AuthState>()(
           user_name: state.user_name,
           user_profile: state.user_profile,
           user_favorite_genres: state.user_favorite_genres,
+          user_announced: state.user_announced,
           access_token: state.access_token,
         }),
       },

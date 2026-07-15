@@ -10,74 +10,38 @@ import { v4 as uuidv4 } from 'uuid';
 import { useNavigate, useParams } from 'react-router-dom';
 import Webcam from 'react-webcam';
 import YouTube, { YouTubeEvent } from 'react-youtube';
-import EmotionBadge from 'components/EmotionBadge/EmotionBadge';
 import Seo from 'components/Seo/Seo';
 import { YouTubePlayer } from 'youtube-player/dist/types';
 import './watchpage.scss';
 import { socket } from 'socket';
 import React from 'react';
-import ProfileIcon from 'components/ProfileIcon/ProfileIcon';
-import TextInput from 'components/TextInput/TextInput';
-import UploadButton from 'components/UploadButton/UploadButton';
-import { ResponsiveBar } from '@nivo/bar';
 import { EmotionType, VideoDetailType } from 'types';
 import { getRelatedVideo, getVideoDetail, toggleBookmark } from 'api/youtube';
 import Divider from 'components/Divider/Divider';
 import { useAuthStorage } from 'store/authStore';
 import { toast } from 'react-toastify';
-import {
-  addLike,
-  cancelLike,
-  deleteComment,
-  getVideoComments,
-  modifyComment,
-  sendNewComment,
-} from 'api/watch';
-import {
-  getScaledTimelineGraphData,
-  getTimeToString,
-  mapNumberToEmotion,
-} from 'utils/index';
+import { addLike, cancelLike } from 'api/watch';
+import { getScaledTimelineGraphData } from 'utils/index';
 import VideoItem from 'components/VideoItem/VideoItem';
 import ModalDialog from 'components/ModalDialog/ModalDialog';
 import Button from 'components/Button/Button';
 import safeImage from 'assets/img/safeImage.png';
 import LikeButton from 'components/LikeButton/LikeButton';
 import BookmarkButton from 'components/BookmarkButton/BookmarkButton';
-import {
-  ResponsiveLine,
-  Point,
-  SliceData,
-  SliceTooltipProps,
-  isSliceData,
-} from '@nivo/line';
+import { ResponsiveLine } from '@nivo/line';
 import VideoCardSkeleton from 'components/Skeleton/VideoCardSkeleton';
 import type { ScaledGraphDistributionDataType } from 'utils/emotion';
 import { useIsMobile } from 'hooks/useMediaQuery';
-import useWindowSize from 'hooks/useWindowSize';
 import { useRequireSignIn } from 'hooks/useRequireSignIn';
 import { useAvailableVideos } from 'hooks/useAvailableVideos';
-import { EMOTION_COLORS, EMOTION_LABELS, EMOTIONS } from 'constants/index';
+import { EMOTION_COLORS, EMOTIONS } from 'constants/index';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import GraphDetailDataItem from 'components/GraphDetailDataItem/GraphDetailDataItem';
-import CommentItem from 'components/CommentItem/CommentItem';
+import { EmotionPanel } from './EmotionPanel';
+import { TimelineTooltip } from './TimelineTooltip';
+import { CommentSection } from './CommentSection';
+import VideoVolume from './VideoVolume';
 
 // Hoisted module-level constants to avoid re-creation on every render
-const EMOTION_BY_EMOTION_TEXT = EMOTIONS.map((emotion) => ({
-  emotion,
-  emotionText: EMOTION_LABELS[emotion],
-}));
-
-const BAR_CHART_COLORS = EMOTIONS.map((e) => EMOTION_COLORS[e]);
-const BAR_CHART_BORDER_COLOR = {
-  from: 'color' as const,
-  modifiers: [['darker', 1.6] as ['darker', number]],
-};
-const BAR_CHART_LABEL_TEXT_COLOR = {
-  from: 'color' as const,
-  modifiers: [['darker', 2.3] as ['darker', number]],
-};
-const BAR_CHART_MARGIN = { top: -10, bottom: -10 };
 const LINE_CHART_MARGIN = { top: 0, right: 0, bottom: 0, left: 0 };
 const WEBCAM_STYLE = {
   width: '100%',
@@ -85,11 +49,17 @@ const WEBCAM_STYLE = {
   borderRadius: '8px',
   marginBottom: '24px',
 };
-const PROFILE_ICON_STYLE = { marginRight: '12px' };
 // videoConstraints 는 카메라 캡처 해상도(품질)만 결정. 렌더링 크기는 WEBCAM_STYLE(width:100%) 이 담당.
 const WEBCAM_OPTIONS = {
   width: 640,
   height: 360,
+};
+
+const formatPlaybackTime = (seconds: number): string => {
+  const total = Math.max(0, Math.floor(seconds));
+  const minutes = Math.floor(total / 60);
+  const rest = total % 60;
+  return `${minutes}:${rest.toString().padStart(2, '0')}`;
 };
 
 // 타임라인 그래프는 데이터 없는 감정 시리즈가 필터링되므로, 순서 기반 배열 대신
@@ -108,136 +78,32 @@ const createInitialEmotionGraphData = (graphId: string) => [
   ),
 ];
 
-// 실시간 감정 패널 (제목 + 막대 그래프 + 감정별 상세).
-// 모바일/데스크톱 × 나/다른 사람들 4곳에서 동일 마크업을 공유한다.
-const EmotionPanel = ({
-  title,
-  graphData,
-  mostEmotion,
-}: {
-  title: string;
-  graphData: Record<string, string | number>[];
-  mostEmotion: EmotionType;
-}): ReactElement => (
-  <div className="emotion-container">
-    <div className="emotion-title-wrapper">
-      <h4 className="emotion-title font-title-small">{title}</h4>
-      <EmotionBadge type="big" emotion={mostEmotion} />
-    </div>
-    <div className="graph-container">
-      <ResponsiveBar
-        data={graphData}
-        keys={EMOTIONS as unknown as string[]}
-        indexBy="id"
-        padding={0.3}
-        layout="horizontal"
-        valueScale={{ type: 'linear' }}
-        indexScale={{ type: 'band', round: true }}
-        colors={BAR_CHART_COLORS}
-        borderColor={BAR_CHART_BORDER_COLOR}
-        axisTop={null}
-        axisRight={null}
-        axisBottom={null}
-        axisLeft={null}
-        enableGridY={false}
-        enableLabel={false}
-        labelSkipWidth={12}
-        labelSkipHeight={12}
-        labelTextColor={BAR_CHART_LABEL_TEXT_COLOR}
-        margin={BAR_CHART_MARGIN}
-        legends={[]}
-        role="application"
-        ariaLabel={`${title} 차트`}
-        barAriaLabel={(e) => `${e.id}: ${e.formattedValue}%`}
-        tooltip={() => null}
-      />
-    </div>
-    <div className="graph-detail-container">
-      {EMOTION_BY_EMOTION_TEXT.map((e) => (
-        <GraphDetailDataItem
-          key={e.emotion}
-          graphData={graphData}
-          emotion={e.emotion}
-          emotionText={e.emotionText}
-          mostEmotion={mostEmotion}
-        />
-      ))}
-    </div>
-  </div>
-);
-
-const formatSecondsToClock = (seconds: number): string => {
-  const total = Math.max(0, Math.floor(seconds));
-  const minutes = Math.floor(total / 60);
-  const rest = total % 60;
-  return `${minutes}:${rest.toString().padStart(2, '0')}`;
-};
-
-const TimelineSliceTooltip = ({
-  slice,
-}: SliceTooltipProps<ScaledGraphDistributionDataType>) => {
-  const time = Number(slice.points[0]?.data.x ?? 0);
-  // 데이터가 없어 필터링된 감정이 있을 수 있으므로 slice 에 있는 모든 감정을 표시
-  const sortedPoints = [...slice.points].sort(
-    (a, b) => Number(b.data.y) - Number(a.data.y),
-  );
-
-  return (
-    <div className="timeline-tooltip">
-      <p className="timeline-tooltip-time font-label-small">
-        {formatSecondsToClock(time)}
-      </p>
-      {sortedPoints.map((point) => (
-        <div className="timeline-tooltip-row" key={point.id}>
-          <span
-            className="timeline-tooltip-dot"
-            style={{ background: point.seriesColor }}
-          />
-          <span className="timeline-tooltip-label font-label-small">
-            {EMOTION_LABELS[point.seriesId]} {Math.round(Number(point.data.y))}%
-          </span>
-        </div>
-      ))}
-      <p className="timeline-tooltip-hint font-label-small">
-        클릭해서 이 장면으로 이동
-      </p>
-    </div>
-  );
-};
-
 const WatchPage = (): ReactElement => {
   const isMobile = useIsMobile();
-  const windowWidth = useWindowSize();
-  const [modifyingComment, setModifyingComment] = useState<string>('');
   const disconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const timelineControlsHideTimerRef = useRef<number | null>(null);
+  const [areTimelineControlsVisible, setAreTimelineControlsVisible] =
+    useState(false);
   const { id } = useParams();
   const navigate = useNavigate();
+  // iframe 의 실제 렌더링 크기는 watchpage.scss 의
+  // .video-container(aspect-ratio: 16/9) + iframe(width/height: 100% !important)
+  // 가 결정하므로, opts 의 width/height 는 의미가 없다. playerVars 만 남긴다.
   const opts = useMemo(
-    () =>
-      isMobile
-        ? {
-            width: '100%',
-            height: `${windowWidth * (9 / 16)}px`,
-            host: 'https://www.youtube-nocookie.com',
-            playerVars: {
-              autoplay: 1 as const,
-              color: 'white' as const,
-              rel: 0 as const,
-              origin: window.location.origin,
-            },
-          }
-        : {
-            width: 852,
-            height: 480,
-            host: 'https://www.youtube-nocookie.com',
-            playerVars: {
-              autoplay: 1 as const,
-              color: 'white' as const,
-              rel: 0 as const,
-              origin: window.location.origin,
-            },
-          },
-    [isMobile, windowWidth],
+    () => ({
+      host: 'https://www.youtube-nocookie.com',
+      playerVars: {
+        autoplay: 1 as const,
+        rel: 0 as const,
+        // 유튜브의 기본 컨트롤 막대와 전체화면 버튼은 숨기고, 재생/일시정지와
+        // 전체화면은 이 페이지의 커스텀 컨트롤로만 처리한다.
+        controls: 0 as const,
+        fs: 0 as const,
+        playsinline: 1 as const,
+        origin: window.location.origin,
+      },
+    }),
+    [],
   );
 
   // Zustand selector optimization: subscribe to individual slices
@@ -251,6 +117,7 @@ const WatchPage = (): ReactElement => {
   const [videoViewLogId, setVideoViewLogId] = useState<string>(() => uuidv4());
 
   const webcamRef = useRef<Webcam>(null);
+  const videoContainerRef = useRef<HTMLDivElement>(null);
 
   const [webcamError, setWebcamError] = useState<
     'denied' | 'unavailable' | null
@@ -298,12 +165,6 @@ const WatchPage = (): ReactElement => {
   // 유튜브에서 삭제/비공개 처리된 영상은 추천 목록에서 제외한다.
   const relatedVideoList = useAvailableVideos(relatedVideoListRaw);
 
-  const { data: commentList = [], isLoading: isCommentsLoading } = useQuery({
-    queryKey: ['videoComments', id],
-    queryFn: () => getVideoComments({ video_id: id || '' }),
-    enabled: !!id,
-  });
-
   const isLikeVideo = videoData?.user_is_liked ?? false;
   const isBookmarked = videoData?.is_bookmarked ?? false;
 
@@ -327,7 +188,7 @@ const WatchPage = (): ReactElement => {
 
       return { previousVideoData };
     },
-    onError: (err, variables, context) => {
+    onError: (_err, _variables, context) => {
       if (context?.previousVideoData) {
         queryClient.setQueryData(
           ['videoDetail', id],
@@ -353,15 +214,16 @@ const WatchPage = (): ReactElement => {
   };
 
   const [video, setVideo] = useState<YouTubePlayer | null>(null);
+  const [playerState, setPlayerState] = useState(-1);
+  const playerStateRef = useRef(-1);
   const [currentMyEmotion, setCurrentMyEmotion] =
     useState<EmotionType>('neutral');
   const [currentOthersEmotion, setCurrentOthersEmotion] =
     useState<EmotionType>('neutral');
   const [isModalOpen1, setIsModalOpen1] = useState<boolean>(false);
-  const [isModalOpen2, setIsModalOpen2] = useState<boolean>(false);
-  const [isDeletedModalOpen, setIsDeletedModalOpen] = useState<boolean>(false);
-
-  const [comment, setComment] = useState('');
+  const [videoErrorKind, setVideoErrorKind] = useState<
+    'deleted' | 'restricted' | 'unavailable' | null
+  >(null);
 
   const capture = React.useCallback(() => {
     const imageSrc = webcamRef.current?.getScreenshot();
@@ -390,59 +252,23 @@ const WatchPage = (): ReactElement => {
   // 관련 영상으로 이동하면 loadVideoById 로 교체되어 onReady 가 다시 오지 않으므로
   // 상태 변화 때마다 길이를 다시 동기화한다.
   const handleVideoStateChange = (e: YouTubeEvent<number>) => {
+    playerStateRef.current = e.data;
+    setPlayerState(e.data);
     syncPlayerDuration(e.target);
   };
 
-  const handleVideoError = () => {
-    setIsDeletedModalOpen(true);
-  };
-
-  const commentMutation = useMutation({
-    mutationFn: (newComment: string) =>
-      sendNewComment({ content: newComment, video_id: id || '' }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['videoComments', id] });
-      setComment('');
-    },
-    onError: () => {
-      toast.error('댓글이 달리지 않았어요', { toastId: 'error new comment' });
-    },
-  });
-
-  const modifyCommentMutation = useMutation({
-    mutationFn: (params: { comment_id: string; content: string }) =>
-      modifyComment(params),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['videoComments', id] });
-      setEditingcommentindex(null);
-    },
-    onError: () => {
-      toast.error('댓글 수정에 실패했어요', {
-        toastId: 'error modify comment',
-      });
-    },
-  });
-
-  const deleteCommentMutation = useMutation({
-    mutationFn: (comment_id: string) => deleteComment({ comment_id }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['videoComments', id] });
-      closeModal2();
-    },
-    onError: () => {
-      toast.error('댓글 삭제에 실패했어요', {
-        toastId: 'error delete comment',
-      });
-    },
-  });
-
-  const handleCommentSubmit = () => {
-    if (!requireSignIn()) return;
-    if (commentMutation.isPending) return;
-    const trimmed = comment.trim();
-    if (trimmed.length > 0) {
-      commentMutation.mutate(trimmed);
-    }
+  const handleVideoError = (e: YouTubeEvent<number>) => {
+    // YouTube IFrame API 에러 코드:
+    // 2: 잘못된 매개변수 / 5: HTML5 플레이어 오류
+    // 100: 영상 없음·비공개·삭제 / 101·150: 소유자가 임베드 금지
+    const code = e.data;
+    setVideoErrorKind(
+      code === 100
+        ? 'deleted'
+        : code === 101 || code === 150
+          ? 'restricted'
+          : 'unavailable',
+    );
   };
 
   const openModal1 = () => {
@@ -452,14 +278,6 @@ const WatchPage = (): ReactElement => {
     setUserAnnounced({ user_announced: true });
     setIsModalOpen1(false);
   };
-  const openModal2 = () => {
-    setIsModalOpen2(true);
-  };
-  const closeModal2 = () => {
-    setIsModalOpen2(false);
-    setIsEditVisible(null);
-  };
-
   const likeMutation = useMutation({
     mutationFn: () =>
       isLikeVideo
@@ -484,7 +302,7 @@ const WatchPage = (): ReactElement => {
 
       return { previousVideoData };
     },
-    onError: (err, variables, context) => {
+    onError: (_err, _variables, context) => {
       if (context?.previousVideoData) {
         queryClient.setQueryData(
           ['videoDetail', id],
@@ -514,6 +332,8 @@ const WatchPage = (): ReactElement => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setVideoViewLogId(uuidv4());
     setPlayerDuration(null);
+    playerStateRef.current = -1;
+    setPlayerState(-1);
     setCurrentMyEmotion('neutral');
     setCurrentOthersEmotion('neutral');
     setMyGraphData(createInitialEmotionGraphData('my-emotion'));
@@ -521,6 +341,11 @@ const WatchPage = (): ReactElement => {
   }, [id]);
 
   const effectiveDuration = playerDuration ?? videoData?.duration ?? 0;
+  const [currentPlaybackTime, setCurrentPlaybackTime] = useState(0);
+  const currentPlaybackRatio =
+    effectiveDuration > 0
+      ? Math.min(Math.max(currentPlaybackTime / effectiveDuration, 0), 1)
+      : 0;
 
   const videoGraphData = useMemo(() => {
     if (
@@ -534,6 +359,159 @@ const WatchPage = (): ReactElement => {
     }
     return [];
   }, [videoData, effectiveDuration]);
+  const hasVideoTimeline = Boolean(
+    videoData?.youtube_url && videoGraphData.length > 0,
+  );
+
+  // 직접 구현한 타임라인 툴팁. 그래프(시각)는 pointer-events:none 이고 마우스
+  // 추적은 별도 오버레이에서 담당한다. 전체화면 버튼은 별도의 클릭 영역을
+  // 사용한다. nivo 내장 슬라이스는 차트가 pointer-events 를 받아야 한다.
+  const [hoverRatio, setHoverRatio] = useState<number | null>(null);
+
+  const tooltipEntries = useMemo(() => {
+    if (hoverRatio === null || effectiveDuration <= 0) return null;
+    const time = hoverRatio * effectiveDuration;
+    const entries = videoGraphData
+      .map((series) => {
+        let best = series.data[0];
+        let bestDist = Infinity;
+        for (const p of series.data) {
+          const d = Math.abs(p.x - time);
+          if (d < bestDist) {
+            bestDist = d;
+            best = p;
+          }
+        }
+        return {
+          emotion: series.id,
+          y: best?.y ?? 0,
+          color: EMOTION_COLORS[series.id],
+        };
+      })
+      .filter((e) => e.y > 0)
+      .sort((a, b) => b.y - a.y);
+    return { time, entries };
+  }, [hoverRatio, effectiveDuration, videoGraphData]);
+
+  const ratioFromEvent = (e: React.MouseEvent<HTMLDivElement>) => {
+    // 오버레이는 우하단 80px 가 빠져 rect.width 가 그래프(라인) 폭과 다르다.
+    // 시간은 라인 영역인 컨테이너 전체 폭 기준으로 환산해야 영상 시간과 맞는다.
+    const container = e.currentTarget.parentElement;
+    if (!container) return 0;
+    const rect = container.getBoundingClientRect();
+    return Math.min(Math.max((e.clientX - rect.left) / rect.width, 0), 1);
+  };
+  const handleOverlayMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    setHoverRatio(ratioFromEvent(e));
+  };
+  const handleOverlayLeave = () => setHoverRatio(null);
+  const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    const nextTime = ratioFromEvent(e) * effectiveDuration;
+    setCurrentPlaybackTime(nextTime);
+    video?.seekTo(nextTime, true);
+  };
+
+  const clearTimelineControlsHideTimer = () => {
+    if (!timelineControlsHideTimerRef.current) return;
+    window.clearTimeout(timelineControlsHideTimerRef.current);
+    timelineControlsHideTimerRef.current = null;
+  };
+
+  // 유튜브 기본 컨트롤(중앙 재생버튼 등)은 마우스 이탈 후 4초에 완전히 사라진다
+  // (Playwright 실측). 그래프/재생시간은 페이드 없이 이 시점에 곧바로 사라지도록
+  // 타이머를 유튜브의 "완전 소멸" 시각에 맞춘다. (모바일은 4.3초 유지)
+  const MOUSE_CONTROLS_LINGER_MS = 4000;
+
+  const showTimelineControlsTemporarily = (duration: number = 4300) => {
+    clearTimelineControlsHideTimer();
+    setAreTimelineControlsVisible(true);
+    timelineControlsHideTimerRef.current = window.setTimeout(() => {
+      setAreTimelineControlsVisible(false);
+      setHoverRatio(null);
+      timelineControlsHideTimerRef.current = null;
+    }, duration);
+  };
+
+  const showTimelineControls = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.pointerType === 'mouse') {
+      // 마우스가 영상 위에 있는 동안엔 계속 보인다(자동 숨김 취소).
+      // ※ 교차출처 iframe 위에서는 pointermove 가 부모로 오지 않아 "이동 중 유지"를
+      //   따로 구현할 수 없다. 그래서 진입=표시 / 이탈=지연 숨김 만으로 처리한다.
+      clearTimelineControlsHideTimer();
+      setAreTimelineControlsVisible(true);
+      return;
+    }
+
+    setHoverRatio(null);
+    showTimelineControlsTemporarily();
+  };
+
+  const hideTimelineControls = (e: React.PointerEvent<HTMLDivElement>) => {
+    // 터치 포인터는 손을 떼는 즉시 pointerleave가 발생하므로, 기존대로 터치용
+    // 타이머가 닫도록 두고 여기서 관여하지 않는다.
+    if (e.pointerType !== 'mouse') return;
+    // 마우스가 벗어나도 즉시 숨기지 않는다. 유튜브 재생버튼이 이탈 후 약 4초간
+    // 남았다가 사라지는 것과 동일하게, 지연 숨김 타이머를 건다(툴팁은 즉시 정리).
+    setHoverRatio(null);
+    showTimelineControlsTemporarily(MOUSE_CONTROLS_LINGER_MS);
+  };
+
+  const handleTouchVideoToggle = () => {
+    if (!video) return;
+    showTimelineControlsTemporarily();
+
+    const wasPlaying = playerStateRef.current === 1;
+    const optimisticState = wasPlaying ? 2 : 1;
+    playerStateRef.current = optimisticState;
+    setPlayerState(optimisticState);
+
+    try {
+      if (wasPlaying) {
+        void video.pauseVideo();
+      } else {
+        void video.playVideo();
+      }
+    } catch {
+      // 영상 교체/리로드와 탭이 겹치면 플레이어 명령이 거절될 수 있다.
+    }
+  };
+
+  useEffect(
+    () => () => {
+      clearTimelineControlsHideTimer();
+    },
+    [],
+  );
+
+  const toggleVideoFullscreen = () => {
+    const container = videoContainerRef.current;
+    if (!container) return;
+
+    if (document.fullscreenElement) {
+      void document.exitFullscreen();
+    } else {
+      void container.requestFullscreen();
+    }
+  };
+
+  // 시간 표시는 감정 타임라인이 표시되는 동안 플레이어 시간에 맞춘다.
+  useEffect(() => {
+    if (!video) return;
+    let active = true;
+
+    const syncPlaybackTime = async () => {
+      const time = await video.getCurrentTime();
+      if (active && Number.isFinite(time)) setCurrentPlaybackTime(time);
+    };
+
+    void syncPlaybackTime();
+    const intervalId = window.setInterval(() => void syncPlaybackTime(), 500);
+
+    return () => {
+      active = false;
+      window.clearInterval(intervalId);
+    };
+  }, [video]);
 
   useEffect(() => {
     if (!user_announced) {
@@ -552,6 +530,7 @@ const WatchPage = (): ReactElement => {
     const interval = setInterval(async () => {
       const currentTime = await video.getCurrentTime();
       if (!Number.isFinite(currentTime)) return;
+      setCurrentPlaybackTime(currentTime);
 
       // timeline_data 의 x 는 진행률 bin(1~100), bin k 는 ((k-1)..k]/100 구간
       const bin = Math.min(
@@ -682,73 +661,6 @@ const WatchPage = (): ReactElement => {
     videoViewLogId,
   ]);
 
-  // GraphDetailDataItem and CommentItem are now external components
-
-  const [hoveredComment, setHoveredComment] = useState<string | null>(null);
-  const [isEditVisible, setIsEditVisible] = useState<string | null>(null);
-  const [editingcommentindex, setEditingcommentindex] = useState<string | null>(
-    null,
-  );
-  const [deletingCommentId, setDeletingCommentId] = useState<string | null>(
-    null,
-  );
-
-  // CommentItem callbacks — React Compiler handles memoization automatically
-  const handleCommentMouseEnter = (commentId: string) => {
-    setHoveredComment(commentId);
-  };
-
-  const handleCommentMouseLeave = () => {
-    setHoveredComment(null);
-    setIsEditVisible(null);
-  };
-
-  const handleCommentEditClick = (commentId: string) => {
-    // 터치 환경에서는 mouseLeave 가 발생하지 않으므로 토글로 닫을 수 있게 한다
-    setIsEditVisible((prev) => (prev === commentId ? null : commentId));
-  };
-
-  const handleCommentDeleteClick = () => {
-    setIsEditVisible(null);
-    openModal2();
-  };
-
-  const handleModifyingCommentSave = () => {
-    const trimmed = modifyingComment.trim();
-    if (
-      editingcommentindex === null ||
-      trimmed.length === 0 ||
-      modifyCommentMutation.isPending
-    ) {
-      return;
-    }
-    modifyCommentMutation.mutate({
-      comment_id: editingcommentindex,
-      content: trimmed,
-    });
-  };
-
-  const handleCommentStartEditing = (commentId: string) => {
-    setIsEditVisible(null);
-    setEditingcommentindex(commentId);
-    const target = commentList.find((item) => item.comment_id === commentId);
-    if (target) {
-      setModifyingComment(target.content);
-    }
-  };
-
-  const handleTimelineClick = (
-    datum:
-      | Readonly<Point<ScaledGraphDistributionDataType>>
-      | Readonly<SliceData<ScaledGraphDistributionDataType>>,
-  ) => {
-    if (!isSliceData(datum)) return;
-    const seconds = datum.points[0]?.data.x;
-    if (typeof seconds === 'number' && Number.isFinite(seconds)) {
-      video?.seekTo(seconds, true);
-    }
-  };
-
   const renderWebcamArea = () => {
     if (!is_sign_in) {
       return (
@@ -839,6 +751,24 @@ const WatchPage = (): ReactElement => {
     );
   };
 
+  const videoErrorContent =
+    videoErrorKind === 'deleted'
+      ? {
+          title: '삭제된 영상',
+          description: '해당 영상은 삭제되어 접근할 수 없습니다.',
+        }
+      : videoErrorKind === 'restricted'
+        ? {
+            title: '재생할 수 없는 영상',
+            description:
+              '영상 소유자가 외부 재생을 허용하지 않아 볼 수 없어요.',
+          }
+        : {
+            title: '영상을 불러올 수 없어요',
+            description:
+              '일시적인 오류로 영상을 재생할 수 없어요. 잠시 후 다시 시도해 주세요.',
+          };
+
   const renderMobileContainer = () => {
     return (
       <div className="watch-page-cam-container">
@@ -897,7 +827,9 @@ const WatchPage = (): ReactElement => {
           </div>
         </div>
       </ModalDialog>
-      <ModalDialog isOpen={isDeletedModalOpen} onClose={() => navigate('/')}>
+      <ModalDialog
+        isOpen={videoErrorKind !== null}
+        onClose={() => navigate('/')}>
         <div className="deleted-video-modal-container">
           <div className="deleted-video-modal-icon">
             <svg
@@ -909,10 +841,10 @@ const WatchPage = (): ReactElement => {
           </div>
           <div className="deleted-video-modal-label-container">
             <h2 className="deleted-video-modal-title font-title-medium">
-              삭제된 영상
+              {videoErrorContent.title}
             </h2>
             <p className="deleted-video-modal-description font-body-large">
-              해당 영상은 삭제되어 접근할 수 없습니다.
+              {videoErrorContent.description}
             </p>
           </div>
           <div className="deleted-video-modal-button-wrapper">
@@ -926,9 +858,14 @@ const WatchPage = (): ReactElement => {
       </ModalDialog>
       <div className="main-container">
         <div className="video-fixed-container">
-          <div className="video-container">
+          <div
+            className="video-container"
+            ref={videoContainerRef}
+            onPointerEnter={showTimelineControls}
+            onPointerLeave={hideTimelineControls}>
             {videoData?.youtube_url ? (
               <YouTube
+                key={videoData.youtube_url}
                 videoId={videoData.youtube_url}
                 style={{ display: 'block' }}
                 opts={opts}
@@ -953,47 +890,119 @@ const WatchPage = (): ReactElement => {
                 <div className="video-loading-spinner" />
               </div>
             )}
-            <div className="video-graph-container">
-              {videoGraphData && videoGraphData.length > 0 && (
-                // interactive 래퍼만 오른쪽을 비워 전체화면 버튼 클릭이 가려지지 않게 함
-                <div className="video-graph-interactive">
-                  <ResponsiveLine
-                    data={videoGraphData}
-                    colors={LINE_CHART_COLORS}
-                    margin={LINE_CHART_MARGIN}
-                    xScale={{
-                      type: 'linear',
-                      min: 0,
-                      max: effectiveDuration || 100,
-                      // d3 nice() 가 도메인을 471→500 처럼 확장해 시간축이
-                      // 유튜브 진행바와 어긋나므로 반드시 꺼야 한다
-                      nice: false,
+            {videoData?.youtube_url && (
+              <button
+                type="button"
+                className="video-touch-toggle"
+                onClick={handleTouchVideoToggle}
+                tabIndex={-1}
+                aria-label={playerState === 1 ? '영상 일시정지' : '영상 재생'}
+              />
+            )}
+            {hasVideoTimeline && (
+              <div
+                className={`video-bottom-left${areTimelineControlsVisible ? ' video-bottom-left--visible' : ''}`}>
+                <span className="video-native-time" aria-live="off">
+                  {formatPlaybackTime(currentPlaybackTime)} /{' '}
+                  {formatPlaybackTime(effectiveDuration)}
+                </span>
+                <VideoVolume video={video} />
+              </div>
+            )}
+            {hasVideoTimeline && (
+              <div
+                className={`video-graph-container${areTimelineControlsVisible ? ' video-graph-container--visible' : ''}`}>
+                {videoGraphData && videoGraphData.length > 0 && (
+                  <>
+                    <div
+                      className="video-graph-watched"
+                      style={{ width: `${currentPlaybackRatio * 100}%` }}
+                      aria-hidden="true"
+                    />
+                    <div className="video-graph-lines">
+                      <ResponsiveLine
+                        data={videoGraphData}
+                        colors={LINE_CHART_COLORS}
+                        margin={LINE_CHART_MARGIN}
+                        xScale={{
+                          type: 'linear',
+                          min: 0,
+                          max: effectiveDuration || 100,
+                          // d3 nice() 가 도메인을 471→500 처럼 확장해 시간축이
+                          // 유튜브 진행바와 어긋나므로 반드시 꺼야 한다
+                          nice: false,
+                        }}
+                        yScale={{
+                          type: 'linear',
+                          min: 0,
+                          max: 100,
+                          stacked: false,
+                          reverse: false,
+                        }}
+                        curve="monotoneX"
+                        axisTop={null}
+                        axisRight={null}
+                        axisBottom={null}
+                        axisLeft={null}
+                        enableGridX={false}
+                        enableGridY={false}
+                        enablePoints={false}
+                        useMesh={false}
+                        lineWidth={2}
+                        legends={[]}
+                      />
+                    </div>
+                    <div
+                      className="video-graph-playhead"
+                      style={{ left: `${currentPlaybackRatio * 100}%` }}
+                      aria-hidden="true"
+                    />
+                    {/* 시각 라인은 pointer-events:none, 이 오버레이에서만 마우스를
+                      추적한다. 전체화면 버튼은 별도 클릭 영역에서 처리한다. */}
+                    <div
+                      className="video-graph-overlay"
+                      onMouseMove={handleOverlayMove}
+                      onMouseLeave={handleOverlayLeave}
+                      onClick={handleOverlayClick}
+                    />
+                    {tooltipEntries && hoverRatio !== null && (
+                      <div
+                        className="video-graph-tooltip"
+                        style={{ left: `${hoverRatio * 100}%` }}>
+                        <TimelineTooltip
+                          time={tooltipEntries.time}
+                          entries={tooltipEntries.entries}
+                        />
+                      </div>
+                    )}
+                  </>
+                )}
+                {hasVideoTimeline && (
+                  <button
+                    type="button"
+                    className="video-graph-fullscreen"
+                    onClick={() => {
+                      void toggleVideoFullscreen();
                     }}
-                    yScale={{
-                      type: 'linear',
-                      min: 0,
-                      max: 100,
-                      stacked: false,
-                      reverse: false,
-                    }}
-                    curve="monotoneX"
-                    axisTop={null}
-                    axisRight={null}
-                    axisBottom={null}
-                    axisLeft={null}
-                    enableGridX={false}
-                    enableGridY={false}
-                    enablePoints={false}
-                    useMesh={false}
-                    enableSlices="x"
-                    sliceTooltip={TimelineSliceTooltip}
-                    onClick={handleTimelineClick}
-                    lineWidth={2}
-                    legends={[]}
-                  />
-                </div>
-              )}
-            </div>
+                    aria-label="전체화면">
+                    <svg
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round">
+                      <path d="M8 3H5a2 2 0 0 0-2 2v3" />
+                      <path d="M21 8V5a2 2 0 0 0-2-2h-3" />
+                      <path d="M3 16v3a2 2 0 0 0 2 2h3" />
+                      <path d="M16 21h3a2 2 0 0 0 2-2v-3" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="video-information-container">
@@ -1030,176 +1039,11 @@ const WatchPage = (): ReactElement => {
           <Divider style={{ width: '100vw', marginLeft: '-16px' }} />
         )}
 
-        <div className="comment-container">
-          <div className="comment-input-container">
-            <ProfileIcon
-              type={isMobile ? 'icon-small' : 'icon-medium'}
-              color={mapNumberToEmotion(user_profile)}
-              style={PROFILE_ICON_STYLE}
-            />
-            <TextInput
-              variant="underline"
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              onKeyDown={(e) => {
-                // 한글 IME 조합 중 Enter 는 무시 (isComposing)
-                if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
-                  handleCommentSubmit();
-                }
-              }}
-              placeholder={'영상에 대한 의견을 남겨보아요'}
-              aria-label="댓글 입력"
-              disabled={commentMutation.isPending}
-            />
-            <UploadButton
-              onClick={handleCommentSubmit}
-              aria-label="댓글 등록"
-              isDisabled={commentMutation.isPending}
-              style={{
-                marginLeft: '12px',
-                display: comment.trim().length > 0 ? 'block' : 'none',
-              }}
-            />
-          </div>
-          <div
-            className={
-              isMobile
-                ? 'comment-info-text font-title-mini'
-                : 'comment-info-text font-title-small'
-            }>
-            {isCommentsLoading ? '댓글' : `댓글 ${commentList.length}개`}
-          </div>
-          <div className="comment-list-container">
-            {isCommentsLoading ? (
-              [0, 1, 2].map((index) => (
-                <div
-                  className="comment-skeleton"
-                  key={index}
-                  role="status"
-                  aria-busy="true"
-                  aria-label="댓글 불러오는 중">
-                  <div className="comment-skeleton-avatar" />
-                  <div className="comment-skeleton-lines">
-                    <div className="comment-skeleton-line short" />
-                    <div className="comment-skeleton-line" />
-                  </div>
-                </div>
-              ))
-            ) : commentList.length > 0 ? (
-              commentList.map((comment) =>
-                comment.comment_id === editingcommentindex ? (
-                  <div
-                    key={comment.comment_id}
-                    className="comment-modifying-container">
-                    <ProfileIcon
-                      type={'icon-small'}
-                      color={mapNumberToEmotion(user_profile)}
-                      style={PROFILE_ICON_STYLE}
-                    />
-                    <div className="comment-modifying-wrapper">
-                      <div className="comment-modifying-info-wrapper">
-                        <div className="comment-modifying-nickname font-label-small">
-                          {comment.user_name}
-                        </div>
-                        <div className="comment-modifying-time-text font-label-small">
-                          {getTimeToString(comment.created_at)}
-                        </div>
-                      </div>
-                      <TextInput
-                        variant="underline"
-                        value={modifyingComment}
-                        onChange={(e) => setModifyingComment(e.target.value)}
-                        onKeyDown={(e) => {
-                          // 한글 IME 조합 중 Enter 는 무시 (isComposing)
-                          if (e.key === 'Enter' && !e.nativeEvent.isComposing) {
-                            handleModifyingCommentSave();
-                          }
-                        }}
-                        placeholder={''}
-                        aria-label="댓글 수정"
-                        style={{ marginBottom: '16px' }}
-                      />
-                      <div className="comment-modifying-button-wrapper">
-                        <button
-                          type="button"
-                          className="comment-modifying-cancel font-label-small"
-                          onClick={() => {
-                            setEditingcommentindex(null);
-                          }}>
-                          취소
-                        </button>
-                        <button
-                          type="button"
-                          className="comment-modifying-save font-label-small"
-                          disabled={
-                            modifyingComment.trim().length === 0 ||
-                            modifyCommentMutation.isPending
-                          }
-                          onClick={handleModifyingCommentSave}>
-                          저장
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <CommentItem
-                    key={comment.comment_id}
-                    user_name={comment.user_name}
-                    created_at={getTimeToString(comment.created_at)}
-                    content={comment.content}
-                    user_profile_image_id={comment.user_profile_image_id}
-                    comment_id={comment.comment_id}
-                    is_modified={comment.is_modified}
-                    is_mine={comment.is_mine}
-                    user_id={comment.user_id}
-                    hoveredComment={hoveredComment}
-                    isEditVisible={isEditVisible}
-                    isMobile={isMobile}
-                    onMouseEnter={handleCommentMouseEnter}
-                    onMouseLeave={handleCommentMouseLeave}
-                    onEditClick={handleCommentEditClick}
-                    onDeleteClick={() => {
-                      setDeletingCommentId(comment.comment_id);
-                      handleCommentDeleteClick();
-                    }}
-                    onStartEditing={handleCommentStartEditing}
-                  />
-                ),
-              )
-            ) : (
-              <p className="no-comments-text font-label-large">
-                아직 댓글이 없어요
-              </p>
-            )}
-            {/* Single modal instance outside the loop */}
-            <ModalDialog isOpen={isModalOpen2} onClose={closeModal2}>
-              <div className="comment-delete-modal-container">
-                <h2>댓글을 삭제하시겠어요?</h2>
-                <div className="comment-delete-modal-button-wrapper">
-                  <Button
-                    label={'취소'}
-                    variant={'cta-fixed-secondary'}
-                    style={{
-                      marginRight: '12px',
-                      background: '#5D5D6D',
-                    }}
-                    onClick={closeModal2}
-                  />
-                  <Button
-                    label={'확인'}
-                    variant={'cta-fixed'}
-                    disabled={deleteCommentMutation.isPending}
-                    onClick={() => {
-                      if (deletingCommentId) {
-                        deleteCommentMutation.mutate(deletingCommentId);
-                      }
-                    }}
-                  />
-                </div>
-              </div>
-            </ModalDialog>
-          </div>
-        </div>
+        <CommentSection
+          videoId={id || ''}
+          isMobile={isMobile}
+          userProfile={user_profile}
+        />
         {isMobile && (
           <Divider style={{ width: '100vw', marginLeft: '-16px' }} />
         )}

@@ -8,6 +8,7 @@
     flex-direction: column;
     padding-top: 16px;
   }
+
   @include variables.desktop {
     padding-top: 16px;
     gap: 24px;
@@ -25,6 +26,9 @@
     min-width: 0;
 
     .video-container {
+      // 기본 컨트롤을 숨겨도 YouTube가 표시하는 출처 링크·로고는 유지될 수 있다.
+      // 그래프는 해당 출처 표시 영역을 가리지 않도록 그 위에 배치한다.
+      --youtube-attribution-safe-area: 60px;
       position: relative;
       width: 100%;
       aspect-ratio: 16 / 9;
@@ -32,11 +36,7 @@
       // 모서리 라운딩은 iframe 자체에 준다.
       overflow: visible;
       border-radius: 8px;
-      margin-bottom: 16px;
-
-      @include variables.desktop {
-        max-width: 852px;
-      }
+      margin-bottom: 0;
 
       iframe {
         position: absolute;
@@ -46,62 +46,286 @@
         border-radius: 8px;
       }
 
-      &:hover .video-graph-container {
-        opacity: 1;
+      // DevTools Device Toolbar를 포함한 주 터치 입력 환경에서는 YouTube iframe의
+      // 중앙 탭이 무시되는 경우가 있다. 영상의 위쪽~중앙을 재생/일시정지 터치 영역으로
+      // 두되, 하단의 감정 그래프(시크)·출처 표시 영역과는 겹치지 않게 한다.
+      .video-touch-toggle {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        // 그래프(.video-graph-container)는 bottom 60px + height 16%(모바일 12%).
+        // 그 상단 바로 위까지를 터치 영역으로 잡아 시크·출처 영역을 비운다.
+        // %는 컨테이너 높이 기준이라 그래프 height %와 정확히 일치한다.
+        bottom: calc(var(--youtube-attribution-safe-area) + 16%);
+        z-index: 1;
+        padding: 0;
+        border: 0;
+        background: transparent;
+        color: transparent;
+        visibility: hidden;
+        pointer-events: none;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: transparent;
 
-        // 컨테이너 전체가 아닌 interactive 영역만 클릭을 받아
-        // 오른쪽(전체화면 버튼)은 유튜브로 통과시킨다.
-        .video-graph-interactive {
-          pointer-events: auto;
+        @include variables.mobile {
+          bottom: calc(var(--youtube-attribution-safe-area) + 12%);
         }
+      }
+
+      // 컨테이너 div 전체화면 시 화면을 꽉 채운다
+      &:fullscreen {
+        max-width: none;
+        width: 100vw;
+        height: 100vh;
+        aspect-ratio: auto;
+        margin-bottom: 0;
       }
 
       .video-graph-container {
         position: absolute;
-        // 유튜브 진행바의 실측 inset 과 일치시켜 그래프 x축과 시간막대를
-        // 수직 정렬한다. 실측: 플레이어 폭 394px 이상 = 좌우 30px 고정,
-        // 393px 이하(small mode) = 좌우 12px.
-        left: 30px;
-        right: 30px;
-        bottom: 17%;
+        // 왼쪽을 조금 더 넓게 쓰고, 오른쪽은 전체화면 버튼 영역으로 비운다.
+        left: 16px;
+        right: 76px;
+        bottom: var(--youtube-attribution-safe-area);
         height: 16%;
+        box-sizing: border-box;
+        padding-block: 4px;
         color: variables.$gray-900;
         background: rgba(0, 0, 0, 0.42);
         border-radius: 0;
+        // 데스크톱은 포인터 진입 시, 휴대기기는 영상 터치 후 잠깐만 표시한다.
+        // 터치 환경에 없는 hover 상태에 표시 여부를 의존하지 않는다.
+        visibility: hidden;
         opacity: 0;
-        transition: opacity 0.2s;
-        // 배경/비주얼 영역은 항상 통과. 실제 히트는 .video-graph-interactive 만.
+        // 시각(배경 + 라인)은 항상 통과. 마우스 추적은 아래 오버레이에서만.
         pointer-events: none;
-        // 툴팁이 그래프 밴드 위로 뻗을 수 있도록 visible (라인 자체는 svg 가 클리핑)
+        // 툴팁이 밴드 밖으로 뻗을 수 있도록 visible
         overflow: visible;
-        cursor: pointer;
         z-index: 2;
 
-        // 그래프 컨테이너(배경) 너비는 유지하고, 클릭/호버 히트만 오른쪽을 비워
-        // 유튜브 전체화면 버튼이 가려지지 않게 한다.
-        .video-graph-interactive {
-          position: absolute;
-          top: 0;
-          left: 0;
-          bottom: 0;
-          right: 40px;
-          pointer-events: none;
+        &.video-graph-container--hidden {
+          display: none;
         }
 
-        @include variables.mobile {
-          bottom: 36%;
-          height: 12%;
+        &.video-graph-container--visible {
+          visibility: visible;
           opacity: 1;
 
-          .video-graph-interactive {
+          .video-graph-fullscreen {
+            pointer-events: auto;
+          }
+
+          .video-graph-overlay {
             pointer-events: auto;
           }
         }
 
+        // 시크 오버레이(터치·마우스 공용). 라인은 pointer-events:none 이고 이
+        // 영역에서만 툴팁/클릭(시크)을 받는다. 재생/멈춤은 상단 .video-touch-toggle
+        // 이 담당하고 시크는 이 하단 영역이 담당하므로 수직으로 분리되어 터치가
+        // 충돌하지 않는다. 전체 폭으로 둬 우하단까지 툴팁을 띄우되, 우하단
+        // (전체화면 버튼 자리)는 별도 버튼이 직접 처리한다.
+        .video-graph-overlay {
+          position: absolute;
+          top: 0;
+          left: 0;
+          bottom: 0;
+          right: 0;
+          pointer-events: none;
+          cursor: pointer;
+          z-index: 3;
+        }
+
+        // 시청 완료 구간은 선 뒤의 배경만 은은하게 강조한다.
+        .video-graph-watched {
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          left: 0;
+          background: rgba(variables.$primary-basic, 0.14);
+          pointer-events: none;
+          z-index: 0;
+        }
+
+        .video-graph-lines {
+          position: relative;
+          block-size: 100%;
+          z-index: 1;
+        }
+
+        // 현재 재생 위치는 핸들 없이 가는 선으로만 표시한다.
+        .video-graph-playhead {
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          width: 1px;
+          transform: translateX(-50%);
+          background: rgba(variables.$primary-basic, 0.85);
+          pointer-events: none;
+          z-index: 2;
+        }
+
+        .video-graph-fullscreen {
+          position: absolute;
+          top: 50%;
+          left: calc(100% + 8px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 36px;
+          height: 36px;
+          padding: 0;
+          color: variables.$gray-900;
+          background: rgba(0, 0, 0, 0.5);
+          border: 0;
+          border-radius: 50%;
+          cursor: pointer;
+          pointer-events: none;
+          transform: translateY(-50%);
+          z-index: 5;
+
+          &:focus-visible {
+            outline: 2px solid variables.$primary-basic;
+            outline-offset: 2px;
+          }
+        }
+
+        // hover 위치의 세로 기준선 + 그 위쪽에 툴팁 박스
+        .video-graph-tooltip {
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          width: 0;
+          transform: translateX(-50%);
+          pointer-events: none;
+          z-index: 4;
+
+          .timeline-tooltip {
+            position: absolute;
+            left: 50%;
+            bottom: 100%;
+            transform: translateX(-50%);
+            margin-bottom: 8px;
+            white-space: nowrap;
+          }
+        }
+
+        @include variables.mobile {
+          height: 12%;
+        }
+
         // 모바일에서 플레이어는 100vw 이므로 뷰포트 폭 = 플레이어 폭
         @media (max-width: 393px) {
-          left: 12px;
-          right: 12px;
+          left: 8px;
+          right: 60px;
+        }
+      }
+
+      // 좌하단 컨트롤 줄: 재생시간 + (데스크톱 전용) 음량 조절. 위치·표시 전환을
+      // 이 컨테이너가 담당하고, 자식(시간/음량)은 스타일만 갖는다.
+      // 유튜브 공유(링크) 버튼 바로 오른쪽에 재생시간이 오도록 left 를 분기한다.
+      // 유튜브 컨트롤은 (1) 플레이어 폭 ~490px 를 경계로, (2) 입력 장치가 마우스냐
+      // 터치냐에 따라 아이콘/여백 크기가 달라진다. 터치 기기(폰·태블릿)는 큰 터치용
+      // 컨트롤을 렌더해 공유버튼이 마우스 UI보다 오른쪽에 온다. 실측한 공유버튼
+      // 우측 끝(offset)에 맞춰 left 를 분기해 어느 환경에서도 겹치지도, 너무
+      // 벌어지지도 않게 한다.
+      //   마우스 큰 티어 ≈68 → 92 / 마우스 작은 티어 ≈40 → 66
+      //   터치(폭 비례) ≈62~98 → calc(48px + 8%)
+      .video-bottom-left {
+        position: absolute;
+        bottom: 26px;
+        left: 92px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        // 자식 중 음량 슬라이더만 상호작용을 받는다(시간은 iframe 으로 통과).
+        pointer-events: none;
+        // 나타날 때만 짧게 페이드인, 사라질 때는(visibility 즉시 hidden) 바로 사라짐.
+        visibility: hidden;
+        opacity: 0;
+        transition: opacity 0.2s;
+        z-index: 2;
+
+        &.video-bottom-left--visible {
+          visibility: visible;
+          opacity: 1;
+        }
+
+        @include variables.mobile {
+          bottom: 22px;
+        }
+
+        @media (max-width: 500px) {
+          left: 66px;
+        }
+
+        @media (pointer: coarse) {
+          left: calc(48px + 8%);
+        }
+      }
+
+      .video-native-time {
+        color: variables.$gray-900;
+        font-size: 0.875rem;
+        font-variant-numeric: tabular-nums;
+        line-height: 1;
+        white-space: nowrap;
+        pointer-events: none;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+
+        @include variables.mobile {
+          font-size: 0.75rem;
+        }
+      }
+
+      // 데스크톱 전용 음량 조절(뮤트 + 슬라이더). 터치 기기는 큰 유튜브 컨트롤과
+      // 겹치므로 숨긴다.
+      .video-volume {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        pointer-events: auto;
+
+        @media (pointer: coarse) {
+          display: none;
+        }
+
+        .video-volume-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 28px;
+          height: 28px;
+          padding: 0;
+          color: variables.$gray-900;
+          background: transparent;
+          border: 0;
+          border-radius: 50%;
+          cursor: pointer;
+          filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.8));
+
+          &:focus-visible {
+            outline: 2px solid variables.$primary-basic;
+            outline-offset: 2px;
+          }
+        }
+
+        .video-volume-slider {
+          width: 72px;
+          height: 4px;
+          cursor: pointer;
+          accent-color: variables.$primary-basic;
+          filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.6));
+        }
+      }
+
+      // 화면 폭이 아니라 실제 주 입력 장치가 터치인 경우에만 중앙 탭 보조 레이어를
+      // 활성화한다. 그래프 자체는 pointer-events:none이라 iframe 입력을 가리지 않는다.
+      @media (hover: none) and (pointer: coarse) {
+        .video-touch-toggle {
+          visibility: visible;
+          pointer-events: auto;
         }
       }
 
@@ -142,9 +366,18 @@
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
+      // 영상과 제목을 분리해 제목이 플레이어에 붙어 보이지 않게 한다.
+      margin-top: 16px;
 
       @include variables.mobile {
-        padding: 14px 0 10px;
+        // .video-fixed-container 는 fixed/100% 로 거터를 벗어나 뷰포트 전체 폭을
+        // 차지하므로, 다른 콘텐츠(emotion/comment)가 쓰는 모바일 거터(16px)와
+        // 동일한 가로 여백을 준다. 영상은 풀폭(full-bleed)으로 유지.
+        padding: 14px variables.$layout-gutter-mobile 10px;
+        margin-top: 0;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
       }
       @include variables.desktop {
         margin-bottom: 18px;
@@ -156,11 +389,11 @@
         min-width: 0;
         flex: 1 1 auto;
         @include variables.mobile {
-          white-space: nowrap;
-          overflow: hidden;
-          max-width: calc(100vw - 112px);
-          height: 24px;
-          text-overflow: ellipsis;
+          width: 100%;
+          white-space: normal;
+          overflow-wrap: anywhere;
+          max-width: none;
+          height: auto;
         }
       }
 
@@ -184,6 +417,43 @@
           margin-top: 6px;
           margin-right: 8px;
         }
+
+        @include variables.mobile {
+          width: 100%;
+          flex-direction: row;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+
+          .right-side-actions {
+            gap: 6px;
+
+            .like-button {
+              min-block-size: 32px;
+              padding-inline: 10px;
+
+              .like-image {
+                width: 18px;
+                margin-right: 5px;
+              }
+            }
+
+            .bookmark-button.with-label {
+              min-block-size: 32px;
+              padding: 0 10px;
+              gap: 4px;
+
+              svg {
+                width: 18px;
+                height: 18px;
+              }
+            }
+          }
+
+          .video-hits-text {
+            margin: 0;
+          }
+        }
       }
     }
 
@@ -202,7 +472,7 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        margin-top: calc(100vw * (9 / 16) + 52px);
+        margin-top: calc(100vw * (9 / 16) + 112px);
         padding-top: 24px;
         padding-bottom: 24px;
 
@@ -225,7 +495,7 @@
           }
 
           .graph-container {
-            height: 12px;
+            height: 22px;
             border-radius: 2px;
             margin-bottom: 16px;
 
@@ -322,8 +592,10 @@
                 font: inherit;
                 color: variables.$gray-500;
                 cursor: pointer;
-                &:hover {
-                  color: variables.$gray-900;
+                @media (hover: hover) and (pointer: fine) {
+                  &:hover {
+                    color: variables.$gray-900;
+                  }
                 }
               }
 
@@ -334,9 +606,11 @@
                 font: inherit;
                 color: variables.$gray-500;
                 margin-left: 16px;
-                &:hover {
-                  cursor: pointer;
-                  color: variables.$gray-900;
+                @media (hover: hover) and (pointer: fine) {
+                  &:hover {
+                    cursor: pointer;
+                    color: variables.$gray-900;
+                  }
                 }
                 &:disabled {
                   cursor: default;
@@ -425,8 +699,10 @@
                     height: 100%;
                     border-radius: 8px 8px 0px 0px;
                   }
-                  &:hover .comment-modify-dim {
-                    display: block;
+                  @media (hover: hover) and (pointer: fine) {
+                    &:hover .comment-modify-dim {
+                      display: block;
+                    }
                   }
                 }
                 .comment-delete-text {
@@ -451,8 +727,10 @@
                     height: 100%;
                     border-radius: 0px 0px 8px 8px;
                   }
-                  &:hover .comment-delete-dim {
-                    display: block;
+                  @media (hover: hover) and (pointer: fine) {
+                    &:hover .comment-delete-dim {
+                      display: block;
+                    }
                   }
                 }
               }
@@ -536,6 +814,10 @@
         height: 12px;
         border-radius: 2px;
         margin-bottom: 16px;
+
+        @include variables.tablet {
+          height: 20px;
+        }
 
         .graph-tooltip-container {
           width: 80px;
