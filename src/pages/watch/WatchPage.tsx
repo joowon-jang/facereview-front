@@ -260,6 +260,16 @@ const WatchPage = (): ReactElement => {
     setPlayerState(e.data);
     syncPlayerDuration(e.target);
 
+    // 드래그 시킹 중 유튜브가 재생을 자동 재개하면(예: ENDED 직후 시크) 다시
+    // 멈춰서 "드래그 중 정지" 를 유지한다.
+    if (e.data === 1 && isDraggingTimelineRef.current) {
+      try {
+        void e.target.pauseVideo();
+      } catch {
+        // 영상 교체/리로드와 겹치면 플레이어 명령이 거절될 수 있다.
+      }
+    }
+
     // 자동재생으로 진입한 경우 hover/tap 없이 재생이 시작되므로, 첫 재생 시점에
     // 타임라인 그래프를 한 번 자동으로 보여준다(이후엔 기존 hover/tap 로직이 담당).
     if (e.data === 1 && !hasAutoRevealedTimelineRef.current) {
@@ -412,14 +422,111 @@ const WatchPage = (): ReactElement => {
     const rect = container.getBoundingClientRect();
     return Math.min(Math.max((e.clientX - rect.left) / rect.width, 0), 1);
   };
-  const handleOverlayMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    setHoverRatio(ratioFromEvent(e));
+  // 드래그 시킹: 포인터 캡처로 그래프 밖에서도 드래그를 추적한다.
+  // ratioFromEvent 가 X를 0~1로 클램프하므로 영역을 벗어나면 핸들이 양 끝에
+  // 붙고, 다시 들어오면 커서 위치를 따라간다. 드래그 중엔 영상을 멈춘 채
+  // 해당 시간의 화면을 미리 보여주고, 놓는 순간 재생한다.
+  const isDraggingTimelineRef = useRef(false);
+  // 드래그 시작 시점에 재생 중이었을 때만 놓을 때 재생을 재개한다.
+  // 정지 상태에서 드래그하면 놓아도 정지 상태를 유지한다.
+  const shouldResumeAfterDragRef = useRef(false);
+
+  // 드래그 중 화면 미리보기용 시크. seekTo(time, true) 를 pointermove 마다
+  // 그대로 보내면 유튜브 서버로 시크 요청이 초당 수십 번 나가 플레이어가
+  // 버벅이므로, 200ms 간격으로 스로틀하고 마지막 위치는 트레일링으로 반영한다.
+  const PREVIEW_SEEK_INTERVAL_MS = 200;
+  const lastPreviewSeekAtRef = useRef(0);
+  const previewSeekTimerRef = useRef<number | null>(null);
+  const pendingPreviewTimeRef = useRef(0);
+
+  const clearPreviewSeekTimer = () => {
+    if (previewSeekTimerRef.current === null) return;
+    window.clearTimeout(previewSeekTimerRef.current);
+    previewSeekTimerRef.current = null;
   };
-  const handleOverlayLeave = () => setHoverRatio(null);
-  const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    const nextTime = ratioFromEvent(e) * effectiveDuration;
+
+  // 영상 끝까지 시크하면 플레이어가 ENDED 상태가 되고, ENDED 상태에서는
+  // 이후 seekTo 가 무시되거나 재생이 자동 재개되는 등 동작이 어긋난다.
+  // 시크는 항상 끝에서 1초 앞까지로 제한한다(핸들·시간 표시는 제한 없이
+  // 커서를 따라간다). 끝에서 놓으면 마지막 1초를 재생하고 자연 종료된다.
+  const clampSeekTime = (time: number) =>
+    Math.min(time, Math.max(effectiveDuration - 1, 0));
+
+  const previewSeekTo = (rawTime: number) => {
+    const time = clampSeekTime(rawTime);
+    pendingPreviewTimeRef.current = time;
+    const elapsed = Date.now() - lastPreviewSeekAtRef.current;
+    if (elapsed >= PREVIEW_SEEK_INTERVAL_MS) {
+      lastPreviewSeekAtRef.current = Date.now();
+      video?.seekTo(time, true);
+      return;
+    }
+    if (previewSeekTimerRef.current !== null) return;
+    previewSeekTimerRef.current = window.setTimeout(() => {
+      previewSeekTimerRef.current = null;
+      if (!isDraggingTimelineRef.current) return;
+      lastPreviewSeekAtRef.current = Date.now();
+      video?.seekTo(pendingPreviewTimeRef.current, true);
+    }, PREVIEW_SEEK_INTERVAL_MS - elapsed);
+  };
+
+  useEffect(() => clearPreviewSeekTimer, []);
+
+  const handleOverlayPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!video) return;
+    isDraggingTimelineRef.current = true;
+    // 버퍼링(3)은 재생 도중의 일시적 상태이므로 재생 중으로 취급한다.
+    shouldResumeAfterDragRef.current =
+      playerStateRef.current === 1 || playerStateRef.current === 3;
+    e.currentTarget.setPointerCapture(e.pointerId);
+    // 드래그 도중 자동 숨김 타이머(터치 4.3초)가 그래프를 숨기지 않도록 멈춘다.
+    clearTimelineControlsHideTimer();
+    try {
+      void video.pauseVideo();
+    } catch {
+      // 영상 교체/리로드와 겹치면 플레이어 명령이 거절될 수 있다.
+    }
+    const ratio = ratioFromEvent(e);
+    setHoverRatio(ratio);
+    const nextTime = ratio * effectiveDuration;
+    setCurrentPlaybackTime(nextTime);
+    previewSeekTo(nextTime);
+  };
+
+  const handleOverlayPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    const ratio = ratioFromEvent(e);
+    setHoverRatio(ratio);
+    if (!isDraggingTimelineRef.current) return;
+    const nextTime = ratio * effectiveDuration;
+    setCurrentPlaybackTime(nextTime);
+    previewSeekTo(nextTime);
+  };
+
+  const endTimelineDrag = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!isDraggingTimelineRef.current) return;
+    isDraggingTimelineRef.current = false;
+    clearPreviewSeekTimer();
+    const nextTime = clampSeekTime(ratioFromEvent(e) * effectiveDuration);
     setCurrentPlaybackTime(nextTime);
     video?.seekTo(nextTime, true);
+    if (shouldResumeAfterDragRef.current) {
+      try {
+        void video?.playVideo();
+      } catch {
+        // 영상 교체/리로드와 겹치면 플레이어 명령이 거절될 수 있다.
+      }
+    }
+    // 터치는 드래그가 끝나면 hover 유지가 없으므로 자동 숨김 타이머를 재가동한다.
+    if (e.pointerType !== 'mouse') {
+      setHoverRatio(null);
+      showTimelineControlsTemporarily();
+    }
+  };
+
+  const handleOverlayLeave = () => {
+    // 포인터 캡처 중엔 leave 가 와도 드래그가 유지되므로 툴팁을 지우지 않는다.
+    if (isDraggingTimelineRef.current) return;
+    setHoverRatio(null);
   };
 
   const clearTimelineControlsHideTimer = () => {
@@ -512,7 +619,9 @@ const WatchPage = (): ReactElement => {
 
     const syncPlaybackTime = async () => {
       const time = await video.getCurrentTime();
-      if (active && Number.isFinite(time)) setCurrentPlaybackTime(time);
+      // 드래그 시킹 중엔 핸들이 커서를 따라가야 하므로 플레이어 시간으로 덮지 않는다.
+      if (active && Number.isFinite(time) && !isDraggingTimelineRef.current)
+        setCurrentPlaybackTime(time);
     };
 
     void syncPlaybackTime();
@@ -541,7 +650,7 @@ const WatchPage = (): ReactElement => {
     const interval = setInterval(async () => {
       const currentTime = await video.getCurrentTime();
       if (!Number.isFinite(currentTime)) return;
-      setCurrentPlaybackTime(currentTime);
+      if (!isDraggingTimelineRef.current) setCurrentPlaybackTime(currentTime);
 
       // timeline_data 의 x 는 진행률 bin(1~100), bin k 는 ((k-1)..k]/100 구간
       const bin = Math.min(
@@ -972,9 +1081,11 @@ const WatchPage = (): ReactElement => {
                       추적한다. 전체화면 버튼은 별도 클릭 영역에서 처리한다. */}
                     <div
                       className="video-graph-overlay"
-                      onMouseMove={handleOverlayMove}
-                      onMouseLeave={handleOverlayLeave}
-                      onClick={handleOverlayClick}
+                      onPointerDown={handleOverlayPointerDown}
+                      onPointerMove={handleOverlayPointerMove}
+                      onPointerUp={endTimelineDrag}
+                      onPointerCancel={endTimelineDrag}
+                      onPointerLeave={handleOverlayLeave}
                     />
                     {tooltipEntries && hoverRatio !== null && (
                       <div
