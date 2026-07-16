@@ -427,6 +427,9 @@ const WatchPage = (): ReactElement => {
   // 붙고, 다시 들어오면 커서 위치를 따라간다. 드래그 중엔 영상을 멈춘 채
   // 해당 시간의 화면을 미리 보여주고, 놓는 순간 재생한다.
   const isDraggingTimelineRef = useRef(false);
+  // 드래그 시작 시점에 재생 중이었을 때만 놓을 때 재생을 재개한다.
+  // 정지 상태에서 드래그하면 놓아도 정지 상태를 유지한다.
+  const shouldResumeAfterDragRef = useRef(false);
 
   // 드래그 중 화면 미리보기용 시크. seekTo(time, true) 를 pointermove 마다
   // 그대로 보내면 유튜브 서버로 시크 요청이 초당 수십 번 나가 플레이어가
@@ -472,6 +475,9 @@ const WatchPage = (): ReactElement => {
   const handleOverlayPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!video) return;
     isDraggingTimelineRef.current = true;
+    // 버퍼링(3)은 재생 도중의 일시적 상태이므로 재생 중으로 취급한다.
+    shouldResumeAfterDragRef.current =
+      playerStateRef.current === 1 || playerStateRef.current === 3;
     e.currentTarget.setPointerCapture(e.pointerId);
     // 드래그 도중 자동 숨김 타이머(터치 4.3초)가 그래프를 숨기지 않도록 멈춘다.
     clearTimelineControlsHideTimer();
@@ -503,10 +509,12 @@ const WatchPage = (): ReactElement => {
     const nextTime = clampSeekTime(ratioFromEvent(e) * effectiveDuration);
     setCurrentPlaybackTime(nextTime);
     video?.seekTo(nextTime, true);
-    try {
-      void video?.playVideo();
-    } catch {
-      // 영상 교체/리로드와 겹치면 플레이어 명령이 거절될 수 있다.
+    if (shouldResumeAfterDragRef.current) {
+      try {
+        void video?.playVideo();
+      } catch {
+        // 영상 교체/리로드와 겹치면 플레이어 명령이 거절될 수 있다.
+      }
     }
     // 터치는 드래그가 끝나면 hover 유지가 없으므로 자동 숨김 타이머를 재가동한다.
     if (e.pointerType !== 'mouse') {
