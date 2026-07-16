@@ -135,6 +135,8 @@
           pointer-events: none;
           cursor: pointer;
           z-index: 3;
+          // 드래그 시킹 중 터치가 페이지 스크롤로 새지 않도록 막는다.
+          touch-action: none;
         }
 
         // 시청 완료 구간은 선 뒤의 배경만 은은하게 강조한다.
