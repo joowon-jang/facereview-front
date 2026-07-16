@@ -84,6 +84,9 @@ const WatchPage = (): ReactElement => {
   const timelineControlsHideTimerRef = useRef<number | null>(null);
   const [areTimelineControlsVisible, setAreTimelineControlsVisible] =
     useState(false);
+  // 자동재생 진입 시에는 hover/tap 같은 사용자 상호작용이 없어 그래프가 노출될
+  // 기회가 없으므로, 영상이 처음 재생 상태가 될 때 한 번은 자동으로 노출한다.
+  const hasAutoRevealedTimelineRef = useRef(false);
   const { id } = useParams();
   const navigate = useNavigate();
   // iframe 의 실제 렌더링 크기는 watchpage.scss 의
@@ -247,6 +250,7 @@ const WatchPage = (): ReactElement => {
   const handleVideoReady = (e: YouTubeEvent<YouTubePlayer>) => {
     setVideo(e.target);
     syncPlayerDuration(e.target);
+    hasAutoRevealedTimelineRef.current = false;
   };
 
   // 관련 영상으로 이동하면 loadVideoById 로 교체되어 onReady 가 다시 오지 않으므로
@@ -255,6 +259,13 @@ const WatchPage = (): ReactElement => {
     playerStateRef.current = e.data;
     setPlayerState(e.data);
     syncPlayerDuration(e.target);
+
+    // 자동재생으로 진입한 경우 hover/tap 없이 재생이 시작되므로, 첫 재생 시점에
+    // 타임라인 그래프를 한 번 자동으로 보여준다(이후엔 기존 hover/tap 로직이 담당).
+    if (e.data === 1 && !hasAutoRevealedTimelineRef.current) {
+      hasAutoRevealedTimelineRef.current = true;
+      showTimelineControlsTemporarily();
+    }
   };
 
   const handleVideoError = (e: YouTubeEvent<number>) => {
