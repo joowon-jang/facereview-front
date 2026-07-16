@@ -60,10 +60,8 @@ const INITIAL_EMOTION_TIME = {
   neutral: 0,
 };
 
-const EMOTION_COLOR_LIST = EMOTIONS.map((e) => EMOTION_COLORS[e]);
 // 타임라인 그래프는 데이터 없는 감정 시리즈가 필터링되므로, 순서 기반 배열 대신
 // 시리즈 id 로 색상을 매핑해야 감정-색상이 어긋나지 않는다 (WatchPage 와 동일).
-// 도넛 차트는 항상 5개 감정이 순서대로 존재하므로 EMOTION_COLOR_LIST 를 그대로 쓴다.
 const LINE_CHART_COLORS = (serie: { id: string }) =>
   EMOTION_COLORS[serie.id as EmotionType] ?? EMOTION_COLORS.neutral;
 const LINE_CHART_MARGIN = { top: 2, right: 0, bottom: 2, left: 0 };
@@ -156,6 +154,14 @@ const MyPage = () => {
       ),
     }));
   }, [emotionSummaryData]);
+
+  // 0% 감정은 호 두께가 0이라 화면엔 안 보이지만 padAngle 간격은 그대로 적용돼,
+  // 그 감정이 있던 자리의 간격만 유독 넓어 보인다. 차트엔 0%를 빼서 간격을
+  // 모든 경계에서 동일하게 만든다(범례는 5개 전부 그대로 보여준다).
+  const visibleDonutGraphData = useMemo(
+    () => donutGraphData.filter((item) => item.value > 0),
+    [donutGraphData],
+  );
 
   const totalWatchLabel = useMemo(() => {
     if (totalSeconds <= 0) return '—';
@@ -523,14 +529,14 @@ const MyPage = () => {
                       />
                     ) : (
                       <ResponsivePie
-                        colors={EMOTION_COLOR_LIST}
-                        data={donutGraphData}
+                        colors={{ datum: 'data.color' }}
+                        data={visibleDonutGraphData}
                         sortByValue={false}
                         margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
                         activeOuterRadiusOffset={6}
                         borderWidth={0}
                         innerRadius={0.72}
-                        padAngle={2}
+                        padAngle={1}
                         cornerRadius={4}
                         enableArcLabels={false}
                         enableArcLinkLabels={false}
