@@ -84,9 +84,9 @@
 
       .video-graph-container {
         position: absolute;
-        // 왼쪽을 조금 더 넓게 쓰고, 오른쪽은 전체화면 버튼 영역으로 비운다.
+        // 왼쪽을 조금 더 넓게 쓰고, 오른쪽은 전체화면 버튼 영역만 남기고 비운다.
         left: 16px;
-        right: 76px;
+        right: 48px;
         bottom: var(--youtube-attribution-safe-area);
         height: 16%;
         box-sizing: border-box;
@@ -168,13 +168,14 @@
 
         .video-graph-fullscreen {
           position: absolute;
-          top: 50%;
+          // 그래프 아랫변과 버튼 아랫변이 같은 수평선에 오도록 bottom 기준으로 맞춘다.
+          bottom: 0;
           left: calc(100% + 8px);
           display: flex;
           align-items: center;
           justify-content: center;
-          width: 36px;
-          height: 36px;
+          width: 34px;
+          height: 34px;
           padding: 0;
           color: variables.$gray-900;
           background: rgba(0, 0, 0, 0.5);
@@ -182,7 +183,6 @@
           border-radius: 50%;
           cursor: pointer;
           pointer-events: none;
-          transform: translateY(-50%);
           z-index: 5;
 
           &:focus-visible {
@@ -218,7 +218,7 @@
         // 모바일에서 플레이어는 100vw 이므로 뷰포트 폭 = 플레이어 폭
         @media (max-width: 393px) {
           left: 8px;
-          right: 60px;
+          right: 46px;
         }
       }
 
