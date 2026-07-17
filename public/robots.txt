@@ -5,4 +5,4 @@ Disallow: /my
 Disallow: /bookmark
 Disallow: /edit
 
-Sitemap: https://www.facereview.net/sitemap.xml
+Sitemap: https://facereview.net/sitemap.xml

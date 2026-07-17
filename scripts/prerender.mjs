@@ -8,7 +8,7 @@ const buildDir = resolve(root, 'build');
 const indexHtmlPath = resolve(buildDir, 'index.html');
 
 const SITE_URL = (
-  process.env.VITE_SITE_URL ?? 'https://www.facereview.net'
+  process.env.VITE_SITE_URL ?? 'https://facereview.net'
 ).replace(/\/$/, '');
 
 const API_BASE = (
@@ -59,6 +59,7 @@ const buildPage = ({
   type,
   noindex = false,
   jsonLd,
+  bodyHtml,
 }) => {
   let html = baseHtml;
 
@@ -98,6 +99,21 @@ const buildPage = ({
     html = html.replace('</head>', `${headTail.join('\n')}\n  </head>`);
   }
 
+  // 크롤러(특히 JS 렌더링이 제한적인 네이버 등)가 읽을 수 있도록 정적 본문을
+  // #root에 넣는다. React가 createRoot().render()로 마운트하면서 교체하므로
+  // 앱 동작에는 영향이 없다. noindex 페이지는 어차피 색인되지 않으므로 생략.
+  const seoBody =
+    bodyHtml ??
+    (noindex
+      ? ''
+      : `<h1>${esc(title)}</h1><p>${esc(description)}</p>`);
+  if (seoBody) {
+    html = html.replace(
+      '<div id="root"></div>',
+      `<div id="root"><main style="max-width:720px;margin:0 auto;padding:48px 24px;color:#e8e9ef">${seoBody}</main></div>`,
+    );
+  }
+
   const outPath = resolve(buildDir, `${path.replace(/^\//, '')}`, 'index.html');
   mkdirSync(dirname(outPath), { recursive: true });
   writeFileSync(outPath, html);
@@ -106,16 +122,28 @@ const buildPage = ({
 
 const defaultImage = `${SITE_URL}/og-image.png`;
 
+const mainBodyHtml = [
+  '<h1>FaceReview 페이스리뷰 - 내 표정으로 리뷰하는 AI 감정 분석 영상 플랫폼</h1>',
+  '<p>FaceReview(페이스리뷰)는 AI 얼굴 인식 기술로 영상을 시청하는 동안의 표정을 실시간 분석해, 웃음·슬픔·놀람 같은 감정 변화를 자동으로 기록하고 공유하는 감정 리뷰 영상 플랫폼입니다.</p>',
+  '<h2>실시간 표정 인식과 감정 분석</h2>',
+  '<p>웹캠 기반 얼굴 인식으로 영상을 보는 동안의 표정을 분석해 행복, 슬픔, 놀람, 분노 등 감정을 실시간으로 기록합니다. 별도의 리뷰 작성 없이 내 표정이 곧 리뷰가 됩니다.</p>',
+  '<h2>시청자 감정 타임라인</h2>',
+  '<p>다른 시청자들이 영상의 어떤 장면에서 웃고 놀랐는지 구간별 감정 그래프로 확인할 수 있습니다. 리액션 영상을 따로 찾아보지 않아도 시청자들의 반응을 한눈에 볼 수 있어요.</p>',
+  '<h2>감정 기반 영상 추천</h2>',
+  '<p>내 감정 데이터를 바탕으로 드라마, 예능, 먹방, 음악 등 다양한 장르에서 취향에 맞는 영상을 추천해 드립니다. 영상을 많이 볼수록 추천이 더 정확해집니다.</p>',
+].join('\n');
+
 const staticRoutes = [
   {
     path: '/main',
-    title: 'FaceReview',
+    title: 'FaceReview 페이스리뷰 - AI 표정 인식 감정 분석 영상 플랫폼',
     description:
-      'FaceReview 홈에서 감정 기반으로 추천되는 영상들을 만나보세요. 드라마, 예능, 먹방, 음악까지 다양한 장르의 인기 영상을 내 표정으로 리뷰하세요.',
+      'FaceReview(페이스리뷰) 홈에서 감정 기반으로 추천되는 영상들을 만나보세요. AI 얼굴 인식으로 표정을 분석해 드라마, 예능, 먹방, 음악까지 다양한 장르의 인기 영상을 내 표정으로 리뷰할 수 있어요.',
     type: 'website',
     index: true,
     priority: '1.0',
     changefreq: 'daily',
+    bodyHtml: mainBodyHtml,
   },
   {
     path: '/auth/1',
@@ -335,11 +363,12 @@ if (videos.length) {
   console.log('▶ Prerendering video watch pages...');
   videos.forEach((v, i) => {
     const thumbnail = thumbnails[i];
-    const description = `${v.title} — FaceReview에서 실시간으로 내 감정을 분석하고 다른 시청자들의 감정 리뷰를 확인해 보세요.`;
+    const description = `${v.title} — FaceReview에서 영상을 보며 AI 얼굴 인식으로 실시간 감정을 분석하고, 다른 시청자들의 감정 리뷰를 확인해 보세요.`;
     buildPage({
       path: `/watch/${v.video_id}`,
-      title: v.title,
+      title: `${v.title} | FaceReview`,
       description,
+      bodyHtml: `<h1>${esc(v.title)}</h1><p>${esc(description)}</p><p>FaceReview(페이스리뷰)는 영상을 시청하는 동안 표정 인식으로 감정 변화를 기록하고, 시청자들의 감정 타임라인을 구간별로 보여주는 감정 분석 영상 플랫폼입니다.</p>`,
       image: thumbnail.url,
       imageWidth: thumbnail.width,
       imageHeight: thumbnail.height,
