@@ -25,7 +25,7 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "yarn generate-og && tsc && vite build && yarn prerender",
+    "build": "tsc && vite build && yarn prerender",
     "generate-og": "node scripts/generate-og.mjs",
     "prerender": "node scripts/prerender.mjs",
     "preview": "vite preview",

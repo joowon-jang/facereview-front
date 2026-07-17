@@ -1,3 +1,6 @@
+// og-image.svg 수정 후 로컬에서 `yarn generate-og`로 실행하고 결과 PNG를 커밋할 것.
+// 시스템 폰트(Pretendard/한글 폰트)에 의존하므로 CI·Vercel 빌드에서 실행하면
+// 한글이 tofu(□)로 깨진다. 이 때문에 build 스크립트에는 포함하지 않는다.
 import { Resvg } from '@resvg/resvg-js';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
