@@ -322,6 +322,33 @@
         }
       }
 
+      // 자막(CC) 켜기/끄기. 음량 슬라이더와 달리 터치 기기에서도 유지한다.
+      .video-captions-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        padding: 0;
+        color: variables.$gray-900;
+        background: transparent;
+        border: 0;
+        border-radius: 4px;
+        cursor: pointer;
+        pointer-events: auto;
+        filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.8));
+
+        &.video-captions-btn--active {
+          color: variables.$gray-50;
+          background: variables.$primary-basic;
+        }
+
+        &:focus-visible {
+          outline: 2px solid variables.$primary-basic;
+          outline-offset: 2px;
+        }
+      }
+
       // 화면 폭이 아니라 실제 주 입력 장치가 터치인 경우에만 중앙 탭 보조 레이어를
       // 활성화한다. 그래프 자체는 pointer-events:none이라 iframe 입력을 가리지 않는다.
       @media (hover: none) and (pointer: coarse) {

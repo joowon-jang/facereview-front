@@ -40,6 +40,7 @@ import { EmotionPanel } from './EmotionPanel';
 import { TimelineTooltip } from './TimelineTooltip';
 import { CommentSection } from './CommentSection';
 import VideoVolume from './VideoVolume';
+import VideoCaptions from './VideoCaptions';
 
 // Hoisted module-level constants to avoid re-creation on every render
 const LINE_CHART_MARGIN = { top: 0, right: 0, bottom: 0, left: 0 };
@@ -1027,6 +1028,7 @@ const WatchPage = (): ReactElement => {
                   {formatPlaybackTime(effectiveDuration)}
                 </span>
                 <VideoVolume video={video} />
+                <VideoCaptions video={video} playerState={playerState} />
               </div>
             )}
             {hasVideoTimeline && (
