@@ -194,6 +194,7 @@ const MyPage = () => {
             graphData = getScaledTimelineGraphData(
               video.timeline_data,
               video.duration,
+              true,
             );
           }
 

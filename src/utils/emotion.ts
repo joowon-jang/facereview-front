@@ -84,6 +84,7 @@ export type ScaledGraphDistributionDataType = {
 export const getScaledTimelineGraphData = (
   dist: VideoDistributionDataType,
   duration = 100,
+  stretchToFit = false,
 ): ScaledGraphDistributionDataType[] => {
   const graphData = getDistributionToGraphData(dist).filter(
     (series) => series.data.length > 0,
@@ -101,7 +102,20 @@ export const getScaledTimelineGraphData = (
   // 수 있다. bin k 는 영상 구간 ((k-1)..k]/100 을 대표하므로 bin "중심"
   // (k-0.5)/100 위치에 그려야 반 bin 우측 밀림이 없다.
   // 실제 시각(초) = (x - 0.5) / 100 * duration.
-  const scale = graphDuration / 100;
+  //
+  // stretchToFit: 영상을 끝까지 보지 않아 뒤쪽 bin 이 통째로 비는 경우
+  // (마이페이지 개인 시청 기록), 100 으로 나누면 실제 데이터가 앞쪽에만
+  // 몰리고 나머지는 마지막 값이 평평하게 늘어난 것처럼 보인다. 이때는 실제
+  // 존재하는 마지막 bin 을 기준으로 나눠 있는 데이터만으로 폭 전체를
+  // 채운다(시각 축 의미보다 "가지고 있는 데이터의 분포"를 우선한다).
+  const maxBin = stretchToFit
+    ? Math.max(
+        ...graphData.flatMap((series) =>
+          series.data.map((point) => Number(point.x)),
+        ),
+      )
+    : 100;
+  const scale = graphDuration / (Number.isFinite(maxBin) && maxBin > 0 ? maxBin : 100);
 
   return graphData.map((series) => {
     let newData = series.data
